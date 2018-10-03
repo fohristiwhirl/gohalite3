@@ -29,3 +29,11 @@ func (self *Game) Pid() int {
 func (self *Game) Turn() int {
 	return self.turn
 }
+
+func (self *Game) Width() int {
+	return self.width
+}
+
+func (self *Game) Height() int {
+	return self.height
+}

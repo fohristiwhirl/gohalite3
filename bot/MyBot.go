@@ -1,7 +1,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"math/rand"
 	"time"
 
 	ai "./ai"
@@ -17,14 +19,19 @@ func main() {
 
 	config := new(ai.Config)
 
-	// Do flag parsing here.
+	flag.BoolVar(&config.Timeseed, "timeseed", false, "seed RNG with time")
+	flag.Parse()
 
 	game := hal.NewGame()
+
+	var longest_turn time.Duration
+	var longest_turn_number int
 
 	defer func() {
 		if p := recover(); p != nil {
 			fmt.Printf("%v", p)
 			game.Log("Quitting: %v", p)
+			game.Log("Longest turn (%d) took %v", longest_turn_number, longest_turn)
 		}
 	}()
 
@@ -32,9 +39,32 @@ func main() {
 	game.LogWithoutTurn("--------------------------------------------------------------------------------")
 	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02 15:04:05"))
 
-	overmind := ai.NewOvermind(game, config)
+	if config.Timeseed {
+		seed := time.Now().UTC().UnixNano()
+		rand.Seed(seed)
+		game.LogWithoutTurn("Seeding own RNG: %v", seed)
+	}
 
-	// Play the game...
+	// FIXME: we likely have to send our name here.
 
-	overmind.Step()
+	overmind := ai.NewOvermind(game, config)		// FIXME: that function will need to do the pre-game parse.
+
+	for {
+		start_time := time.Now()
+
+		game.Parse()
+
+		if config.Timeseed == false {
+			rand.Seed(int64(game.Turn() + game.Width() + game.Pid()))
+		}
+
+		overmind.Step()
+
+		game.Send()
+
+		if time.Now().Sub(start_time) > longest_turn {
+			longest_turn = time.Now().Sub(start_time)
+			longest_turn_number = game.Turn()
+		}
+	}
 }

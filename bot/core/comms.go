@@ -84,3 +84,13 @@ func (self *TokenParser) Bool() bool {
 		return true
 	}
 }
+
+// ---------------------------------------
+
+func (self *Game) Parse() {
+	return
+}
+
+func (self *Game) Send() {
+	return
+}

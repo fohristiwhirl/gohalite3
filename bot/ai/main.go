@@ -5,6 +5,7 @@ import (
 )
 
 type Config struct {
+	Timeseed				bool
 }
 
 type Overmind struct {
