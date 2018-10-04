@@ -14,6 +14,22 @@ type Box struct {
 	halite						int
 }
 
+func (self *Box) Left() *Box {
+	return self.game.Box(self.x - 1, self.y)
+}
+
+func (self *Box) Right() *Box {
+	return self.game.Box(self.x + 1, self.y)
+}
+
+func (self *Box) Up() *Box {
+	return self.game.Box(self.x, self.y - 1)
+}
+
+func (self *Box) Down() *Box {
+	return self.game.Box(self.x, self.y + 1)
+}
+
 // ------------------------------------------------------------
 
 type Ship struct {
@@ -47,12 +63,13 @@ type Game struct {
 }
 
 func NewGame() *Game {
+
 	game := new(Game)
 	game.turn = -1
 	game.token_parser = NewTokenParser()
 
-	self.ship_xy_lookup = make(map[Point]*Ship)
-	self.ship_id_lookup = make(map[int]*Ship)
+	game.ship_xy_lookup = make(map[Point]*Ship)
+	game.ship_id_lookup = make(map[int]*Ship)
 
 	// FIXME: Do a parse of whatever info the game sends pre-game.
 
