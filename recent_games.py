@@ -36,8 +36,8 @@ class RecentGames:
 				player_names.sort(key = lambda name : player_ranks[name])
 
 				for i, name in enumerate(player_names):
-					if len(name) < 12:
-						player_names[i] = name + ((12 - len(name)) * " ")
+					if len(name) < 16:
+						player_names[i] = name + ((16 - len(name)) * " ")
 
 				print("{0:>3}: {1} - {2}".format(len(self.game_ids) - 1, game["game_id"], " ".join(player_names)))
 
@@ -76,7 +76,7 @@ while 1:
 
 	# So, try to get a game_id to download...
 
-	if s[0] in "dD":
+	if s[0] in "dD":			# D for direct, i.e. specify exact actual id
 		try:
 			game_id = int(s.split()[1])
 		except:
@@ -91,6 +91,9 @@ while 1:
 			continue
 
 	# We got a game_id...
+
+	if not os.path.exists("./replays/"):
+		os.makedirs("./replays/")
 
 	local_filename = "./replays/{}.hlt".format(game_id)
 
