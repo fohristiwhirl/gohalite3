@@ -1,0 +1,104 @@
+import os, requests, subprocess
+
+MY_ID = 112
+INITIAL_LIMIT = 50
+RELOAD_LIMIT = 50
+FLUORINE_DIR = "C:\\Users\\Owner\\github\\fluorine"
+
+class RecentGames:
+
+	def __init__(self, my_id):
+
+		self.game_ids = []
+		self.reload(my_id, INITIAL_LIMIT)
+
+	def reload(self, my_id, limit):
+
+		recent = reversed(requests.get("http://api.2018.halite.io/v1/api/user/{}/match?&order_by=desc,time_played&limit={}".format(my_id, limit)).json())
+
+		for game in recent:
+
+			if game["game_id"] not in self.game_ids:
+
+				self.game_ids.append(game["game_id"])
+
+				player_objects = game["players"]		# dict of player id --> object
+
+				player_ranks = dict()
+
+				player_names = []
+
+				for pid, ob in player_objects.items():
+					name = ob["username"]
+					player_names.append(name)
+					player_ranks[name] = ob["rank"]
+
+				player_names.sort(key = lambda name : player_ranks[name])
+
+				for i, name in enumerate(player_names):
+					if len(name) < 12:
+						player_names[i] = name + ((12 - len(name)) * " ")
+
+				print("{0:>3}: {1} - {2}".format(len(self.game_ids) - 1, game["game_id"], " ".join(player_names)))
+
+	def get_game_id(self, n):
+		return self.game_ids[n]
+
+	def current_len(self):
+		return len(self.game_ids)
+
+
+def load_in_fluorine(filename):
+	subprocess.Popen("electron \"{}\" -o \"{}\"".format(FLUORINE_DIR, filename), shell = True)
+
+my_id = MY_ID
+rg = RecentGames(my_id)
+
+while 1:
+
+	s = input("> ")
+
+	if len(s) == 0:
+		continue
+
+	if s in "rR":
+		rg.reload(my_id, RELOAD_LIMIT)
+		continue
+
+	if s[0] in "sS":
+		try:
+			my_id = int(s.split()[1])
+			rg.reload(my_id, 250)
+			print("OK")
+			continue
+		except:
+			continue
+
+	# So, try to get a game_id to download...
+
+	if s[0] in "dD":
+		try:
+			game_id = int(s.split()[1])
+		except:
+			continue
+	else:
+		try:
+			n = int(s)
+			if n < 0 or n >= rg.current_len():
+				continue
+			game_id = rg.get_game_id(n)
+		except:
+			continue
+
+	# We got a game_id...
+
+	local_filename = "./replays/{}.hlt".format(game_id)
+
+	if not os.path.exists(local_filename):
+		url = "https://api.2018.halite.io/v1/api/user/{}/match/{}/replay".format(my_id, game_id)
+		hlt = requests.get(url)
+		with open(local_filename, "wb") as output:
+			output.write(hlt.content)
+
+	load_in_fluorine(os.path.abspath(local_filename))
+
