@@ -21,8 +21,8 @@ func (self *Ship) HaliteAt() int {
 	return self.game.HaliteAt(self.X, self.Y)
 }
 
-func (self *Ship) Neighbours() []Point {
-	return self.game.Neighbours(self.X, self.Y)
+func (self *Ship) NeighbourPoints() []Point {
+	return self.game.NeighbourPoints(self.X, self.Y)
 }
 
 // ------------------------------------------------------------
@@ -92,7 +92,7 @@ func (self *Game) Height() int {
 	return self.height
 }
 
-func (self *Game) Neighbours(x, y int) []Point {
+func (self *Game) NeighbourPoints(x, y int) []Point {
 	return []Point{
 		Point{mod(x - 1, self.width), y},
 		Point{x,                      mod(y - 1, self.height)},
@@ -101,12 +101,12 @@ func (self *Game) Neighbours(x, y int) []Point {
 	}
 }
 
-func (self *Game) Factory(pid int) (int, int) {
+func (self *Game) FactoryXY(pid int) (int, int) {
 	factory := self.factories[pid]
 	return factory.X, factory.Y
 }
 
-func (self *Game) Dropoffs(pid int) []Point {
+func (self *Game) DropoffPoints(pid int) []Point {
 
 	var ret []Point
 
