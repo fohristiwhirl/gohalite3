@@ -25,6 +25,23 @@ func (self *Ship) NeighbourPoints() []Point {
 	return self.game.NeighbourPoints(self.X, self.Y)
 }
 
+func (self *Ship) LocationFromMove(s string) (int, int) {
+
+	switch s {
+
+	case "w":
+		return mod(self.X - 1, self.game.width), self.Y
+	case "e":
+		return mod(self.X + 1, self.game.width), self.Y
+	case "n":
+		return self.X,                           mod(self.Y - 1, self.game.height)
+	case "s":
+		return self.X,                           mod(self.Y + 1, self.game.height)
+	default:
+		return self.X,                           self.Y
+	}
+}
+
 // ------------------------------------------------------------
 
 type Game struct {
@@ -116,5 +133,15 @@ func (self *Game) DropoffPoints(pid int) []Point {
 		ret = append(ret, Point{point.X, point.Y})
 	}
 
+	return ret
+}
+
+func (self *Game) ReturnPoints(pid int) []Point {
+
+	// So-called "dropoff points", plus factory.
+
+	ret := self.DropoffPoints(pid)
+	factory := self.factories[pid]
+	ret = append(ret, Point{factory.X, factory.Y})
 	return ret
 }
