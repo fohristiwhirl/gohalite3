@@ -1,47 +1,28 @@
 package core
 
 type Point struct {
-	x							int
-	y							int
-}
-
-// ------------------------------------------------------------
-
-type Box struct {
-	game						*Game
-	x							int
-	y							int
-	halite						int
-}
-
-func (self *Box) Left() *Box {
-	return self.game.Box(self.x - 1, self.y)
-}
-
-func (self *Box) Right() *Box {
-	return self.game.Box(self.x + 1, self.y)
-}
-
-func (self *Box) Up() *Box {
-	return self.game.Box(self.x, self.y - 1)
-}
-
-func (self *Box) Down() *Box {
-	return self.game.Box(self.x, self.y + 1)
+	X							int
+	Y							int
 }
 
 // ------------------------------------------------------------
 
 type Ship struct {
 	game						*Game
-	x							int
-	y							int
-	pid							int			// Player ID
-	sid							int			// Ship ID
+
+	X							int
+	Y							int
+	Owner						int			// Player ID
+	Id							int			// Ship ID
+	Halite						int
 }
 
-func (self *Ship) Box() *Box {
-	return self.game.Box(self.x, self.y)
+func (self *Ship) HaliteAt() int {
+	return self.game.HaliteAt(self.X, self.Y)
+}
+
+func (self *Ship) Neighbours() []Point {
+	return self.game.Neighbours(self.X, self.Y)
 }
 
 // ------------------------------------------------------------
@@ -52,8 +33,11 @@ type Game struct {
 	width						int
 	height						int
 
-	boxes						[]*Box
+	halite						[]int
 	ships						[]*Ship
+
+	factories					map[int]Point
+	dropoffs					map[int][]Point
 
 	ship_xy_lookup				map[Point]*Ship
 	ship_id_lookup				map[int]*Ship
@@ -76,7 +60,7 @@ func NewGame() *Game {
 	return game
 }
 
-func (self *Game) Box(x, y int) *Box {
+func (self *Game) HaliteAt(x, y int) int {
 
 	// Translate out-of-bounds coordinates...
 	// Use a special function since % doesn't work for negative.
@@ -84,7 +68,12 @@ func (self *Game) Box(x, y int) *Box {
 	x = mod(x, self.width)
 	y = mod(y, self.height)
 
-	return self.boxes[y * self.width + x]
+	return self.halite[y * self.width + x]
+}
+
+func (self *Game) ShipAt(x, y int) (*Ship, bool) {
+	ret, ok := self.ship_xy_lookup[Point{x, y}]
+	return ret, ok
 }
 
 func (self *Game) Pid() int {
@@ -101,4 +90,31 @@ func (self *Game) Width() int {
 
 func (self *Game) Height() int {
 	return self.height
+}
+
+func (self *Game) Neighbours(x, y int) []Point {
+	return []Point{
+		Point{mod(x - 1, self.width), y},
+		Point{x,                      mod(y - 1, self.height)},
+		Point{mod(x + 1, self.width), y},
+		Point{x,                      mod(y + 1, self.height)},
+	}
+}
+
+func (self *Game) Factory(pid int) (int, int) {
+	factory := self.factories[pid]
+	return factory.X, factory.Y
+}
+
+func (self *Game) Dropoffs(pid int) []Point {
+
+	var ret []Point
+
+	dropoffs := self.dropoffs[pid]
+
+	for _, point := range dropoffs {
+		ret = append(ret, Point{point.X, point.Y})
+	}
+
+	return ret
 }
