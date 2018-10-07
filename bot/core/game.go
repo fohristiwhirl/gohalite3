@@ -46,15 +46,19 @@ func (self *Ship) LocationFromMove(s string) (int, int) {
 
 type Game struct {
 	turn						int
+	players						int
 	pid							int
 	width						int
 	height						int
 
+	constants_json				string
+
+	budgets						[]int
 	halite						[]int
 	ships						[]*Ship
 
-	factories					map[int]Point
-	dropoffs					map[int][]Point
+	factories					[]Point
+	dropoffs					[][]Point
 
 	ship_xy_lookup				map[Point]*Ship
 	ship_id_lookup				map[int]*Ship
@@ -71,8 +75,6 @@ func NewGame() *Game {
 
 	game.ship_xy_lookup = make(map[Point]*Ship)
 	game.ship_id_lookup = make(map[int]*Ship)
-
-	// FIXME: Do a parse of whatever info the game sends pre-game.
 
 	return game
 }
@@ -143,5 +145,22 @@ func (self *Game) ReturnPoints(pid int) []Point {
 	ret := self.DropoffPoints(pid)
 	factory := self.factories[pid]
 	ret = append(ret, Point{factory.X, factory.Y})
+	return ret
+}
+
+func (self *Game) MyShips() []*Ship {
+	return self.PlayerShips(self.pid)
+}
+
+func (self *Game) PlayerShips(pid int) []*Ship {
+
+	var ret []*Ship
+
+	for _, ship := range self.ships {
+		if ship.Owner == pid {
+			ret = append(ret, ship)
+		}
+	}
+
 	return ret
 }

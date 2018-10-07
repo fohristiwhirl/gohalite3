@@ -2,3 +2,6 @@
 *.txt
 *.exe
 *.hlt
+*.log
+tester.py
+stdrelay.py

@@ -35,6 +35,8 @@ func main() {
 		}
 	}()
 
+	game.PrePreParse()
+
 	game.StartLog(fmt.Sprintf("log%d.txt", game.Pid()))
 	game.LogWithoutTurn("--------------------------------------------------------------------------------")
 	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02 15:04:05"))
@@ -45,7 +47,9 @@ func main() {
 		game.LogWithoutTurn("Seeding own RNG: %v", seed)
 	}
 
-	// FIXME: we likely have to send our name here.
+	game.PreParse()
+
+	fmt.Printf("%s %s\n", NAME, VERSION)
 
 	overmind := ai.NewOvermind(game, config)		// FIXME: that function will need to do the pre-game parse.
 
