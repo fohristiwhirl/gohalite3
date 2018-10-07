@@ -83,11 +83,14 @@ func (self *Game) PreParse() {
 	self.width = self.token_parser.Int()
 	self.height = self.token_parser.Int()
 
-	self.halite = make([]int, self.width * self.height)
+	self.halite = make([][]int, self.width)
+	for x := 0; x < self.width; x++ {
+		self.halite[x] = make([]int, self.height)
+	}
 
 	for y := 0; y < self.height; y++ {
 		for x := 0; x < self.width; x++ {
-			self.halite[y * self.width + x] = self.token_parser.Int()
+			self.halite[x][y] = self.token_parser.Int()
 		}
 	}
 }
@@ -167,7 +170,7 @@ func (self *Game) Parse() {
 		y := self.token_parser.Int()
 		val := self.token_parser.Int()
 
-		self.halite[y * self.width + x] = val
+		self.halite[x][y] = val
 	}
 
 	// ------------------------------------------------

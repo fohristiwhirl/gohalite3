@@ -17,7 +17,7 @@ type Game struct {
 	constants_json				string
 
 	budgets						[]int
-	halite						[]int
+	halite						[][]int
 	ships						[]*Ship
 
 	factories					[]Point
@@ -52,10 +52,14 @@ func (self *Game) HaliteAt(x, y int) int {
 	x = mod(x, self.width)
 	y = mod(y, self.height)
 
-	return self.halite[y * self.width + x]
+	return self.halite[x][y]
 }
 
 func (self *Game) ShipAt(x, y int) (*Ship, bool) {
+
+	x = mod(x, self.width)
+	y = mod(y, self.height)
+
 	ret, ok := self.ship_xy_lookup[Point{x, y}]
 	return ret, ok
 }
