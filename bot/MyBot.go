@@ -51,12 +51,12 @@ func main() {
 
 	fmt.Printf("%s %s\n", NAME, VERSION)
 
-	overmind := ai.NewOvermind(game, config)		// FIXME: that function will need to do the pre-game parse.
+	overmind := ai.NewOvermind(game, config)
 
 	for {
-		start_time := time.Now()
-
 		game.Parse()
+
+		start_time := time.Now()
 
 		if config.Timeseed == false {
 			rand.Seed(int64(game.Turn() + game.Width() + game.Pid()))

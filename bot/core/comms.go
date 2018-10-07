@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
+	"strings"
 )
 
 // ---------------------------------------
@@ -38,51 +40,6 @@ func (self *TokenParser) Int() int {
 
 	self.count++
 	return ret
-}
-
-func (self *TokenParser) Float() float64 {
-	bl := self.scanner.Scan()
-	if bl == false {
-		err := self.scanner.Err()
-		if err != nil {
-			panic(fmt.Sprintf("%v", err))
-		} else {
-			panic(fmt.Sprintf("End of input."))
-		}
-	}
-	ret, err := strconv.ParseFloat(self.scanner.Text(), 64)
-	if err != nil {
-		panic(fmt.Sprintf("TokenReader.Float(): ParseFloat failed at token %d: \"%s\"", self.count, self.scanner.Text()))
-	}
-
-	self.count++
-	return ret
-}
-
-func (self *TokenParser) Bool() bool {
-	bl := self.scanner.Scan()
-	if bl == false {
-		err := self.scanner.Err()
-		if err != nil {
-			panic(fmt.Sprintf("%v", err))
-		} else {
-			panic(fmt.Sprintf("End of input."))
-		}
-	}
-	val, err := strconv.Atoi(self.scanner.Text())
-	if err != nil {
-		panic(fmt.Sprintf("TokenReader.Bool(): Atoi failed at token %d: \"%s\"", self.count, self.scanner.Text()))
-	}
-	if val != 0 && val != 1 {
-		panic(fmt.Sprintf("TokenReader.Bool(): Non-bool at token %d: \"%s\"", self.count, self.scanner.Text()))
-	}
-
-	self.count++
-	if val == 0 {
-		return false
-	} else {
-		return true
-	}
 }
 
 func (self *TokenParser) Str() string {
@@ -128,8 +85,6 @@ func (self *Game) PreParse() {
 
 	self.halite = make([]int, self.width * self.height)
 
-	// FIXME: check I have these the right way round...
-
 	for y := 0; y < self.height; y++ {
 		for x := 0; x < self.width; x++ {
 			self.halite[y * self.width + x] = self.token_parser.Int()
@@ -137,11 +92,9 @@ func (self *Game) PreParse() {
 	}
 }
 
-func pretend(...interface{}) {
-	return
-}
-
 func (self *Game) Parse() {
+
+	self.generate = false
 
 	// Hold onto the sid lookup map so we can find
 	// the entities while still creating a new map...
@@ -149,10 +102,12 @@ func (self *Game) Parse() {
 	old_ship_id_lookup := self.ship_id_lookup
 
 	self.budgets = make([]int, self.players)
-	self.ship_xy_lookup = make(map[Point]*Ship)
-	self.ship_id_lookup = make(map[int]*Ship)
 
 	self.ships = nil
+	self.dropoffs = make([][]Point, self.players)
+
+	self.ship_xy_lookup = make(map[Point]*Ship)
+	self.ship_id_lookup = make(map[int]*Ship)
 
 	// ------------------------------------------------
 
@@ -181,6 +136,8 @@ func (self *Game) Parse() {
 				ship.Owner = pid
 			}
 
+			ship.Command = ""
+
 			ship.Id = sid
 			ship.X = self.token_parser.Int()
 			ship.Y = self.token_parser.Int()
@@ -190,20 +147,15 @@ func (self *Game) Parse() {
 			self.ship_id_lookup[ship.Id] = ship
 
 			self.ships = append(self.ships, ship)
-
 		}
-
-		// Dropoffs.
-		// The following is not known to be correct...
-		// FIXME: update self.dropoffs
 
 		for i := 0; i < dropoffs; i++ {
 
-			sid := self.token_parser.Int()
+			_ = self.token_parser.Int()		// sid (not needed)
 			x := self.token_parser.Int()
 			y := self.token_parser.Int()
 
-			pretend(sid, x, y)
+			self.dropoffs[pid] = append(self.dropoffs[pid], Point{x, y})
 		}
 	}
 
@@ -218,25 +170,54 @@ func (self *Game) Parse() {
 		self.halite[y * self.width + x] = val
 	}
 
+	// ------------------------------------------------
+	// Some cleanup...
+
+	sort.Slice(self.ships, func(a, b int) bool {
+		return self.ships[a].Id < self.ships[b].Id
+	})
+
 	return
 }
 
+func (self *Game) SetGenerate(x bool) {
+	self.generate = x
+}
+
 func (self *Game) Send() {
+
+	var commands []string
+
+	if self.generate {
+		commands = append(commands, "g")
+	}
+
+	for _, ship := range self.ships {
+		if ship.Owner == self.pid && ship.Command != "" {
+			commands = append(commands, ship.Command)
+		}
+	}
+
+	output := strings.Join(commands, " ")
+	fmt.Printf(output)
 	fmt.Printf("\n")
 	return
 }
 
+/*
+	Example Parse() input for 2 players
 
+	4				- turn
 
+	0 2 1 3000		- pid, ships, dropoffs, budget
+	1 28 28 0		- sid, x, y, energy
+	0 27 28 22      - sid, x, y, energy
+	2 10 10			- dropoff id, x, y
 
-	/*
-		4				- turn
-		0 2 0 3000		- pid, ships, dropoff count (??), budget
-		1 28 28 0		- sid, x, y, energy
-		0 27 28 22      - sid, x, y, energy
-		2               - cell update count
-		27 28 63        - x y val
-		28 28 0         - x y val
+	1 1 0 3000		- pid, ships, dropoffs, budget
+	3 15 17 0		- sid, x, y, energy
 
-		// Probably dropoff info after
-	*/
+	2               - cell update count
+	27 28 63        - x y val
+	28 28 0         - x y val
+*/

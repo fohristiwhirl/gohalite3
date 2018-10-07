@@ -7,43 +7,6 @@ type Point struct {
 
 // ------------------------------------------------------------
 
-type Ship struct {
-	game						*Game
-
-	X							int
-	Y							int
-	Owner						int			// Player ID
-	Id							int			// Ship ID
-	Halite						int
-}
-
-func (self *Ship) HaliteAt() int {
-	return self.game.HaliteAt(self.X, self.Y)
-}
-
-func (self *Ship) NeighbourPoints() []Point {
-	return self.game.NeighbourPoints(self.X, self.Y)
-}
-
-func (self *Ship) LocationFromMove(s string) (int, int) {
-
-	switch s {
-
-	case "w":
-		return mod(self.X - 1, self.game.width), self.Y
-	case "e":
-		return mod(self.X + 1, self.game.width), self.Y
-	case "n":
-		return self.X,                           mod(self.Y - 1, self.game.height)
-	case "s":
-		return self.X,                           mod(self.Y + 1, self.game.height)
-	default:
-		return self.X,                           self.Y
-	}
-}
-
-// ------------------------------------------------------------
-
 type Game struct {
 	turn						int
 	players						int
@@ -65,6 +28,8 @@ type Game struct {
 
 	logfile						*Logfile
 	token_parser				*TokenParser
+
+	generate					bool
 }
 
 func NewGame() *Game {
@@ -163,4 +128,12 @@ func (self *Game) PlayerShips(pid int) []*Ship {
 	}
 
 	return ret
+}
+
+func (self *Game) MyBudget() int {
+	return self.PlayerBudget(self.pid)
+}
+
+func (self *Game) PlayerBudget(pid int) int {
+	return self.budgets[pid]
 }
