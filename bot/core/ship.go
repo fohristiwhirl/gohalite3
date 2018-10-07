@@ -61,6 +61,10 @@ func (self *Ship) Clear() {
 	self.Command = ""
 }
 
+func (self *Ship) Set(s string) {
+	self.Command = s
+}
+
 func (self *Ship) Construct() {
 	self.Command = fmt.Sprintf("c %d", self.Id)
 }

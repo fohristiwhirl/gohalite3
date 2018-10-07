@@ -26,11 +26,6 @@ func (self *Overmind) Step() {
 	my_ships := self.Game.MyShips()
 	budget := self.Game.MyBudget()
 
-	if budget >= 1000 && self.Game.Pid() == 2 {
-		self.Game.SetGenerate(true)
-		return
-	}
-
 	if budget >= 1000 && len(my_ships) < 4 {
 		self.Game.SetGenerate(true)
 	}
