@@ -113,7 +113,8 @@ func (self *Game) Parse() {
 
 	self.generate = false
 
-	// Set all ships as dead (for stale ref detection by the AI)...
+	// Set all ships as dead (for stale ref detection by the AI).
+	// Also clear all commands...
 
 	for _, ship := range self.ships {
 		ship.Alive = false
@@ -160,6 +161,7 @@ func (self *Game) Parse() {
 			}
 
 			ship.Alive = true
+			ship.Inspired = false			// Will detect later
 
 			ship.Owner = pid
 			ship.Sid = sid
@@ -200,6 +202,8 @@ func (self *Game) Parse() {
 		return self.ships[a].Sid < self.ships[b].Sid
 	})
 
+	self.FixInspiration()
+
 	return
 }
 
@@ -227,21 +231,77 @@ func (self *Game) Send() {
 	return
 }
 
+func (self *Game) FixInspiration() {
+
+	if self.constants.INSPIRATION_RADIUS != 4 {
+		self.LogOnce("Couldn't set inspiration: self.constants.INSPIRATION_RADIUS == %d", self.constants.INSPIRATION_RADIUS)
+		return
+	}
+
+	vectors := []Vector{		// Doesn't include 0, 0
+		Vector{0, -4}, Vector{-1, -3}, Vector{0, -3}, Vector{1, -3}, Vector{-2, -2}, Vector{-1, -2},
+		Vector{0, -2}, Vector{1, -2}, Vector{2, -2}, Vector{-3, -1}, Vector{-2, -1}, Vector{-1, -1},
+		Vector{0, -1}, Vector{1, -1}, Vector{2, -1}, Vector{3, -1}, Vector{-4, 0}, Vector{-3, 0},
+		Vector{-2, 0}, Vector{-1, 0}, Vector{1, 0}, Vector{2, 0}, Vector{3, 0}, Vector{4, 0},
+		Vector{-3, 1}, Vector{-2, 1}, Vector{-1, 1}, Vector{0, 1}, Vector{1, 1}, Vector{2, 1},
+		Vector{3, 1}, Vector{-2, 2}, Vector{-1, 2}, Vector{0, 2}, Vector{1, 2}, Vector{2, 2},
+		Vector{-1, 3}, Vector{0, 3}, Vector{1, 3}, Vector{0, 4},
+	}
+
+	for _, ship := range self.ships {
+
+		hits := 0
+
+		for _, vector := range vectors {
+
+			x := ship.X + vector.X
+			y := ship.Y + vector.Y
+
+			other, ok := self.ShipAt(x, y)		// Handles bounds automagically
+
+			if ok {
+				if other.Owner != ship.Owner {
+					hits++
+				}
+			}
+		}
+
+		if hits >= self.constants.INSPIRATION_SHIP_COUNT {
+			ship.Inspired = true
+		}
+	}
+}
+
+
 
 /*
-	Example Parse() input for 2 players
 
-	4				- turn
+Example Parse() input for 2 players
 
-	0 2 1 3000		- pid, ships, dropoffs, budget
-	1 28 28 0		- sid, x, y, energy
-	0 27 28 22      - sid, x, y, energy
-	2 10 10			- dropoff id, x, y
+4				- turn
 
-	1 1 0 3000		- pid, ships, dropoffs, budget
-	3 15 17 0		- sid, x, y, energy
+0 2 1 3000		- pid, ships, dropoffs, budget
+1 28 28 0		- sid, x, y, energy
+0 27 28 22      - sid, x, y, energy
+2 10 10			- dropoff id, x, y
 
-	2               - cell update count
-	27 28 63        - x y val
-	28 28 0         - x y val
+1 1 0 3000		- pid, ships, dropoffs, budget
+3 15 17 0		- sid, x, y, energy
+
+2               - cell update count
+27 28 63        - x y val
+28 28 0         - x y val
+
+Vectors for inspiration:
+
+                                    {0, -4}
+                           {-1, -3} {0, -3} {1, -3}
+                  {-2, -2} {-1, -2} {0, -2} {1, -2} {2, -2}
+         {-3, -1} {-2, -1} {-1, -1} {0, -1} {1, -1} {2, -1} {3, -1}
+{-4,  0} {-3,  0} {-2,  0} {-1,  0}         {1,  0} {2,  0} {3,  0} {4,  0}
+         {-3,  1} {-2,  1} {-1,  1} {0,  1} {1,  1} {2,  1} {3,  1}
+                  {-2,  2} {-1,  2} {0,  2} {1,  2} {2,  2}
+                           {-1,  3} {0,  3} {1,  3}
+                                    {0,  4}
 */
+

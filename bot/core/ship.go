@@ -12,8 +12,9 @@ type Ship struct {
 	X							int
 	Y							int
 	Halite						int
+	Inspired					bool
 
-	Alive						bool		// Updated each turn so stale refs can be detected by the AI
+	Alive						bool		// Parser updates this so stale refs can be detected by the AI
 	Command						string		// AI's chosen command this turn
 }
 

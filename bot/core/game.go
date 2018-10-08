@@ -5,6 +5,11 @@ type Point struct {
 	Y							int
 }
 
+type Vector struct {
+	X							int
+	Y							int
+}
+
 // ------------------------------------------------------------
 
 type Game struct {
