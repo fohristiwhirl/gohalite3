@@ -25,6 +25,21 @@ func (self *Ship) NeighbourPoints() []Point {
 	return self.Game.NeighbourPoints(self.X, self.Y)
 }
 
+func (self *Ship) IsOnDropoff() bool {
+
+	// True iff ship is on one of its own dropoffs or its factory.
+
+	dropoffs := self.Game.Dropoffs(self.Owner)
+
+	for _, d := range dropoffs {
+		if self.X == d.X && self.Y == d.Y {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (self *Ship) LocationFromMove(s string) (int, int) {
 
 	switch s {

@@ -89,14 +89,27 @@ func (self *Game) NeighbourPoints(x, y int) []Point {
 	}
 }
 
+func (self *Game) MyFactoryXY() (int, int) {
+	return self.FactoryXY(self.pid)
+}
+
 func (self *Game) FactoryXY(pid int) (int, int) {
 	factory := self.factories[pid]
 	return factory.X, factory.Y
 }
 
-func (self *Game) DropoffPoints(pid int) []Point {
+func (self *Game) MyDropoffs() []Point {
+	return self.Dropoffs(self.pid)
+}
+
+func (self *Game) Dropoffs(pid int) []Point {
+
+	// Includes factory
 
 	var ret []Point
+
+	factory := self.factories[pid]
+	ret = append(ret, Point{factory.X, factory.Y})
 
 	dropoffs := self.dropoffs[pid]
 
@@ -104,16 +117,6 @@ func (self *Game) DropoffPoints(pid int) []Point {
 		ret = append(ret, Point{point.X, point.Y})
 	}
 
-	return ret
-}
-
-func (self *Game) ReturnPoints(pid int) []Point {
-
-	// So-called "dropoff points", plus factory.
-
-	ret := self.DropoffPoints(pid)
-	factory := self.factories[pid]
-	ret = append(ret, Point{factory.X, factory.Y})
 	return ret
 }
 
