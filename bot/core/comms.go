@@ -2,11 +2,13 @@ package core
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // ---------------------------------------
@@ -57,14 +59,26 @@ func (self *TokenParser) Str() string {
 
 // ---------------------------------------
 
-func (self *Game) PrePreParse() {
+func (self *Game) PrePreParse(name, version string) {
 
 	// Very early parsing that has to be done before log is opened
 	// so that we can open the right log name.
 
-	self.constants_json = self.token_parser.Str()
+	constants_json := self.token_parser.Str()
+	err := json.Unmarshal([]byte(constants_json), &self.constants)
+
+	// Dealing with the err is delayed until a log file is started...
+
 	self.players = self.token_parser.Int()
 	self.pid = self.token_parser.Int()
+
+	self.StartLog(fmt.Sprintf("log%d.txt", self.pid))
+	self.LogWithoutTurn("--------------------------------------------------------------------------------")
+	self.LogWithoutTurn("%s %s starting up at %s", name, version, time.Now().Format("2006-01-02 15:04:05"))
+
+	if err != nil {
+		self.Log("%v", err)
+	}
 }
 
 func (self *Game) PreParse() {
@@ -212,6 +226,7 @@ func (self *Game) Send() {
 	fmt.Printf("\n")
 	return
 }
+
 
 /*
 	Example Parse() input for 2 players

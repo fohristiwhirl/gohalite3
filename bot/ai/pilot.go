@@ -72,7 +72,7 @@ func (self *Pilot) Fly() {
 		return
 	}
 
-	if ship.IsOnDropoff() {
+	if ship.OnDropoff() {
 		self.State = Normal
 		self.NewTarget()
 	}

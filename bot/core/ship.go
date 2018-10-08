@@ -25,7 +25,7 @@ func (self *Ship) NeighbourPoints() []Point {
 	return self.Game.NeighbourPoints(self.X, self.Y)
 }
 
-func (self *Ship) IsOnDropoff() bool {
+func (self *Ship) OnDropoff() bool {
 
 	// True iff ship is on one of its own dropoffs or its factory.
 

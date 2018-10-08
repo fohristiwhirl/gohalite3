@@ -14,7 +14,7 @@ type Game struct {
 	width						int
 	height						int
 
-	constants_json				string
+	constants					Constants
 
 	budgets						[]int
 	halite						[][]int

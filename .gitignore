@@ -5,3 +5,4 @@
 *.log
 tester.py
 stdrelay.py
+*.lnk
