@@ -7,14 +7,16 @@ import (
 	hal "../core"
 )
 
-func abs(a int) int {
-	if a < 0 { return -a }
-	return a
+type Pilot struct {
+	Ship					*hal.Ship
+	Sid						int
 }
 
-func (self *Overmind) Navigate(ship *hal.Ship, x, y int) {
+func (self *Pilot) Navigate(x, y int) {
 
 	// FIXME: consider wraps
+
+	ship := self.Ship
 
 	dx := x - ship.X
 	dy := y - ship.Y

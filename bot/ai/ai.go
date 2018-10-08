@@ -14,11 +14,6 @@ type Overmind struct {
 	Pilots					[]*Pilot
 }
 
-type Pilot struct {
-	Ship					*hal.Ship
-	Sid						int
-}
-
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
 	ret := new(Overmind)
 	ret.Game = game
