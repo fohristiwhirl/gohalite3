@@ -99,16 +99,23 @@ func (self *Game) Parse() {
 
 	self.generate = false
 
+	// Set all ships as dead (for stale ref detection by the AI)...
+
+	for _, ship := range self.ships {
+		ship.Alive = false
+		ship.Command = ""
+	}
+
 	// Hold onto the sid lookup map so we can find
 	// the entities while still creating a new map...
 
 	old_ship_id_lookup := self.ship_id_lookup
 
-	self.budgets = make([]int, self.players)
+	// Clear our slices and maps...
 
+	self.budgets = make([]int, self.players)
 	self.ships = nil
 	self.dropoffs = make([][]Point, self.players)
-
 	self.ship_xy_lookup = make(map[Point]*Ship)
 	self.ship_id_lookup = make(map[int]*Ship)
 
@@ -135,21 +142,20 @@ func (self *Game) Parse() {
 
 			if ok == false {
 				ship = new(Ship)
-				ship.game = self
-				ship.Owner = pid
+				ship.Game = self
 			}
 
-			ship.Command = ""
+			ship.Alive = true
 
-			ship.Id = sid
+			ship.Owner = pid
+			ship.Sid = sid
 			ship.X = self.token_parser.Int()
 			ship.Y = self.token_parser.Int()
 			ship.Halite = self.token_parser.Int()
 
-			self.ship_xy_lookup[Point{ship.X, ship.Y}] = ship
-			self.ship_id_lookup[ship.Id] = ship
-
 			self.ships = append(self.ships, ship)
+			self.ship_xy_lookup[Point{ship.X, ship.Y}] = ship
+			self.ship_id_lookup[ship.Sid] = ship
 		}
 
 		for i := 0; i < dropoffs; i++ {
@@ -177,7 +183,7 @@ func (self *Game) Parse() {
 	// Some cleanup...
 
 	sort.Slice(self.ships, func(a, b int) bool {
-		return self.ships[a].Id < self.ships[b].Id
+		return self.ships[a].Sid < self.ships[b].Sid
 	})
 
 	return

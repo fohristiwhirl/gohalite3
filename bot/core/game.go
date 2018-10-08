@@ -18,7 +18,7 @@ type Game struct {
 
 	budgets						[]int
 	halite						[][]int
-	ships						[]*Ship
+	ships						[]*Ship		// Each ship contains a command field for the AI to set
 
 	factories					[]Point
 	dropoffs					[][]Point
@@ -29,7 +29,7 @@ type Game struct {
 	logfile						*Logfile
 	token_parser				*TokenParser
 
-	generate					bool
+	generate					bool		// Whether the AI wants to send a "g" command
 }
 
 func NewGame() *Game {

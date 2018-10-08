@@ -39,7 +39,13 @@ class RecentGames:
 					if len(name) < 16:
 						player_names[i] = name + ((16 - len(name)) * " ")
 
-				print("{0:>3}: {1}   ({2}x{3})   {4}".format(len(self.game_ids) - 1, game["game_id"], game["map_width"], game["map_height"], " ".join(player_names)))
+				print("{0:>3}: {1}   ({2}x{3})   {4}".format(
+					len(self.game_ids) - 1,
+					game["game_id"],
+					game["map_width"],
+					game["map_height"],
+					" ".join(player_names),
+				))
 
 	def get_game_id(self, n):
 		return self.game_ids[n]

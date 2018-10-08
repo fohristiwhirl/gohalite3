@@ -46,7 +46,6 @@ func (self *Overmind) Navigate(ship *hal.Ship, x, y int) {
 
 	direction := options[n]
 
-	command := fmt.Sprintf("m %d s", ship.Id, direction)
-
+	command := fmt.Sprintf("m %d s", ship.Sid, direction)
 	ship.Set(command)
 }
