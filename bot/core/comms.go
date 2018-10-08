@@ -121,7 +121,7 @@ func (self *Game) Parse() {
 
 	// ------------------------------------------------
 
-	self.turn = self.token_parser.Int()
+	self.turn = self.token_parser.Int() - 1			// Out by 1 correction
 
 	for n := 0; n < self.players; n++ {
 

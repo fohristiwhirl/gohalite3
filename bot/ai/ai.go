@@ -61,6 +61,8 @@ func (self *Overmind) UpdatePilots() {
 			pilot.TargetY = ship.Y
 
 			self.Pilots = append(self.Pilots, pilot)
+
+			self.Game.Log("New pilot: %d", ship.Sid)
 		}
 	}
 
@@ -70,6 +72,7 @@ func (self *Overmind) UpdatePilots() {
 		pilot := self.Pilots[n]
 		if pilot.Ship.Alive == false {
 			self.Pilots = append(self.Pilots[:n], self.Pilots[n+1:]...)
+			self.Game.Log("Dead pilot: %d", pilot.Ship.Sid)
 		}
 	}
 }
