@@ -15,7 +15,7 @@ type Ship struct {
 	Inspired					bool
 
 	Alive						bool		// Parser updates this so stale refs can be detected by the AI
-	Command						string		// AI's chosen command this turn
+	Command						string		// Note that "o" means chosen-no-move while "" means no-choice-yet
 }
 
 func (self *Ship) String() string {
@@ -53,23 +53,6 @@ func (self *Ship) OnDropoff() bool {
 	return false
 }
 
-func (self *Ship) LocationFromMove(s string) (int, int) {
-
-	switch s {
-
-	case "w":
-		return mod(self.X - 1, self.Game.width), self.Y
-	case "e":
-		return mod(self.X + 1, self.Game.width), self.Y
-	case "n":
-		return self.X,                           mod(self.Y - 1, self.Game.height)
-	case "s":
-		return self.X,                           mod(self.Y + 1, self.Game.height)
-	default:
-		return self.X,                           self.Y
-	}
-}
-
 func (self *Ship) DxDy(x, y int) (int, int) {
 	return self.Game.DxDy(self.X, self.Y, x, y)
 }
@@ -78,30 +61,17 @@ func (self *Ship) Dist(x, y int) int {
 	return self.Game.Dist(self.X, self.Y, x, y)
 }
 
-func (self *Ship) Left() {
-	self.Command = fmt.Sprintf("m %d w", self.Sid)
+func (self *Ship) Move(s string) {
+
+	// Note that one cannot send "" - use ClearMove() instead
+
+	if s == "e" || s == "w" || s == "s" || s == "n" || s == "c" || s == "o" {
+		self.Command = s
+	} else {
+		panic(fmt.Sprintf("ship.Move() - Illegal move \"%s\" on %v", s, self))
+	}
 }
 
-func (self *Ship) Right() {
-	self.Command = fmt.Sprintf("m %d e", self.Sid)
-}
-
-func (self *Ship) Up() {
-	self.Command = fmt.Sprintf("m %d n", self.Sid)
-}
-
-func (self *Ship) Down() {
-	self.Command = fmt.Sprintf("m %d s", self.Sid)
-}
-
-func (self *Ship) Construct() {
-	self.Command = fmt.Sprintf("c %d", self.Sid)
-}
-
-func (self *Ship) Clear() {
+func (self *Ship) ClearMove() {
 	self.Command = ""
-}
-
-func (self *Ship) Set(s string) {
-	self.Command = s
 }

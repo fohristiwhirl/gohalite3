@@ -12,3 +12,24 @@ func abs(a int) int {
 	if a < 0 { return -a }
 	return a
 }
+
+func string_to_dxdy(s string) (int, int) {
+
+	switch s {
+
+	case "e":
+		return 1, 0
+	case "w":
+		return -1, 0
+	case "s":
+		return 0, 1
+	case "n":
+		return 0, -1
+	case "c":
+		return 0, 0
+	case "":
+		return 0, 0
+	}
+
+	panic("string_to_dxdy() got illegal string")
+}

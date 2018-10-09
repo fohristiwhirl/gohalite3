@@ -24,6 +24,17 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 	return o
 }
 
+/*
+	New plan:
+
+	Each pilot makes a list of directions / commands that it's willing to do,
+	sorted in order of preference. (Which incidentally should prefer passing
+	through low halite squares, unless that square is actually the target.)
+
+	After that's done we can iterate through all pilots setting the book
+	and setting the ship's actual command.
+*/
+
 func (self *Overmind) Step() {
 
 	self.ClearBook()
@@ -34,12 +45,14 @@ func (self *Overmind) Step() {
 	}
 
 	for _, pilot := range self.Pilots {
-		pilot.Fly()
+		if pilot.Ship.Command == "" {
+			pilot.Fly()
+		}
 	}
 
 	for _, pilot := range self.Pilots {
-		if pilot.Holding == false && pilot.Ship.Command == "" {
-			pilot.Hold()
+		if pilot.Ship.Command == "" {
+			pilot.Prepare("o")
 		}
 	}
 
@@ -91,12 +104,6 @@ func (self *Overmind) UpdatePilots() {
 			self.Pilots = append(self.Pilots[:n], self.Pilots[n+1:]...)
 			self.Game.Log("Dead pilot: %d", pilot.Ship.Sid)
 		}
-	}
-
-	// Step 3: other maintainence...
-
-	for _, pilot := range self.Pilots {
-		pilot.Holding = false
 	}
 }
 

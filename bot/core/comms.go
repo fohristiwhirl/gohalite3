@@ -221,7 +221,11 @@ func (self *Game) Send() {
 
 	for _, ship := range self.ships {
 		if ship.Owner == self.pid && ship.Command != "" {
-			commands = append(commands, ship.Command)
+			if ship.Command == "c" {
+				commands = append(commands, fmt.Sprintf("c %d", ship.Sid))
+			} else {
+				commands = append(commands, fmt.Sprintf("m %d %s", ship.Sid, ship.Command))
+			}
 		}
 	}
 

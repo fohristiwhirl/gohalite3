@@ -11,14 +11,14 @@ import (
 type State int
 
 const (
-	Normal		= State(iota)
+	Normal = 				State(iota)
 	Returning
 )
 
 type Box struct {
-	X					int
-	Y					int
-	Score				int
+	X						int
+	Y						int
+	Score					int
 }
 
 type Pilot struct {
@@ -29,7 +29,6 @@ type Pilot struct {
 	State					State
 	TargetX					int
 	TargetY					int
-	Holding					bool		// Intends to not move this turn
 }
 
 func (self *Pilot) Navigate(x, y int) {
@@ -37,7 +36,7 @@ func (self *Pilot) Navigate(x, y int) {
 	dx, dy := self.Ship.DxDy(x, y)
 
 	if dx == 0 && dy == 0 {
-		self.Ship.Clear()
+		self.Prepare("o")
 		return
 	}
 
@@ -68,6 +67,7 @@ func (self *Pilot) Navigate(x, y int) {
 	}
 
 	if len(options) == 0 {
+		self.Prepare("o")
 		return
 	}
 
@@ -81,31 +81,22 @@ func (self *Pilot) MaybeHold() {
 
 	ship := self.Ship
 
-	if ship.Halite < self.Ship.MoveCost() {								// We can't move
-		self.Hold()
+	if ship.Halite < self.Ship.MoveCost() {			// We can't move
+		self.Prepare("o")
 		return
 	}
 
 	if self.State == Normal {
 		if ship.Halite < 800 {
-			if ship.HaliteUnder() > 50 {
-				self.Hold()
+			if ship.HaliteUnder() > 50 {			// We're happy here
+				self.Prepare("o")
 				return
 			}
 		}
 	}
 }
 
-func (self *Pilot) Hold() {
-	self.Holding = true
-	self.Overmind.SetBook(self, self.Ship.X, self.Ship.Y)
-}
-
 func (self *Pilot) Fly() {
-
-	if self.Holding {
-		return
-	}
 
 	game := self.Game
 	ship := self.Ship
@@ -184,8 +175,7 @@ func (self *Pilot) NewTarget() {
 
 func (self *Pilot) Prepare(d string) {
 
-	command := fmt.Sprintf("m %d %s", self.Ship.Sid, d)
-	self.Ship.Set(command)		// But undo this if it's not a valid direction. See default.
+	self.Ship.Move(d)
 
 	switch d {
 
@@ -197,8 +187,15 @@ func (self *Pilot) Prepare(d string) {
 		self.Overmind.SetBook(self, self.Ship.X, self.Ship.Y + 1)
 	case "n":
 		self.Overmind.SetBook(self, self.Ship.X, self.Ship.Y - 1)
+	case "o":
+		self.Overmind.SetBook(self, self.Ship.X, self.Ship.Y)
+	case "c":
+		// Doesn't need to set the book, won't exist
 	default:
-		self.Ship.Clear()
-
+		panic(fmt.Sprintf("pilot.Prepare() - illegal move \"%s\"", d))
 	}
+}
+
+func (self *Pilot) Unprepare() {
+	// FIXME: remove any book entry associated with this ship
 }
