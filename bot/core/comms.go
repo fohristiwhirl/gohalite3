@@ -270,18 +270,4 @@ func (self *Game) FixInspiration() {
 			ship.Inspired = true
 		}
 	}
-
-	// FIXME: remove this logging once we're sure everything works...
-
-	var reports []string
-
-	for _, ship := range self.ships {
-		if ship.Inspired {
-			reports = append(reports, ship.String())
-		}
-	}
-
-	if len(reports) > 0 {
-		self.Log("Inspired: " + strings.Join(reports, ", "))
-	}
 }
