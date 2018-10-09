@@ -16,7 +16,7 @@ const (
 type Box struct {
 	X						int
 	Y						int
-	Score					int
+	Score					float64
 }
 
 type Pilot struct {
@@ -140,7 +140,7 @@ func (self *Pilot) NewTarget() {
 
 			dist := self.Ship.Dist(x, y)
 
-			score := game.HaliteAt(x, y) / (dist + 1)		// Avoid divide by zero		// FIXME: likely should be float
+			score := float64(game.HaliteAt(x, y)) / float64((dist + 1))		// Avoid divide by zero
 
 			boxes = append(boxes, Box{
 				X: x,
