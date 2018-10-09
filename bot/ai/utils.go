@@ -27,6 +27,8 @@ func string_to_dxdy(s string) (int, int) {
 		return 0, -1
 	case "c":
 		return 0, 0
+	case "o":
+		return 0, 0
 	case "":
 		return 0, 0
 	}

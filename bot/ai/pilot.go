@@ -1,8 +1,6 @@
 package ai
 
 import (
-	"fmt"
-	"math/rand"
 	"sort"
 
 	hal "../core"
@@ -29,77 +27,74 @@ type Pilot struct {
 	State					State
 	TargetX					int
 	TargetY					int
+	Desires					[]string
 }
 
-func (self *Pilot) Navigate(x, y int) {
+func (self *Pilot) DesireNav(x, y int) {
+
+	self.Desires = nil
 
 	dx, dy := self.Ship.DxDy(x, y)
 
 	if dx == 0 && dy == 0 {
-		self.Prepare("o")
+		self.Desires = []string{"o"}
 		return
 	}
 
-	var options []string
+	var likes []string
+	var neutrals []string		// Perhaps badly named
+	var dislikes []string
 
 	if dx > 0 {
-		if self.Overmind.Booker(self.Ship.X + 1, self.Ship.Y) == nil {
-			options = append(options, "e")
-		}
-	}
-
-	if dx < 0 {
-		if self.Overmind.Booker(self.Ship.X - 1, self.Ship.Y) == nil {
-			options = append(options, "w")
-		}
+		likes = append(likes, "e")
+		dislikes = append(dislikes, "w")
+	} else if dx < 0 {
+		likes = append(likes, "w")
+		dislikes = append(dislikes, "e")
+	} else {
+		neutrals = append(neutrals, "e")
+		neutrals = append(neutrals, "w")
 	}
 
 	if dy > 0 {
-		if self.Overmind.Booker(self.Ship.X, self.Ship.Y + 1) == nil {
-			options = append(options, "s")
-		}
+		likes = append(likes, "s")
+		dislikes = append(dislikes, "n")
+	} else if dy < 0 {
+		likes = append(likes, "n")
+		dislikes = append(dislikes, "n")
+	} else {
+		neutrals = append(neutrals, "s")
+		neutrals = append(neutrals, "n")
 	}
 
-	if dy < 0 {
-		if self.Overmind.Booker(self.Ship.X, self.Ship.Y - 1) == nil {
-			options = append(options, "n")
-		}
-	}
-
-	if len(options) == 0 {
-		self.Prepare("o")
-		return
-	}
-
-	n := rand.Intn(len(options))
-	direction := options[n]
-
-	self.Prepare(direction)
+	self.Desires = append(self.Desires, likes...)
+	self.Desires = append(self.Desires, neutrals...)
+	self.Desires = append(self.Desires, dislikes...)
+	self.Desires = append(self.Desires, "o")
 }
 
-func (self *Pilot) MaybeHold() {
+func (self *Pilot) SetDesires() {
 
+	game := self.Game
 	ship := self.Ship
 
+	// Maybe we want to stay still...
+
 	if ship.Halite < self.Ship.MoveCost() {			// We can't move
-		self.Prepare("o")
+		self.Desires = []string{"o"}
 		return
 	}
 
 	if self.State == Normal {
 		if ship.Halite < 800 {
 			if ship.HaliteUnder() > 50 {			// We're happy here
-				self.Prepare("o")
+				self.Desires = []string{"o"}
 				return
 			}
 		}
 	}
-}
 
-func (self *Pilot) Fly() {
-
-	game := self.Game
-	ship := self.Ship
+	// So we're not holding still...
 
 	if ship.OnDropoff() {
 		self.State = Normal
@@ -113,7 +108,7 @@ func (self *Pilot) Fly() {
 		if ship.X == self.TargetX && ship.Y == self.TargetY {
 			self.State = Returning			// FIXME: maybe choose new target
 		} else {
-			self.Navigate(self.TargetX, self.TargetY)
+			self.DesireNav(self.TargetX, self.TargetY)
 		}
 	}
 
@@ -122,7 +117,7 @@ func (self *Pilot) Fly() {
 		// FIXME: consider more than the first in the list...
 
 		dropoff := game.MyDropoffs()[0]
-		self.Navigate(dropoff.X, dropoff.Y)
+		self.DesireNav(dropoff.X, dropoff.Y)
 	}
 }
 
@@ -163,7 +158,7 @@ func (self *Pilot) NewTarget() {
 	BoxLoop:
 	for _, box := range boxes {
 		for _, pilot := range pilots {
-			if pilot.TargetX == box.X && pilot.TargetY == box.Y {
+			if pilot != self && pilot.State == Normal && pilot.TargetX == box.X && pilot.TargetY == box.Y {
 				continue BoxLoop
 			}
 			self.TargetX = box.X
@@ -173,29 +168,15 @@ func (self *Pilot) NewTarget() {
 	}
 }
 
-func (self *Pilot) Prepare(d string) {
+func (self *Pilot) LocationAfterMove(s string) (int, int) {
 
-	self.Ship.Move(d)
+	dx, dy := string_to_dxdy(s)
 
-	switch d {
+	x := self.Ship.X + dx
+	y := self.Ship.Y + dy
 
-	case "e":
-		self.Overmind.SetBook(self, self.Ship.X + 1, self.Ship.Y)
-	case "w":
-		self.Overmind.SetBook(self, self.Ship.X - 1, self.Ship.Y)
-	case "s":
-		self.Overmind.SetBook(self, self.Ship.X, self.Ship.Y + 1)
-	case "n":
-		self.Overmind.SetBook(self, self.Ship.X, self.Ship.Y - 1)
-	case "o":
-		self.Overmind.SetBook(self, self.Ship.X, self.Ship.Y)
-	case "c":
-		// Doesn't need to set the book, won't exist
-	default:
-		panic(fmt.Sprintf("pilot.Prepare() - illegal move \"%s\"", d))
-	}
-}
+	x = mod(x, self.Game.Width())
+	y = mod(y, self.Game.Height())
 
-func (self *Pilot) Unprepare() {
-	// FIXME: remove any book entry associated with this ship
+	return x, y
 }

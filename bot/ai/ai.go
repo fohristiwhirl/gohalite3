@@ -41,26 +41,49 @@ func (self *Overmind) Step() {
 	self.UpdatePilots()
 
 	for _, pilot := range self.Pilots {
-		pilot.MaybeHold()
-	}
-
-	for _, pilot := range self.Pilots {
 		if pilot.Ship.Command == "" {
-			pilot.Fly()
+			pilot.SetDesires()
 		}
 	}
 
 	for _, pilot := range self.Pilots {
-		if pilot.Ship.Command == "" {
-			pilot.Prepare("o")
+		if len(pilot.Desires) == 0 {				// Should be impossible
+			pilot.Desires = []string{"o"}
+		}
+	}
+
+	for _, pilot := range self.Pilots {
+		if pilot.Desires[0] == "o" {
+			pilot.Ship.Move("o")
+			self.SetBook(pilot, pilot.Ship.X, pilot.Ship.Y)
+		}
+	}
+
+	for _, pilot := range self.Pilots {
+
+		if pilot.Ship.Command != "" {
+			continue
+		}
+
+		for _, desire := range pilot.Desires {
+
+			new_x, new_y := pilot.LocationAfterMove(desire)
+
+			if self.Booker(new_x, new_y) == nil {
+				pilot.Ship.Move(desire)
+				self.SetBook(pilot, new_x, new_y)
+				break
+			}
 		}
 	}
 
 	factory_x, factory_y := self.Game.MyFactoryXY()
 
-	if self.Game.MyBudget() >= 1000 && self.Booker(factory_x, factory_y) == nil {
+	if self.Game.MyBudget() >= 1000 && self.Booker(factory_x, factory_y) == nil && self.Game.Turn() < self.Game.Constants.MAX_TURNS / 2 {
 		self.Game.SetGenerate(true)
 	}
+
+	self.SanityCheck()
 
 	return
 }
@@ -105,6 +128,12 @@ func (self *Overmind) UpdatePilots() {
 			self.Game.Log("Dead pilot: %d", pilot.Ship.Sid)
 		}
 	}
+
+	// Step 3: other maintainence...
+
+	for _, pilot := range self.Pilots {
+		pilot.Desires = nil
+	}
 }
 
 func (self *Overmind) ClearBook() {
@@ -128,4 +157,19 @@ func (self *Overmind) SetBook(pilot *Pilot, x, y int) {
 	y = mod(y, self.Game.Height())
 
 	self.Book[x][y] = pilot
+}
+
+func (self *Overmind) SanityCheck() {
+
+	targets := make(map[hal.Point]bool)
+
+	for _, pilot := range self.Pilots {
+		if pilot.State == Normal {
+			if targets[hal.Point{pilot.TargetX, pilot.TargetY}] {
+				self.Game.Log("Multiple \"Normal\" ships looking at same target")
+			} else {
+				targets[hal.Point{pilot.TargetX, pilot.TargetY}] = true
+			}
+		}
+	}
 }
