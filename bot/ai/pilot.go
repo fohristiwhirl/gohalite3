@@ -62,7 +62,7 @@ func (self *Pilot) DesireNav(x, y int) {
 		dislikes = append(dislikes, "n")
 	} else if dy < 0 {
 		likes = append(likes, "n")
-		dislikes = append(dislikes, "n")
+		dislikes = append(dislikes, "s")
 	} else {
 		neutrals = append(neutrals, "s")
 		neutrals = append(neutrals, "n")
