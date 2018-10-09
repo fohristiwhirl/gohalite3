@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"math/rand"
 	"sort"
 
 	hal "../core"
@@ -66,6 +67,18 @@ func (self *Pilot) DesireNav(x, y int) {
 		neutrals = append(neutrals, "s")
 		neutrals = append(neutrals, "n")
 	}
+
+	rand.Shuffle(len(likes), func(i, j int) {
+		likes[i], likes[j] = likes[j], likes[i]
+	})
+
+	rand.Shuffle(len(neutrals), func(i, j int) {
+		neutrals[i], neutrals[j] = neutrals[j], neutrals[i]
+	})
+
+	rand.Shuffle(len(dislikes), func(i, j int) {
+		dislikes[i], dislikes[j] = dislikes[j], dislikes[i]
+	})
 
 	self.Desires = append(self.Desires, likes...)
 	self.Desires = append(self.Desires, neutrals...)
