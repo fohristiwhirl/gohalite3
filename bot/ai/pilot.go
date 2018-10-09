@@ -25,15 +25,10 @@ type Pilot struct {
 
 func (self *Pilot) Navigate(x, y int) {
 
-	// FIXME: consider wraps
-
-	ship := self.Ship
-
-	dx := x - ship.X
-	dy := y - ship.Y
+	dx, dy := self.Ship.DxDy(x, y)
 
 	if dx == 0 && dy == 0 {
-		ship.Clear()
+		self.Ship.Clear()
 		return
 	}
 
@@ -59,8 +54,8 @@ func (self *Pilot) Navigate(x, y int) {
 
 	direction := options[n]
 
-	command := fmt.Sprintf("m %d %s", ship.Sid, direction)
-	ship.Set(command)
+	command := fmt.Sprintf("m %d %s", self.Ship.Sid, direction)
+	self.Ship.Set(command)
 }
 
 func (self *Pilot) Fly() {

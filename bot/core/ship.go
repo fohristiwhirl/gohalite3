@@ -58,6 +58,10 @@ func (self *Ship) LocationFromMove(s string) (int, int) {
 	}
 }
 
+func (self *Ship) DxDy(x, y int) (int, int) {
+	return self.Game.DxDy(self.X, self.Y, x, y)
+}
+
 func (self *Ship) Left() {
 	self.Command = fmt.Sprintf("m %d w", self.Sid)
 }
