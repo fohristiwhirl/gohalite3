@@ -8,6 +8,11 @@ func mod(x, n int) int {
 	return (x % n + n) % n
 }
 
+func abs(a int) int {
+	if a < 0 { return -a }
+	return a
+}
+
 func (self *Game) DxDy(x1, y1, x2, y2 int) (int, int) {
 
 	// How to get from (x1, y1) to (x2, y2)
@@ -51,4 +56,9 @@ func (self *Game) DxDy(x1, y1, x2, y2 int) (int, int) {
 	}
 
 	return foo.X, foo.Y
+}
+
+func (self *Game) Dist(x1, y1, x2, y2 int) int {
+	dx, dy := self.DxDy(x1, y1, x2, y2)
+	return abs(dx) + abs(dy)
 }
