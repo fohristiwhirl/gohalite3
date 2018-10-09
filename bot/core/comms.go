@@ -233,35 +233,31 @@ func (self *Game) Send() {
 
 func (self *Game) FixInspiration() {
 
-	if self.constants.INSPIRATION_RADIUS != 4 {
-		self.LogOnce("Couldn't set inspiration: self.constants.INSPIRATION_RADIUS == %d", self.constants.INSPIRATION_RADIUS)
-		return
-	}
-
-	vectors := []Vector{		// Doesn't include 0, 0
-		Vector{0, -4}, Vector{-1, -3}, Vector{0, -3}, Vector{1, -3}, Vector{-2, -2}, Vector{-1, -2},
-		Vector{0, -2}, Vector{1, -2}, Vector{2, -2}, Vector{-3, -1}, Vector{-2, -1}, Vector{-1, -1},
-		Vector{0, -1}, Vector{1, -1}, Vector{2, -1}, Vector{3, -1}, Vector{-4, 0}, Vector{-3, 0},
-		Vector{-2, 0}, Vector{-1, 0}, Vector{1, 0}, Vector{2, 0}, Vector{3, 0}, Vector{4, 0},
-		Vector{-3, 1}, Vector{-2, 1}, Vector{-1, 1}, Vector{0, 1}, Vector{1, 1}, Vector{2, 1},
-		Vector{3, 1}, Vector{-2, 2}, Vector{-1, 2}, Vector{0, 2}, Vector{1, 2}, Vector{2, 2},
-		Vector{-1, 3}, Vector{0, 3}, Vector{1, 3}, Vector{0, 4},
-	}
-
 	for _, ship := range self.ships {
 
 		hits := 0
 
-		for _, vector := range vectors {
+		for y := 0; y <= self.constants.INSPIRATION_RADIUS; y++ {
 
-			x := ship.X + vector.X
-			y := ship.Y + vector.Y
+			startx := y - self.constants.INSPIRATION_RADIUS
+			endx := self.constants.INSPIRATION_RADIUS - y
 
-			other, ok := self.ShipAt(x, y)		// Handles bounds automagically
+			for x := startx; x <= endx; x++ {
 
-			if ok {
-				if other.Owner != ship.Owner {
-					hits++
+				other, ok := self.ShipAt(ship.X + x, ship.Y + y)			// Handles bounds automagically
+				if ok {
+					if other.Owner != ship.Owner {
+						hits++
+					}
+				}
+
+				if y != 0 {
+					other, ok := self.ShipAt(ship.X + x, ship.Y - y)		// Handles bounds automagically
+					if ok {
+						if other.Owner != ship.Owner {
+							hits++
+						}
+					}
 				}
 			}
 		}
@@ -271,37 +267,3 @@ func (self *Game) FixInspiration() {
 		}
 	}
 }
-
-
-
-/*
-
-Example Parse() input for 2 players
-
-4				- turn
-
-0 2 1 3000		- pid, ships, dropoffs, budget
-1 28 28 0		- sid, x, y, energy
-0 27 28 22      - sid, x, y, energy
-2 10 10			- dropoff id, x, y
-
-1 1 0 3000		- pid, ships, dropoffs, budget
-3 15 17 0		- sid, x, y, energy
-
-2               - cell update count
-27 28 63        - x y val
-28 28 0         - x y val
-
-Vectors for inspiration:
-
-                                    {0, -4}
-                           {-1, -3} {0, -3} {1, -3}
-                  {-2, -2} {-1, -2} {0, -2} {1, -2} {2, -2}
-         {-3, -1} {-2, -1} {-1, -1} {0, -1} {1, -1} {2, -1} {3, -1}
-{-4,  0} {-3,  0} {-2,  0} {-1,  0}         {1,  0} {2,  0} {3,  0} {4,  0}
-         {-3,  1} {-2,  1} {-1,  1} {0,  1} {1,  1} {2,  1} {3,  1}
-                  {-2,  2} {-1,  2} {0,  2} {1,  2} {2,  2}
-                           {-1,  3} {0,  3} {1,  3}
-                                    {0,  4}
-*/
-
