@@ -16,6 +16,7 @@ const (
 
 type Pilot struct {
 	Game					*hal.Game
+	Overmind				*Overmind
 	Ship					*hal.Ship
 	Sid						int
 	State					State

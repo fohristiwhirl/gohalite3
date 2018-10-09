@@ -15,10 +15,12 @@ type Overmind struct {
 }
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
-	ret := new(Overmind)
-	ret.Game = game
-	ret.Config = config
-	return ret
+
+	o := new(Overmind)
+	o.Game = game
+	o.Config = config
+
+	return o
 }
 
 func (self *Overmind) Step() {
@@ -54,6 +56,7 @@ func (self *Overmind) UpdatePilots() {
 
 			pilot := new(Pilot)
 			pilot.Game = self.Game
+			pilot.Overmind = self
 			pilot.Ship = ship
 			pilot.Sid = ship.Sid
 			pilot.State = Normal
