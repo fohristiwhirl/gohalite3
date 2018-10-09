@@ -12,6 +12,7 @@ type Overmind struct {
 	Config					*Config
 	Game					*hal.Game
 	Pilots					[]*Pilot
+	Book					[][]*Pilot
 }
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
@@ -25,13 +26,26 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 
 func (self *Overmind) Step() {
 
+	self.ClearBook()
 	self.UpdatePilots()
+
+	for _, pilot := range self.Pilots {
+		pilot.MaybeHold()
+	}
 
 	for _, pilot := range self.Pilots {
 		pilot.Fly()
 	}
 
-	if self.Game.MyBudget() >= 1000 {
+	for _, pilot := range self.Pilots {
+		if pilot.Holding == false && pilot.Ship.Command == "" {
+			pilot.Hold()
+		}
+	}
+
+	factory_x, factory_y := self.Game.MyFactoryXY()
+
+	if self.Game.MyBudget() >= 1000 && self.Booker(factory_x, factory_y) == nil {
 		self.Game.SetGenerate(true)
 	}
 
@@ -78,4 +92,33 @@ func (self *Overmind) UpdatePilots() {
 			self.Game.Log("Dead pilot: %d", pilot.Ship.Sid)
 		}
 	}
+
+	// Step 3: other maintainence...
+
+	for _, pilot := range self.Pilots {
+		pilot.Holding = false
+	}
+}
+
+func (self *Overmind) ClearBook() {
+	self.Book = make([][]*Pilot, self.Game.Width())
+	for x := 0; x < self.Game.Width(); x++ {
+		self.Book[x] = make([]*Pilot, self.Game.Height())
+	}
+}
+
+func (self *Overmind) Booker(x, y int) *Pilot {
+
+	x = mod(x, self.Game.Width())
+	y = mod(y, self.Game.Height())
+
+	return self.Book[x][y]
+}
+
+func (self *Overmind) SetBook(pilot *Pilot, x, y int) {
+
+	x = mod(x, self.Game.Width())
+	y = mod(y, self.Game.Height())
+
+	self.Book[x][y] = pilot
 }
