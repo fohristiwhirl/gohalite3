@@ -140,7 +140,7 @@ func (self *Pilot) NewTarget() {
 
 			dist := self.Ship.Dist(x, y)
 
-			score := game.HaliteAt(x, y) / (dist + 1)		// Avoid divide by zero
+			score := game.HaliteAt(x, y) / (dist + 1)		// Avoid divide by zero		// FIXME: likely should be float
 
 			boxes = append(boxes, Box{
 				X: x,
@@ -161,10 +161,10 @@ func (self *Pilot) NewTarget() {
 			if pilot != self && pilot.State == Normal && pilot.TargetX == box.X && pilot.TargetY == box.Y {
 				continue BoxLoop
 			}
-			self.TargetX = box.X
-			self.TargetY = box.Y
-			break BoxLoop
 		}
+		self.TargetX = box.X
+		self.TargetY = box.Y
+		break BoxLoop
 	}
 }
 
