@@ -18,12 +18,24 @@ type Ship struct {
 	Command						string		// AI's chosen command this turn
 }
 
-func (self *Ship) HaliteAt() int {
+func (self *Ship) String() string {
+	return fmt.Sprintf("Ship %v (%v,%v - owner %v)", self.Sid, self.X, self.Y, self.Owner)
+}
+
+func (self *Ship) HaliteUnder() int {
 	return self.Game.HaliteAt(self.X, self.Y)
 }
 
 func (self *Ship) NeighbourPoints() []Point {
 	return self.Game.NeighbourPoints(self.X, self.Y)
+}
+
+func (self *Ship) MoveCost() int {
+	if self.Inspired {
+		return self.HaliteUnder() / self.Game.Constants.INSPIRED_MOVE_COST_RATIO
+	} else {
+		return self.HaliteUnder() / self.Game.Constants.MOVE_COST_RATIO
+	}
 }
 
 func (self *Ship) OnDropoff() bool {
@@ -60,6 +72,10 @@ func (self *Ship) LocationFromMove(s string) (int, int) {
 
 func (self *Ship) DxDy(x, y int) (int, int) {
 	return self.Game.DxDy(self.X, self.Y, x, y)
+}
+
+func (self *Ship) Dist(x, y int) int {
+	return self.Game.Dist(self.X, self.Y, x, y)
 }
 
 func (self *Ship) Left() {

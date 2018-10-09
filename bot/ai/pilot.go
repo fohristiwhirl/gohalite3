@@ -63,7 +63,7 @@ func (self *Pilot) Fly() {
 	game := self.Game
 	ship := self.Ship
 
-	if ship.Halite < game.HaliteAt(ship.X, ship.Y) / 10 {			// We can't move
+	if ship.Halite < ship.MoveCost() {								// We can't move
 		return
 	}
 

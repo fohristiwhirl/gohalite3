@@ -65,7 +65,7 @@ func (self *Game) PrePreParse(name, version string) {
 	// so that we can open the right log name.
 
 	constants_json := self.token_parser.Str()
-	err := json.Unmarshal([]byte(constants_json), &self.constants)
+	err := json.Unmarshal([]byte(constants_json), &self.Constants)
 
 	// Dealing with the err is delayed until a log file is started...
 
@@ -237,10 +237,10 @@ func (self *Game) FixInspiration() {
 
 		hits := 0
 
-		for y := 0; y <= self.constants.INSPIRATION_RADIUS; y++ {
+		for y := 0; y <= self.Constants.INSPIRATION_RADIUS; y++ {
 
-			startx := y - self.constants.INSPIRATION_RADIUS
-			endx := self.constants.INSPIRATION_RADIUS - y
+			startx := y - self.Constants.INSPIRATION_RADIUS
+			endx := self.Constants.INSPIRATION_RADIUS - y
 
 			for x := startx; x <= endx; x++ {
 
@@ -262,8 +262,22 @@ func (self *Game) FixInspiration() {
 			}
 		}
 
-		if hits >= self.constants.INSPIRATION_SHIP_COUNT {
+		if hits >= self.Constants.INSPIRATION_SHIP_COUNT {
 			ship.Inspired = true
 		}
+	}
+
+	// FIXME: remove this logging once we're sure everything works...
+
+	var reports []string
+
+	for _, ship := range self.ships {
+		if ship.Inspired {
+			reports = append(reports, ship.String())
+		}
+	}
+
+	if len(reports) > 0 {
+		self.Log("Inspired: " + strings.Join(reports, ", "))
 	}
 }

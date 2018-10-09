@@ -38,7 +38,7 @@ type Constants struct {			// This could conceivably change in the engine in futu
 }
 
 func (self *Game) LogConstants() {
-	s, err := json.MarshalIndent(self.constants, "", "    ")
+	s, err := json.MarshalIndent(self.Constants, "", "    ")
 	if err != nil {
 		self.LogWithoutTurn("%v", err)
 	} else {

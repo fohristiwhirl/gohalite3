@@ -13,13 +13,14 @@ type Vector struct {
 // ------------------------------------------------------------
 
 type Game struct {
+
+	Constants
+
 	turn						int
 	players						int
 	pid							int
 	width						int
 	height						int
-
-	constants					Constants
 
 	budgets						[]int
 	halite						[][]int
