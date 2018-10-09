@@ -24,17 +24,6 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 	return o
 }
 
-/*
-	New plan:
-
-	Each pilot makes a list of directions / commands that it's willing to do,
-	sorted in order of preference. (Which incidentally should prefer passing
-	through low halite squares, unless that square is actually the target.)
-
-	After that's done we can iterate through all pilots setting the book
-	and setting the ship's actual command.
-*/
-
 func (self *Overmind) Step() {
 
 	self.ClearBook()

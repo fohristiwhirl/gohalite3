@@ -114,10 +114,17 @@ func (self *Pilot) SetDesires() {
 
 	if self.State == Returning {
 
-		// FIXME: consider more than the first in the list...
+		choice := game.MyDropoffs()[0]
+		choice_dist := self.Ship.Dist(choice.X, choice.Y)
 
-		dropoff := game.MyDropoffs()[0]
-		self.DesireNav(dropoff.X, dropoff.Y)
+		for _, dropoff := range game.MyDropoffs()[1:] {
+			if self.Ship.Dist(dropoff.X, dropoff.Y) < choice_dist {
+				choice = dropoff
+				choice_dist = self.Ship.Dist(dropoff.X, dropoff.Y)
+			}
+		}
+
+		self.DesireNav(choice.X, choice.Y)
 	}
 }
 

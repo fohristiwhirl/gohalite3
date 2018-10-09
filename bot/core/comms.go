@@ -215,14 +215,26 @@ func (self *Game) Send() {
 
 	var commands []string
 
+	budget_left := self.MyBudget()
+
 	if self.generate {
-		commands = append(commands, "g")
+		if budget_left >= self.Constants.NEW_ENTITY_ENERGY_COST {
+			commands = append(commands, "g")
+			budget_left -= self.Constants.NEW_ENTITY_ENERGY_COST
+		} else {
+			self.Log("Warning: GENERATE command blocked due to lack of resources!")
+		}
 	}
 
 	for _, ship := range self.ships {
 		if ship.Owner == self.pid && ship.Command != "" {
 			if ship.Command == "c" {
-				commands = append(commands, fmt.Sprintf("c %d", ship.Sid))
+				if budget_left >= self.Constants.DROPOFF_COST {
+					commands = append(commands, fmt.Sprintf("c %d", ship.Sid))
+					budget_left -= self.Constants.DROPOFF_COST
+				} else {
+					self.Log("Warning: CONSTRUCT command blocked due to lack of resources!")
+				}
 			} else {
 				commands = append(commands, fmt.Sprintf("m %d %s", ship.Sid, ship.Command))
 			}
