@@ -1,10 +1,5 @@
 package core
 
-type Vector struct {
-	X							int
-	Y							int
-}
-
 func mod(x, n int) int {
 
 	// Works for negative x

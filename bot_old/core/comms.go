@@ -80,9 +80,7 @@ func (self *Game) PrePreParse() {
 
 func (self *Game) PreParse() {
 
-	for n := 0; n < self.players; n++ {
-		self.dropoffs = append(self.dropoffs, nil)
-	}
+	self.factories = make([]Point, self.players)
 
 	for n := 0; n < self.players; n++ {
 
@@ -90,31 +88,20 @@ func (self *Game) PreParse() {
 		x := self.token_parser.Int()
 		y := self.token_parser.Int()
 
-		self.dropoffs[pid] = &Dropoff{
-			Game:		self,
-			Factory:	true,
-			Owner:		pid,
-			X:			x,
-			Y:			y,
-		}
+		self.factories[pid] = Point{x, y}
 	}
 
 	self.width = self.token_parser.Int()
 	self.height = self.token_parser.Int()
 
-	self.boxes = make([][]*Box, self.width)
+	self.halite = make([][]int, self.width)
 	for x := 0; x < self.width; x++ {
-		self.boxes[x] = make([]*Box, self.height)
+		self.halite[x] = make([]int, self.height)
 	}
 
 	for y := 0; y < self.height; y++ {
 		for x := 0; x < self.width; x++ {
-			self.boxes[x][y] = &Box{
-				Game: self,
-				X: x,
-				Y: y,
-				Halite: self.token_parser.Int(),
-			}
+			self.halite[x][y] = self.token_parser.Int()
 		}
 	}
 }
@@ -136,11 +123,12 @@ func (self *Game) Parse() {
 
 	old_ship_id_lookup := self.ship_id_lookup
 
-	// Clear some slices and maps (not dropoffs; old dropoffs are always OK)...
+	// Clear our slices and maps...
 
 	self.budgets = make([]int, self.players)
 	self.ships = nil
-	self.ship_xy_lookup = make(map[__point]*Ship)
+	self.dropoffs = make([][]Point, self.players)
+	self.ship_xy_lookup = make(map[Point]*Ship)
 	self.ship_id_lookup = make(map[int]*Ship)
 
 	// ------------------------------------------------
@@ -157,7 +145,7 @@ func (self *Game) Parse() {
 
 		for i := 0; i < ships; i++ {
 
-			// Either update the ship or create it if needed.
+			// Either update the entity or create it if needed.
 			// In any case, it ends up placed in the new maps.
 
 			sid := self.token_parser.Int()
@@ -179,37 +167,17 @@ func (self *Game) Parse() {
 			ship.Halite = self.token_parser.Int()
 
 			self.ships = append(self.ships, ship)
-			self.ship_xy_lookup[__point{ship.X, ship.Y}] = ship
+			self.ship_xy_lookup[Point{ship.X, ship.Y}] = ship
 			self.ship_id_lookup[ship.Sid] = ship
 		}
 
 		for i := 0; i < dropoffs; i++ {
 
-			_ = self.token_parser.Int()					// sid (not needed)
+			_ = self.token_parser.Int()		// sid (not needed)
 			x := self.token_parser.Int()
 			y := self.token_parser.Int()
 
-			known := false
-
-			for _, dropoff := range self.dropoffs {
-				if dropoff.X == x && dropoff.Y == y {
-					known = true
-					break
-				}
-			}
-
-			if known == false {
-
-				new_dropoff := &Dropoff{
-					Game:		self,
-					Factory:	false,
-					Owner:		pid,
-					X:			x,
-					Y:			y,
-				}
-
-				self.dropoffs = append(self.dropoffs, new_dropoff)
-			}
+			self.dropoffs[pid] = append(self.dropoffs[pid], Point{x, y})
 		}
 	}
 
@@ -221,7 +189,7 @@ func (self *Game) Parse() {
 		y := self.token_parser.Int()
 		val := self.token_parser.Int()
 
-		self.boxes[x][y].Halite = val
+		self.halite[x][y] = val
 	}
 
 	// ------------------------------------------------
