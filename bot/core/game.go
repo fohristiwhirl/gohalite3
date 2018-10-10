@@ -154,3 +154,23 @@ func (self *Game) MyBudget() int {
 func (self *Game) PlayerBudget(pid int) int {
 	return self.budgets[pid]
 }
+
+func (self *Game) MyDropoffDist(x int, y int) int {
+	return self.DropoffDist(self.pid, x, y)
+}
+
+func (self *Game) DropoffDist(pid int, x int, y int) int {
+
+	dropoffs := self.Dropoffs(pid)
+
+	best := self.Dist(x, y, dropoffs[0].X, dropoffs[0].Y)
+
+	for _, dropoff := range dropoffs[1:] {
+		dist := self.Dist(x, y, dropoff.X, dropoff.Y)
+		if dist < best {
+			best = dist
+		}
+	}
+
+	return best
+}
