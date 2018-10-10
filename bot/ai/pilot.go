@@ -58,9 +58,11 @@ func (self *Pilot) SetDesires() {
 
 func (self *Pilot) NewTarget() {
 
+	old_target := self.Target
+
 	type Foo struct {
 		Box		*hal.Box
-		Score	float64
+		Score	float32
 	}
 
 	self.Target = self.Ship.Box()
@@ -81,7 +83,7 @@ func (self *Pilot) NewTarget() {
 
 			dist := self.Dist(box)
 
-			score := float64(box.Halite) / float64((dist + 1))		// Avoid divide by zero
+			score := float32(box.Halite) / float32((dist + 1) * (dist + 1))		// Avoid divide by zero
 
 			all_foo = append(all_foo, Foo{
 				Box: box,
@@ -104,6 +106,10 @@ func (self *Pilot) NewTarget() {
 		}
 		self.Target = foo.Box
 		break FooLoop
+	}
+
+	if self.Target.Halite <= old_target.Halite {
+		self.Target = old_target
 	}
 }
 

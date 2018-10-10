@@ -8,10 +8,15 @@ func (self *Game) Box(x, y int) *Box {
 	return self.boxes[x][y]
 }
 
-func (self *Game) ShipAt(x, y int) (*Ship, bool) {
+func (self *Game) Ship(x, y int) (*Ship, bool) {
 	x = mod(x, self.width)
 	y = mod(y, self.height)
 	ret, ok := self.ship_xy_lookup[Point{x, y}]
+	return ret, ok
+}
+
+func (self *Game) Sid(sid int) (*Ship, bool) {
+	ret, ok := self.ship_id_lookup[sid]
 	return ret, ok
 }
 

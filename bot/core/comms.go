@@ -249,7 +249,7 @@ func (self *Game) FixInspiration() {
 
 			for x := startx; x <= endx; x++ {
 
-				other, ok := self.ShipAt(ship.X + x, ship.Y + y)			// Handles bounds automagically
+				other, ok := self.Ship(ship.X + x, ship.Y + y)			// Handles bounds automagically
 				if ok {
 					if other.Owner != ship.Owner {
 						hits++
@@ -257,7 +257,7 @@ func (self *Game) FixInspiration() {
 				}
 
 				if y != 0 {
-					other, ok := self.ShipAt(ship.X + x, ship.Y - y)		// Handles bounds automagically
+					other, ok := self.Ship(ship.X + x, ship.Y - y)		// Handles bounds automagically
 					if ok {
 						if other.Owner != ship.Owner {
 							hits++
