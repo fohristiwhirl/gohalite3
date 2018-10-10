@@ -39,8 +39,6 @@ func main() {
 
 	game.PrePreParse(NAME, VERSION)		// Reads very early data and starts log file.
 
-	// game.LogConstants()
-
 	if config.Timeseed {
 		seed := time.Now().UTC().UnixNano()
 		rand.Seed(seed)
@@ -50,8 +48,9 @@ func main() {
 	game.PreParse()						// Reads the map data.
 
 	overmind := ai.NewOvermind(game, config)
-
 	fmt.Printf("%s %s\n", NAME, VERSION)
+
+	game.LogWithoutTurn("./halite.exe --width %d --height %d -s %v", game.Width(), game.Height(), game.Constants.GameSeed)
 
 	// -------------------------------------------------------------------------------
 

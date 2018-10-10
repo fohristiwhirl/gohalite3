@@ -35,6 +35,8 @@ type Constants struct {			// This could conceivably change in the engine in futu
 	PERSISTENCE					float64
 	SHIPS_ABOVE_FOR_CAPTURE		int
 	STRICT_ERRORS				bool
+
+	GameSeed					int64		`json:"game_seed"`
 }
 
 func (self *Game) LogConstants() {

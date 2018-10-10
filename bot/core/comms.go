@@ -207,6 +207,45 @@ func (self *Game) Parse() {
 	return
 }
 
+func (self *Game) FixInspiration() {
+
+	for _, ship := range self.ships {
+
+		hits := 0
+
+		for y := 0; y <= self.Constants.INSPIRATION_RADIUS; y++ {
+
+			startx := y - self.Constants.INSPIRATION_RADIUS
+			endx := self.Constants.INSPIRATION_RADIUS - y
+
+			for x := startx; x <= endx; x++ {
+
+				other, ok := self.ShipAt(ship.X + x, ship.Y + y)			// Handles bounds automagically
+				if ok {
+					if other.Owner != ship.Owner {
+						hits++
+					}
+				}
+
+				if y != 0 {
+					other, ok := self.ShipAt(ship.X + x, ship.Y - y)		// Handles bounds automagically
+					if ok {
+						if other.Owner != ship.Owner {
+							hits++
+						}
+					}
+				}
+			}
+		}
+
+		if hits >= self.Constants.INSPIRATION_SHIP_COUNT {
+			ship.Inspired = true
+		}
+	}
+}
+
+// ---------------------------------------
+
 func (self *Game) SetGenerate(x bool) {
 	self.generate = x
 }
@@ -245,41 +284,4 @@ func (self *Game) Send() {
 	fmt.Printf(output)
 	fmt.Printf("\n")
 	return
-}
-
-func (self *Game) FixInspiration() {
-
-	for _, ship := range self.ships {
-
-		hits := 0
-
-		for y := 0; y <= self.Constants.INSPIRATION_RADIUS; y++ {
-
-			startx := y - self.Constants.INSPIRATION_RADIUS
-			endx := self.Constants.INSPIRATION_RADIUS - y
-
-			for x := startx; x <= endx; x++ {
-
-				other, ok := self.ShipAt(ship.X + x, ship.Y + y)			// Handles bounds automagically
-				if ok {
-					if other.Owner != ship.Owner {
-						hits++
-					}
-				}
-
-				if y != 0 {
-					other, ok := self.ShipAt(ship.X + x, ship.Y - y)		// Handles bounds automagically
-					if ok {
-						if other.Owner != ship.Owner {
-							hits++
-						}
-					}
-				}
-			}
-		}
-
-		if hits >= self.Constants.INSPIRATION_SHIP_COUNT {
-			ship.Inspired = true
-		}
-	}
 }
