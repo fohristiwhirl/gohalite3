@@ -64,10 +64,7 @@ class Game:
 
 		# Create our map array and zero it...
 
-		for x in range(self.width):
-			self.map.append([])
-			for y in range(self.height):
-				self.map[x].append(0)
+		self.map = [[0 for y in range(self.height)] for x in range(self.width)]
 
 		# Fill it up with actual data from stdin...
 
