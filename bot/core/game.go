@@ -86,6 +86,10 @@ func (self *Game) Height() int {
 	return self.height
 }
 
+func (self *Game) Players() int {
+	return self.players
+}
+
 func (self *Game) NeighbourPoints(x, y int) []Point {
 	return []Point{
 		Point{mod(x - 1, self.width), y},

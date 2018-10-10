@@ -37,7 +37,11 @@ func main() {
 
 	// -------------------------------------------------------------------------------
 
-	game.PrePreParse(NAME, VERSION)		// Reads very early data and starts log file.
+	game.PrePreParse()			// Reads very early data and starts log file.
+	game.PreParse()				// Reads the map data.
+
+	game.LogWithoutTurn("--------------------------------------------------------------------------------")
+	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02 15:04:05"))
 
 	if config.Timeseed {
 		seed := time.Now().UTC().UnixNano()
@@ -45,12 +49,10 @@ func main() {
 		game.LogWithoutTurn("Seeding own RNG: %v", seed)
 	}
 
-	game.PreParse()						// Reads the map data.
-
 	overmind := ai.NewOvermind(game, config)
 	fmt.Printf("%s %s\n", NAME, VERSION)
 
-	game.LogWithoutTurn("./halite.exe --width %d --height %d -s %v", game.Width(), game.Height(), game.Constants.GameSeed)
+	game.LogWithoutTurn("./halite.exe --width %d --height %d -s %v    <%d players>", game.Width(), game.Height(), game.Constants.GameSeed, game.Players())
 
 	// -------------------------------------------------------------------------------
 

@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // ---------------------------------------
@@ -59,7 +58,7 @@ func (self *TokenParser) Str() string {
 
 // ---------------------------------------
 
-func (self *Game) PrePreParse(name, version string) {
+func (self *Game) PrePreParse() {
 
 	// Very early parsing that has to be done before log is opened
 	// so that we can open the right log name.
@@ -73,8 +72,6 @@ func (self *Game) PrePreParse(name, version string) {
 	self.pid = self.token_parser.Int()
 
 	self.StartLog(fmt.Sprintf("log%d.txt", self.pid))
-	self.LogWithoutTurn("--------------------------------------------------------------------------------")
-	self.LogWithoutTurn("%s %s starting up at %s", name, version, time.Now().Format("2006-01-02 15:04:05"))
 
 	if err != nil {
 		self.Log("%v", err)
