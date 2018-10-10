@@ -32,7 +32,8 @@ func main() {
 
 	go input_reader()
 
-	last_comms := time.Now()
+	last_input := time.Now()
+	no_input_since_send := true
 
 	for {
 
@@ -40,19 +41,20 @@ func main() {
 
 		case line := <- input_chan:
 
-			last_comms = time.Now()
+			last_input = time.Now()
+			no_input_since_send = false
 			fmt.Fprintf(outfile, line)
 			fmt.Fprintf(outfile, "\n")
 
 		default:
 
-			// Basically the idea is to send \n if there's been no comms in either direction for 20 ms
+			// Basically the idea is to send \n (once) if there's been no input for 20 ms
 
 			time.Sleep(10 * time.Millisecond)
 
-			if time.Now().Sub(last_comms) > (20 * time.Millisecond) {
+			if no_input_since_send == false && time.Now().Sub(last_input) > (20 * time.Millisecond) {
 				fmt.Printf("\n")
-				last_comms = time.Now()
+				no_input_since_send = true
 			}
 		}
 	}
