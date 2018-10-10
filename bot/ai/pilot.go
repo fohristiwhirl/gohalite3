@@ -7,20 +7,12 @@ import (
 	hal "../core"
 )
 
-type State int
-
-const (
-	Normal = 				State(iota)
-	Returning
-)
-
 type Pilot struct {
 	Game					*hal.Game
 	Overmind				*Overmind
 	Ship					*hal.Ship
 	Sid						int
-	State					State
-	Target					hal.XYer
+	Target					*hal.Box
 	Desires					[]string
 }
 
@@ -30,6 +22,90 @@ func (self *Pilot) GetY() int { return self.Ship.Y }
 func (self *Pilot) DxDy(other hal.XYer) (int, int) { return hal.DxDy(self, other) }
 func (self *Pilot) Dist(other hal.XYer) int { return hal.Dist(self, other) }
 func (self *Pilot) SamePlace(other hal.XYer) bool { return hal.SamePlace(self, other) }
+
+
+func (self *Pilot) SetDesires() {
+
+	ship := self.Ship
+
+	// Maybe we want to stay still...
+
+	if ship.Halite < ship.MoveCost() {				// We can't move
+		self.Desires = []string{"o"}
+		return
+	}
+
+	if ship.Halite < 800 {
+		if ship.Box().Halite > 20 {					// We are happy where we are
+			self.Desires = []string{"o"}
+			return
+		}
+	}
+
+	// We're not holding, so if we're on our target square, we're either
+	// about to return or about to change target.
+
+	if self.SamePlace(self.Target) {
+		if ship.Halite > 500 {
+			self.Target = ship.NearestDropoff().Box()
+		} else {
+			self.NewTarget()
+		}
+	}
+
+	self.DesireNav(self.Target)
+}
+
+func (self *Pilot) NewTarget() {
+
+	type Foo struct {
+		Box		*hal.Box
+		Score	float64
+	}
+
+	self.Target = self.Ship.Box()
+
+	game := self.Game
+	width := game.Width()
+	height := game.Height()
+
+	pilots := self.Overmind.Pilots
+
+	var all_foo []Foo
+
+	for x := 0; x < width; x++ {
+
+		for y := 0; y < height; y++ {
+
+			box := game.Box(x, y)
+
+			dist := self.Dist(box)
+
+			score := float64(box.Halite) / float64((dist + 1))		// Avoid divide by zero
+
+			all_foo = append(all_foo, Foo{
+				Box: box,
+				Score: score,
+			})
+
+		}
+	}
+
+	sort.Slice(all_foo, func(a, b int) bool {
+		return all_foo[a].Score > all_foo[b].Score				// Highest first
+	})
+
+	FooLoop:
+	for _, foo := range all_foo {
+		for _, pilot := range pilots {
+			if pilot.Target == foo.Box {
+				continue FooLoop
+			}
+		}
+		self.Target = foo.Box
+		break FooLoop
+	}
+}
 
 func (self *Pilot) DesireNav(target hal.XYer) {
 
@@ -84,112 +160,6 @@ func (self *Pilot) DesireNav(target hal.XYer) {
 	self.Desires = append(self.Desires, neutrals...)
 	self.Desires = append(self.Desires, dislikes...)
 	self.Desires = append(self.Desires, "o")
-}
-
-func (self *Pilot) SetDesires() {
-
-	game := self.Game
-	ship := self.Ship
-
-	// Maybe we want to stay still...
-
-	if ship.Halite < self.Ship.MoveCost() {			// We can't move
-		self.Desires = []string{"o"}
-		return
-	}
-
-	if self.State == Normal { // && self.SamePlace(self.Target) {
-		if ship.Halite < 800 {
-			if ship.BoxUnder().Halite > 50 {
-				self.Desires = []string{"o"}
-				return
-			}
-		}
-	}
-
-	// So we're not holding still...
-
-	if ship.OnDropoff() {
-		self.State = Normal
-		self.NewTarget()
-	}
-
-	// We're not holding, so if we're on our target square, we're either
-	// about to return or about to change target.
-
-	if self.State == Normal {
-		if self.SamePlace(self.Target) {
-			self.State = Returning			// FIXME: maybe choose new target
-		} else {
-			self.DesireNav(self.Target)
-		}
-	}
-
-	if self.State == Returning {
-
-		choice := game.MyDropoffs()[0]
-		choice_dist := self.Dist(choice)
-
-		for _, dropoff := range game.MyDropoffs()[1:] {
-			if self.Dist(dropoff) < choice_dist {
-				choice = dropoff
-				choice_dist = self.Dist(dropoff)
-			}
-		}
-
-		self.DesireNav(choice)
-	}
-}
-
-func (self *Pilot) NewTarget() {
-
-	type Foo struct {
-		X		int
-		Y		int
-		Score	float64
-	}
-
-	self.Target = self.Game.Box(self.Ship.X, self.Ship.Y)
-
-	game := self.Game
-	width := game.Width()
-	height := game.Height()
-
-	pilots := self.Overmind.Pilots
-
-	var all_foo []Foo
-
-	for x := 0; x < width; x++ {
-
-		for y := 0; y < height; y++ {
-
-			dist := self.Dist(hal.Point{x, y})
-
-			score := float64(game.Box(x, y).Halite) / float64((dist + 1))		// Avoid divide by zero
-
-			all_foo = append(all_foo, Foo{
-				X: x,
-				Y: y,
-				Score: score,
-			})
-
-		}
-	}
-
-	sort.Slice(all_foo, func(a, b int) bool {
-		return all_foo[a].Score > all_foo[b].Score				// Highest first
-	})
-
-	FooLoop:
-	for _, foo := range all_foo {
-		for _, pilot := range pilots {
-			if pilot != self && pilot.State == Normal && pilot.Target.GetX() == foo.X && pilot.Target.GetY() == foo.Y {
-				continue FooLoop
-			}
-		}
-		self.Target = game.Box(foo.X, foo.Y)
-		break FooLoop
-	}
 }
 
 func (self *Pilot) LocationAfterMove(s string) (int, int) {

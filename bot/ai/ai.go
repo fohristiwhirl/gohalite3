@@ -87,9 +87,7 @@ func (self *Overmind) UpdatePilots() {
 		known_ships[pilot.Sid] = true
 	}
 
-	my_ships := self.Game.MyShips()
-
-	for _, ship := range my_ships {
+	for _, ship := range self.Game.MyShips() {
 
 		if known_ships[ship.Sid] == false {
 
@@ -98,8 +96,7 @@ func (self *Overmind) UpdatePilots() {
 			pilot.Overmind = self
 			pilot.Ship = ship
 			pilot.Sid = ship.Sid
-			pilot.State = Normal
-			pilot.Target = self.Game.Box(ship.X, ship.Y)
+			pilot.Target = ship.Box()
 
 			self.Pilots = append(self.Pilots, pilot)
 		}
@@ -149,12 +146,10 @@ func (self *Overmind) SanityCheck() {
 	targets := make(map[hal.Point]bool)
 
 	for _, pilot := range self.Pilots {
-		if pilot.State == Normal {
-			if targets[hal.Point{pilot.Target.GetX(), pilot.Target.GetY()}] {
-				self.Game.Log("Multiple \"Normal\" ships looking at same target")
-			} else {
-				targets[hal.Point{pilot.Target.GetX(), pilot.Target.GetY()}] = true
-			}
+		if targets[hal.Point{pilot.Target.X, pilot.Target.Y}] && self.Game.Box(pilot.Target.X, pilot.Target.Y).Halite > 0 {
+			self.Game.Log("Multiple \"Normal\" ships looking at same target")
+		} else {
+			targets[hal.Point{pilot.Target.X, pilot.Target.Y}] = true
 		}
 	}
 }

@@ -43,12 +43,30 @@ func (self *Ship) OnDropoff() bool {
 	return false
 }
 
-func (self *Ship) BoxUnder() *Box {
+func (self *Ship) Box() *Box {
 	return self.Game.Box(self.X, self.Y)
 }
 
 func (self *Ship) MoveCost() int {
-	return self.BoxUnder().Halite / 10
+	return self.Box().Halite / 10
+}
+
+func (self *Ship) NearestDropoff() *Dropoff {
+
+	possibles := self.Game.Dropoffs(self.Owner)
+
+	choice := possibles[0]
+	choice_dist := self.Dist(choice)
+
+	for _, dropoff := range possibles[1:] {
+		dist := self.Dist(dropoff)
+		if dist < choice_dist {
+			choice = dropoff
+			choice_dist = dist
+		}
+	}
+
+	return choice
 }
 
 // ------------------------------------------------------------
@@ -59,6 +77,10 @@ type Dropoff struct {
 	Owner						int			// Player ID
 	X							int
 	Y							int
+}
+
+func (self *Dropoff) Box() *Box {
+	return self.Game.Box(self.X, self.Y)
 }
 
 type Box struct {
