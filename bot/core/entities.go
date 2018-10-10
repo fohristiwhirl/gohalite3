@@ -34,8 +34,8 @@ func (self *Ship) Move(s string) {		// Note that one cannot send "" - use ClearM
 }
 
 func (self *Ship) OnDropoff() bool {
-	my_dropoffs := self.Game.MyDropoffs()
-	for _, dropoff := range my_dropoffs {
+	player_dropoffs := self.Game.Dropoffs(self.Owner)
+	for _, dropoff := range player_dropoffs {
 		if dropoff.X == self.X && dropoff.Y == self.Y {
 			return true
 		}
