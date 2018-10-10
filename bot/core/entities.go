@@ -33,6 +33,24 @@ func (self *Ship) Move(s string) {		// Note that one cannot send "" - use ClearM
 	}
 }
 
+func (self *Ship) OnDropoff() bool {
+	my_dropoffs := self.Game.MyDropoffs()
+	for _, dropoff := range my_dropoffs {
+		if dropoff.X == self.X && dropoff.Y == self.Y {
+			return true
+		}
+	}
+	return false
+}
+
+func (self *Ship) BoxUnder() *Box {
+	return self.Game.Box(self.X, self.Y)
+}
+
+func (self *Ship) MoveCost() int {
+	return self.BoxUnder().Halite / 10
+}
+
 // ------------------------------------------------------------
 
 type Dropoff struct {
@@ -49,6 +67,16 @@ type Box struct {
 	Y							int
 	Halite						int
 }
+
+type Point struct {
+	X							int
+	Y							int
+}
+
+func (self Point) GetX() int { return self.X }
+func (self Point) GetY() int { return self.Y }
+
+// ------------------------------------------------------------
 
 func (self *Box) GetGame() *Game { return self.Game }
 func (self *Ship) GetGame() *Game { return self.Game }
@@ -69,3 +97,7 @@ func (self *Dropoff) DxDy(other XYer) (int, int) { return DxDy(self, other) }
 func (self *Box) Dist(other XYer) int { return Dist(self, other) }
 func (self *Ship) Dist(other XYer) int { return Dist(self, other) }
 func (self *Dropoff) Dist(other XYer) int { return Dist(self, other) }
+
+func (self *Box) SamePlace(other XYer) bool { return SamePlace(self, other) }
+func (self *Ship) SamePlace(other XYer) bool { return SamePlace(self, other) }
+func (self *Dropoff) SamePlace(other XYer) bool { return SamePlace(self, other) }

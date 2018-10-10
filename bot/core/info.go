@@ -11,7 +11,7 @@ func (self *Game) Box(x, y int) *Box {
 func (self *Game) ShipAt(x, y int) (*Ship, bool) {
 	x = mod(x, self.width)
 	y = mod(y, self.height)
-	ret, ok := self.ship_xy_lookup[__point{x, y}]
+	ret, ok := self.ship_xy_lookup[Point{x, y}]
 	return ret, ok
 }
 

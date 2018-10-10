@@ -1,10 +1,5 @@
 package core
 
-type __point struct {			// Should almost never be used. Use Box instead where possible.
-	X							int
-	Y							int
-}
-
 // ------------------------------------------------------------
 
 type Game struct {
@@ -22,7 +17,7 @@ type Game struct {
 	ships						[]*Ship			// Each ship contains a command field for the AI to set
 	dropoffs					[]*Dropoff		// The first <player_count> items are always the factories
 
-	ship_xy_lookup				map[__point]*Ship
+	ship_xy_lookup				map[Point]*Ship
 	ship_id_lookup				map[int]*Ship
 
 	logfile						*Logfile
@@ -37,7 +32,7 @@ func NewGame() *Game {
 	game.turn = -1
 	game.token_parser = NewTokenParser()
 
-	game.ship_xy_lookup = make(map[__point]*Ship)
+	game.ship_xy_lookup = make(map[Point]*Ship)
 	game.ship_id_lookup = make(map[int]*Ship)
 
 	return game

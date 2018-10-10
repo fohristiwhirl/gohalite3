@@ -140,7 +140,7 @@ func (self *Game) Parse() {
 
 	self.budgets = make([]int, self.players)
 	self.ships = nil
-	self.ship_xy_lookup = make(map[__point]*Ship)
+	self.ship_xy_lookup = make(map[Point]*Ship)
 	self.ship_id_lookup = make(map[int]*Ship)
 
 	// ------------------------------------------------
@@ -179,7 +179,7 @@ func (self *Game) Parse() {
 			ship.Halite = self.token_parser.Int()
 
 			self.ships = append(self.ships, ship)
-			self.ship_xy_lookup[__point{ship.X, ship.Y}] = ship
+			self.ship_xy_lookup[Point{ship.X, ship.Y}] = ship
 			self.ship_id_lookup[ship.Sid] = ship
 		}
 
