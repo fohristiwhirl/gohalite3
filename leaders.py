@@ -8,8 +8,9 @@ print()
 
 for item in data[:30]:
 
-	print(" {0:>3}  {1:>18} v{2:<4}  {3:.2f} +/- {4:.2f}  ({5})".format(
+	print(" {0:>3} {1:<5}  {2:>18} v{3:<4}  {4:.2f} +/- {5:.2f}  ({6})".format(
 		item["rank"],
+		"(" + str(item["user_id"]) + ")",
 		item["username"],
 		item["version_number"],
 		item["mu"],
