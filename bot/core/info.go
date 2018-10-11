@@ -1,5 +1,9 @@
 package core
 
+import (
+	"fmt"
+)
+
 // Game info, NOT including trivial properties (e.g. width, players)
 
 func (self *Game) Box(x, y int) *Box {
@@ -69,7 +73,7 @@ func (self *Game) Factory(pid int) *Dropoff {
 	factory := self.dropoffs[pid]
 
 	if factory.Owner != pid || factory.Factory == false {
-		panic("self.dropoffs[%d] wasn't the right factory")
+		panic(fmt.Sprintf("self.dropoffs[%d] wasn't the right factory", pid))
 	}
 
 	return factory

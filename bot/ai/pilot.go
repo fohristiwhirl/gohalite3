@@ -78,6 +78,10 @@ func (self *Pilot) NewTarget() {
 
 			score := float32(box.Halite) / float32((dist + 1) * (dist + 1))		// Avoid divide by zero
 
+			if box.Halite <= 20 {
+				score -= 10000
+			}
+
 			all_foo = append(all_foo, Foo{
 				Box: box,
 				Score: score,
