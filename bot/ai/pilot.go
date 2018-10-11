@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 
@@ -23,6 +24,14 @@ func (self *Pilot) DxDy(other hal.XYer) (int, int) { return hal.DxDy(self, other
 func (self *Pilot) Dist(other hal.XYer) int { return hal.Dist(self, other) }
 func (self *Pilot) SamePlace(other hal.XYer) bool { return hal.SamePlace(self, other) }
 
+func (self *Pilot) Flog() {
+	style := `color: #ffffff`
+	if (self.Dist(self.Target) == 0) {
+		style = `color: #ffff00`
+	}
+	msg := fmt.Sprintf(`Target: <span style="%s">%d %d</span>`, style, self.Target.X, self.Target.Y)
+	self.Game.Flog(self.Game.Turn(), self.Ship.X, self.Ship.Y, msg)
+}
 
 func (self *Pilot) SetDesires() {
 

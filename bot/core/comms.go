@@ -58,7 +58,7 @@ func (self *TokenParser) Str() string {
 
 // ---------------------------------------
 
-func (self *Game) PrePreParse() {
+func (self *Game) PrePreParse() error {
 
 	// Very early parsing that has to be done before log is opened
 	// so that we can open the right log name.
@@ -71,11 +71,7 @@ func (self *Game) PrePreParse() {
 	self.players = self.token_parser.Int()
 	self.pid = self.token_parser.Int()
 
-	self.StartLog(fmt.Sprintf("log%d.txt", self.pid))
-
-	if err != nil {
-		self.Log("%v", err)
-	}
+	return err
 }
 
 func (self *Game) PreParse() {

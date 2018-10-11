@@ -74,6 +74,7 @@ func (self *Overmind) Step() {
 
 	self.SanityCheck()
 
+	self.Flog()
 	return
 }
 
@@ -151,5 +152,11 @@ func (self *Overmind) SanityCheck() {
 		} else {
 			targets[hal.Point{pilot.Target.X, pilot.Target.Y}] = true
 		}
+	}
+}
+
+func (self *Overmind) Flog() {
+	for _, pilot := range self.Pilots {
+		pilot.Flog()
 	}
 }

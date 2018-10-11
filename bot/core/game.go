@@ -21,6 +21,7 @@ type Game struct {
 	ship_id_lookup				map[int]*Ship
 
 	logfile						*Logfile
+	flogfile					*Flogfile
 	token_parser				*TokenParser
 
 	generate					bool			// Whether the AI wants to send a "g" command
