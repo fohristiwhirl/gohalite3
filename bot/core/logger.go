@@ -9,6 +9,7 @@ type Logfile struct {
 	outfile			*os.File
 	outfilename		string
 	logged_once		map[string]bool
+	failed			bool
 }
 
 func NewLog(outfilename string) *Logfile {
@@ -16,12 +17,13 @@ func NewLog(outfilename string) *Logfile {
 		nil,
 		outfilename,
 		make(map[string]bool),
+		false,
 	}
 }
 
 func (self *Logfile) Log(format_string string, args ...interface{}) {
 
-	if self == nil {
+	if self == nil || self.failed {
 		return
 	}
 
@@ -38,6 +40,7 @@ func (self *Logfile) Log(format_string string, args ...interface{}) {
 		}
 
 		if err != nil {
+			self.failed = true
 			return
 		}
 	}

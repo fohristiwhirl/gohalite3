@@ -12,6 +12,7 @@ type Flogfile struct {
 	outfile			*os.File
 	outfilename		string
 	at_start		bool
+	failed			bool
 }
 
 type FlogObject struct {
@@ -26,21 +27,21 @@ func NewFlog(outfilename string) *Flogfile {
 		nil,
 		outfilename,
 		true,
+		false,
 	}
 }
 
 func (self *Flogfile) Flog(t, x, y int, msg string) {
 
-	if self == nil {
+	if self == nil || self.failed {
 		return
 	}
 
 	if self.outfile == nil {
-
 		var err error
 		self.outfile, err = os.Create(self.outfilename)
-
 		if err != nil {
+			self.failed = true
 			return
 		}
 	}
