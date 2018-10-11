@@ -13,6 +13,7 @@ import (
 const (
 	NAME = "Fohristiwhirl"
 	VERSION = "0"
+	FLOGGING = true
 )
 
 func main() {
@@ -40,8 +41,11 @@ func main() {
 
 	err := game.PrePreParse()			// Reads very early data and starts log file.
 
-	game.StartLog(fmt.Sprintf("log%d.txt", game.Pid()))
-	game.StartFlog(fmt.Sprintf("flog%d.json", game.Pid()))
+	game.StartLog(fmt.Sprintf("log%v.txt", game.Pid()))
+
+	if FLOGGING {
+		game.StartFlog(fmt.Sprintf("flogs/flog%v-%v.json", game.Pid(), game.Constants.GameSeed))
+	}
 
 	if err != nil {
 		game.Log("%v", err)

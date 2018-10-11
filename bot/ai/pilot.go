@@ -27,7 +27,7 @@ func (self *Pilot) SamePlace(other hal.XYer) bool { return hal.SamePlace(self, o
 func (self *Pilot) Flog() {
 	style := `color: #ffffff`
 	if (self.Dist(self.Target) == 0) {
-		style = `color: #ffff00`
+		style = `color: #d9b3ff`
 	}
 	msg := fmt.Sprintf(`Target: <span style="%s">%d %d</span>`, style, self.Target.X, self.Target.Y)
 	self.Game.Flog(self.Game.Turn(), self.Ship.X, self.Ship.Y, msg)

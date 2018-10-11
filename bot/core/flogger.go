@@ -50,17 +50,17 @@ func (self *Flogfile) Flog(t, x, y int, msg string) {
 	s, _ := json.Marshal(f)
 
 	if self.at_start {
-		fmt.Fprintf(self.outfile, "[")
+		fmt.Fprintf(self.outfile, "[\n  ")
 		self.at_start = false
 	} else {
-		fmt.Fprintf(self.outfile, ",")
+		fmt.Fprintf(self.outfile, ",\n  ")
 	}
 
 	fmt.Fprintf(self.outfile, string(s))
 }
 
 func (self *Flogfile) Close() {
-	fmt.Fprintf(self.outfile, "]")
+	fmt.Fprintf(self.outfile, "\n]")
 	self.outfile.Close()
 }
 
