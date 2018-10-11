@@ -42,7 +42,7 @@ func main() {
 
 	// Both of these fail harmlessly if the directory isn't there:
 	game.StartLog(fmt.Sprintf("logs/log%v.txt", game.Pid()))
-	game.StartFlog(fmt.Sprintf("flogs/flog%v-%v.json", game.Pid(), game.Constants.GameSeed))
+	game.StartFlog(fmt.Sprintf("flogs/flog-%v-%v.json", game.Constants.GameSeed, game.Pid()))
 
 	if err != nil {
 		game.Log("%v", err)

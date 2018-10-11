@@ -17,22 +17,6 @@ type Pilot struct {
 	Desires					[]string
 }
 
-func (self *Pilot) GetGame() *hal.Game { return self.Game }
-func (self *Pilot) GetX() int { return self.Ship.X }
-func (self *Pilot) GetY() int { return self.Ship.Y }
-func (self *Pilot) DxDy(other hal.XYer) (int, int) { return hal.DxDy(self, other) }
-func (self *Pilot) Dist(other hal.XYer) int { return hal.Dist(self, other) }
-func (self *Pilot) SamePlace(other hal.XYer) bool { return hal.SamePlace(self, other) }
-
-func (self *Pilot) Flog() {
-	style := `color: #ffffff`
-	if (self.Dist(self.Target) == 0) {
-		style = `color: #d9b3ff`
-	}
-	msg := fmt.Sprintf(`Target: <span style="%s">%d, %d</span>`, style, self.Target.X, self.Target.Y)
-	self.Game.Flog(self.Game.Turn(), self.Ship.X, self.Ship.Y, msg)
-}
-
 func (self *Pilot) SetDesires() {
 
 	ship := self.Ship
@@ -189,3 +173,25 @@ func (self *Pilot) LocationAfterMove(s string) (int, int) {
 
 	return x, y
 }
+
+func (self *Pilot) Flog() {
+
+	if self.Game.ShipCanDropoffAt(self.Ship, self.Target) {
+		self.Game.Flog(self.Game.Turn(), self.Ship.X, self.Ship.Y, "Returning")
+		return
+	}
+
+	style := `color: #ffffff`
+	if (self.Dist(self.Target) == 0) {
+		style = `color: #d9b3ff`
+	}
+	msg := fmt.Sprintf(`Target: %v, %v &ndash; <span style="%v">dist: %v</span>`, self.Target.X, self.Target.Y, style, self.Dist(self.Target))
+	self.Game.Flog(self.Game.Turn(), self.Ship.X, self.Ship.Y, msg)
+}
+
+func (self *Pilot) GetGame() *hal.Game { return self.Game }
+func (self *Pilot) GetX() int { return self.Ship.X }
+func (self *Pilot) GetY() int { return self.Ship.Y }
+func (self *Pilot) DxDy(other hal.XYer) (int, int) { return hal.DxDy(self, other) }
+func (self *Pilot) Dist(other hal.XYer) int { return hal.Dist(self, other) }
+func (self *Pilot) SamePlace(other hal.XYer) bool { return hal.SamePlace(self, other) }

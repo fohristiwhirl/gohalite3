@@ -8,16 +8,14 @@ func (self *Game) Box(x, y int) *Box {
 	return self.boxes[x][y]
 }
 
-func (self *Game) Ship(x, y int) (*Ship, bool) {
+func (self *Game) Ship(x, y int) *Ship {
 	x = mod(x, self.width)
 	y = mod(y, self.height)
-	ret, ok := self.ship_xy_lookup[Point{x, y}]
-	return ret, ok
+	return self.ship_xy_lookup[Point{x, y}]
 }
 
-func (self *Game) Sid(sid int) (*Ship, bool) {
-	ret, ok := self.ship_id_lookup[sid]
-	return ret, ok
+func (self *Game) Sid(sid int) *Ship {
+	return self.ship_id_lookup[sid]
 }
 
 func (self *Game) Dropoffs(pid int) []*Dropoff {
@@ -75,4 +73,16 @@ func (self *Game) Factory(pid int) *Dropoff {
 	}
 
 	return factory
+}
+
+func (self *Game) ShipCanDropoffAt(ship *Ship, box *Box) bool {
+
+	dropoffs := self.Dropoffs(ship.Owner)
+
+	for _, dropoff := range dropoffs {
+		if dropoff.X == box.X && dropoff.Y == box.Y {
+			return true
+		}
+	}
+	return false
 }
