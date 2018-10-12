@@ -43,10 +43,6 @@ func (self *Ship) OnDropoff() bool {
 	return false
 }
 
-func (self *Ship) Box() *Box {
-	return self.Game.BoxAt(self)
-}
-
 func (self *Ship) MoveCost() int {
 	if self.Inspired {
 		return self.Box().Halite / self.Game.Constants.INSPIRED_MOVE_COST_RATIO
@@ -88,6 +84,10 @@ func (self *Ship) LocationAfterMove(s string) Point {
 	y = mod(y, self.Game.Height())
 
 	return Point{x, y}
+}
+
+func (self *Ship) Box() *Box {
+	return self.Game.BoxAt(self)
 }
 
 func (self *Ship) GetGame() *Game { return self.Game }

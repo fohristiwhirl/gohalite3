@@ -179,6 +179,10 @@ func (self *Pilot) Flog() {
 	self.Game.Flog(self.Game.Turn(), self.Ship.X, self.Ship.Y, msg)
 }
 
+func (self *Pilot) OnDropoff() bool {
+	return self.Ship.OnDropoff()
+}
+
 func (self *Pilot) MoveCost() int {
 	return self.Ship.MoveCost()
 }
@@ -187,16 +191,16 @@ func (self *Pilot) NearestDropoff() *hal.Dropoff {
 	return self.Ship.NearestDropoff()
 }
 
-func (self *Pilot) LocationAfterMove(s string) hal.Point {
-	return self.Ship.LocationAfterMove(s)
-}
-
 func (self *Pilot) CanDropoffAt(pos hal.XYer) bool {
 	return self.Ship.CanDropoffAt(pos)
 }
 
 func (self *Pilot) TargetIsDropoff() bool {
 	return self.Ship.CanDropoffAt(self.Target)
+}
+
+func (self *Pilot) LocationAfterMove(s string) hal.Point {
+	return self.Ship.LocationAfterMove(s)
 }
 
 func (self *Pilot) Box() *hal.Box {
