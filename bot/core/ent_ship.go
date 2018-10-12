@@ -77,6 +77,19 @@ func (self *Ship) CanDropoffAt(pos XYer) bool {
 	return self.Game.ShipCanDropoffAt(self, pos)
 }
 
+func (self *Ship) LocationAfterMove(s string) Point {
+
+	dx, dy := string_to_dxdy(s)
+
+	x := self.X + dx
+	y := self.Y + dy
+
+	x = mod(x, self.Game.Width())
+	y = mod(y, self.Game.Height())
+
+	return Point{x, y}
+}
+
 func (self *Ship) GetGame() *Game { return self.Game }
 func (self *Ship) GetX() int { return self.X }
 func (self *Ship) GetY() int { return self.Y }

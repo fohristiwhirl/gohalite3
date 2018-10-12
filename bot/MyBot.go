@@ -38,17 +38,13 @@ func main() {
 
 	// -------------------------------------------------------------------------------
 
-	err := game.PrePreParse()			// Reads very early data and starts log file.
+	game.PrePreParse()				// Reads very early data (including PID, needed for log names)
 
 	// Both of these fail harmlessly if the directory isn't there:
-	game.StartLog(fmt.Sprintf("logs/log%v.txt", game.Pid()))
+	game.StartLog(fmt.Sprintf("logs/log-%v.txt", game.Pid()))
 	game.StartFlog(fmt.Sprintf("flogs/flog-%v-%v.json", game.Constants.GameSeed, game.Pid()))
 
-	if err != nil {
-		game.Log("%v", err)
-	}
-
-	game.PreParse()						// Reads the map data.
+	game.PreParse()					// Reads the map data.
 
 	game.LogWithoutTurn("--------------------------------------------------------------------------------")
 	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02 15:04:05"))

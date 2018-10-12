@@ -23,13 +23,13 @@ func (self *Pilot) SetDesires() {
 
 	// Maybe we want to stay still...
 
-	if ship.Halite < ship.MoveCost() {				// We can't move
+	if ship.Halite < self.MoveCost() {				// We can't move
 		self.Desires = []string{"o"}
 		return
 	}
 
 	if ship.Halite < 800 {
-		if ship.Box().Halite > 20 {					// We are happy where we are
+		if self.Box().Halite > 20 {					// We are happy where we are
 			self.Desires = []string{"o"}
 			return
 		}
@@ -40,7 +40,7 @@ func (self *Pilot) SetDesires() {
 
 	if self.SamePlace(self.Target) {
 		if ship.Halite > 500 {
-			self.Target = ship.NearestDropoff().Box()
+			self.Target = self.NearestDropoff().Box()
 		} else {
 			self.NewTarget()
 		}
@@ -58,7 +58,7 @@ func (self *Pilot) NewTarget() {
 		Score	float32
 	}
 
-	self.Target = self.Ship.Box()
+	self.Target = self.Box()
 
 	game := self.Game
 	width := game.Width()
@@ -164,19 +164,6 @@ func (self *Pilot) DesireNav(target hal.XYer) {
 	self.Desires = append(self.Desires, "o")
 }
 
-func (self *Pilot) LocationAfterMove(s string) hal.Point {
-
-	dx, dy := string_to_dxdy(s)
-
-	x := self.Ship.X + dx
-	y := self.Ship.Y + dy
-
-	x = mod(x, self.Game.Width())
-	y = mod(y, self.Game.Height())
-
-	return hal.Point{x, y}
-}
-
 func (self *Pilot) Flog() {
 
 	if self.Game.ShipCanDropoffAt(self.Ship, self.Target) {
@@ -190,6 +177,18 @@ func (self *Pilot) Flog() {
 	}
 	msg := fmt.Sprintf(`Target: %v, %v &ndash; <span style="%v">dist: %v</span>`, self.Target.X, self.Target.Y, style, self.Dist(self.Target))
 	self.Game.Flog(self.Game.Turn(), self.Ship.X, self.Ship.Y, msg)
+}
+
+func (self *Pilot) MoveCost() int {
+	return self.Ship.MoveCost()
+}
+
+func (self *Pilot) NearestDropoff() *hal.Dropoff {
+	return self.Ship.NearestDropoff()
+}
+
+func (self *Pilot) LocationAfterMove(s string) hal.Point {
+	return self.Ship.LocationAfterMove(s)
 }
 
 func (self *Pilot) CanDropoffAt(pos hal.XYer) bool {

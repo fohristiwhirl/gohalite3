@@ -58,7 +58,7 @@ func (self *TokenParser) Str() string {
 
 // ---------------------------------------
 
-func (self *Game) PrePreParse() error {
+func (self *Game) PrePreParse() {
 
 	// Very early parsing that has to be done before log is opened
 	// so that we can open the right log name.
@@ -66,12 +66,12 @@ func (self *Game) PrePreParse() error {
 	constants_json := self.token_parser.Str()
 	err := json.Unmarshal([]byte(constants_json), &self.Constants)
 
-	// Dealing with the err is delayed until a log file is started...
+	if err != nil {
+		panic("Couldn't load initial JSON line.")
+	}
 
 	self.players = self.token_parser.Int()
 	self.pid = self.token_parser.Int()
-
-	return err
 }
 
 func (self *Game) PreParse() {
