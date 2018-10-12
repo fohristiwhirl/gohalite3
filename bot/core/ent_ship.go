@@ -77,57 +77,9 @@ func (self *Ship) CanDropoffAt(pos XYer) bool {
 	return self.Game.ShipCanDropoffAt(self, pos)
 }
 
-// ------------------------------------------------------------
-
-type Dropoff struct {
-	Game						*Game
-	Factory						bool
-	Owner						int			// Player ID
-	X							int
-	Y							int
-}
-
-func (self *Dropoff) Box() *Box {
-	return self.Game.BoxAt(self)
-}
-
-type Box struct {
-	Game						*Game
-	X							int
-	Y							int
-	Halite						int
-}
-
-type Point struct {
-	X							int
-	Y							int
-}
-
-func (self Point) GetX() int { return self.X }
-func (self Point) GetY() int { return self.Y }
-
-// ------------------------------------------------------------
-
-func (self *Box) GetGame() *Game { return self.Game }
 func (self *Ship) GetGame() *Game { return self.Game }
-func (self *Dropoff) GetGame() *Game { return self.Game }
-
-func (self *Box) GetX() int { return self.X }
 func (self *Ship) GetX() int { return self.X }
-func (self *Dropoff) GetX() int { return self.X }
-
-func (self *Box) GetY() int { return self.Y }
 func (self *Ship) GetY() int { return self.Y }
-func (self *Dropoff) GetY() int { return self.Y }
-
-func (self *Box) DxDy(other XYer) (int, int) { return DxDy(self, other) }
 func (self *Ship) DxDy(other XYer) (int, int) { return DxDy(self, other) }
-func (self *Dropoff) DxDy(other XYer) (int, int) { return DxDy(self, other) }
-
-func (self *Box) Dist(other XYer) int { return Dist(self, other) }
 func (self *Ship) Dist(other XYer) int { return Dist(self, other) }
-func (self *Dropoff) Dist(other XYer) int { return Dist(self, other) }
-
-func (self *Box) SamePlace(other XYer) bool { return SamePlace(self, other) }
 func (self *Ship) SamePlace(other XYer) bool { return SamePlace(self, other) }
-func (self *Dropoff) SamePlace(other XYer) bool { return SamePlace(self, other) }
