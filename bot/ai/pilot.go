@@ -72,8 +72,7 @@ func (self *Pilot) NewTarget() {
 
 		for y := 0; y < height; y++ {
 
-			box := game.Box(x, y)
-
+			box := game.BoxAt(hal.Point{x, y})
 			dist := self.Dist(box)
 
 			score := float32(box.Halite) / float32((dist + 1) * (dist + 1))		// Avoid divide by zero
@@ -191,6 +190,14 @@ func (self *Pilot) Flog() {
 	}
 	msg := fmt.Sprintf(`Target: %v, %v &ndash; <span style="%v">dist: %v</span>`, self.Target.X, self.Target.Y, style, self.Dist(self.Target))
 	self.Game.Flog(self.Game.Turn(), self.Ship.X, self.Ship.Y, msg)
+}
+
+func (self *Pilot) CanDropoffAt(pos hal.XYer) bool {
+	return self.Ship.CanDropoffAt(pos)
+}
+
+func (self *Pilot) Box() *hal.Box {
+	return self.Game.BoxAt(self)
 }
 
 func (self *Pilot) GetGame() *hal.Game { return self.Game }

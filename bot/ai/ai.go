@@ -144,13 +144,15 @@ func (self *Overmind) SetBook(pilot *Pilot, x, y int) {
 
 func (self *Overmind) SanityCheck() {
 
-	targets := make(map[hal.Point]bool)
+	// targets := make(map[hal.Point]bool)
+
+	targets := make(map[hal.XYer]bool)
 
 	for _, pilot := range self.Pilots {
-		if targets[hal.Point{pilot.Target.X, pilot.Target.Y}] && self.Game.Box(pilot.Target.X, pilot.Target.Y).Halite > 0 {
+		if targets[pilot.Target] && pilot.CanDropoffAt(pilot.Target) == false {
 			self.Game.Log("Multiple \"Normal\" ships looking at same target")
 		} else {
-			targets[hal.Point{pilot.Target.X, pilot.Target.Y}] = true
+			targets[pilot.Target] = true
 		}
 	}
 }

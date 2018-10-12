@@ -44,7 +44,7 @@ func (self *Ship) OnDropoff() bool {
 }
 
 func (self *Ship) Box() *Box {
-	return self.Game.Box(self.X, self.Y)
+	return self.Game.BoxAt(self)
 }
 
 func (self *Ship) MoveCost() int {
@@ -73,6 +73,10 @@ func (self *Ship) NearestDropoff() *Dropoff {
 	return choice
 }
 
+func (self *Ship) CanDropoffAt(pos XYer) bool {
+	return self.Game.ShipCanDropoffAt(self, pos)
+}
+
 // ------------------------------------------------------------
 
 type Dropoff struct {
@@ -84,7 +88,7 @@ type Dropoff struct {
 }
 
 func (self *Dropoff) Box() *Box {
-	return self.Game.Box(self.X, self.Y)
+	return self.Game.BoxAt(self)
 }
 
 type Box struct {

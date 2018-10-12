@@ -10,15 +10,15 @@ func (self *Game) Width() int { return self.width }
 func (self *Game) Height() int { return self.height }
 func (self *Game) Players() int { return self.players }
 
-func (self *Game) Box(x, y int) *Box {
-	x = mod(x, self.width)
-	y = mod(y, self.height)
+func (self *Game) BoxAt(pos XYer) *Box {
+	x := mod(pos.GetX(), self.width)
+	y := mod(pos.GetY(), self.height)
 	return self.boxes[x][y]
 }
 
-func (self *Game) ShipAt(x, y int) *Ship {			// Maybe nil
-	x = mod(x, self.width)
-	y = mod(y, self.height)
+func (self *Game) ShipAt(pos XYer) *Ship {			// Maybe nil
+	x := mod(pos.GetX(), self.width)
+	y := mod(pos.GetY(), self.height)
 	return self.ship_xy_lookup[Point{x, y}]
 }
 
@@ -85,14 +85,14 @@ func (self *Game) MyFactory() *Dropoff {
 	return self.Factory(self.pid)
 }
 
-func (self *Game) ShipCanDropoffAt(ship *Ship, box *Box) bool {
+func (self *Game) ShipCanDropoffAt(ship *Ship, pos XYer) bool {
 
 	// Does the box coincide with a friendly dropoff?
 
 	dropoffs := self.Dropoffs(ship.Owner)
 
 	for _, dropoff := range dropoffs {
-		if dropoff.X == box.X && dropoff.Y == box.Y {
+		if dropoff.X == pos.GetX() && dropoff.Y == pos.GetX() {
 			return true
 		}
 	}
