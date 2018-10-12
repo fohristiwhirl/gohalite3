@@ -92,7 +92,7 @@ func (self *Game) ShipCanDropoffAt(ship *Ship, pos XYer) bool {
 	dropoffs := self.Dropoffs(ship.Owner)
 
 	for _, dropoff := range dropoffs {
-		if dropoff.X == pos.GetX() && dropoff.Y == pos.GetX() {
+		if dropoff.X == pos.GetX() && dropoff.Y == pos.GetY() {
 			return true
 		}
 	}

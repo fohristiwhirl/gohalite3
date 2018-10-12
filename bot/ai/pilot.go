@@ -164,7 +164,7 @@ func (self *Pilot) DesireNav(target hal.XYer) {
 	self.Desires = append(self.Desires, "o")
 }
 
-func (self *Pilot) LocationAfterMove(s string) (int, int) {
+func (self *Pilot) LocationAfterMove(s string) hal.Point {
 
 	dx, dy := string_to_dxdy(s)
 
@@ -174,7 +174,7 @@ func (self *Pilot) LocationAfterMove(s string) (int, int) {
 	x = mod(x, self.Game.Width())
 	y = mod(y, self.Game.Height())
 
-	return x, y
+	return hal.Point{x, y}
 }
 
 func (self *Pilot) Flog() {
@@ -194,6 +194,10 @@ func (self *Pilot) Flog() {
 
 func (self *Pilot) CanDropoffAt(pos hal.XYer) bool {
 	return self.Ship.CanDropoffAt(pos)
+}
+
+func (self *Pilot) TargetIsDropoff() bool {
+	return self.Ship.CanDropoffAt(self.Target)
 }
 
 func (self *Pilot) Box() *hal.Box {

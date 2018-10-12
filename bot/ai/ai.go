@@ -44,7 +44,7 @@ func (self *Overmind) Step() {
 	for _, pilot := range self.Pilots {
 		if pilot.Desires[0] == "o" {
 			pilot.Ship.Move("o")
-			self.SetBook(pilot, pilot.Ship.X, pilot.Ship.Y)
+			self.SetBook(pilot, pilot)
 		}
 	}
 
@@ -56,11 +56,11 @@ func (self *Overmind) Step() {
 
 		for _, desire := range pilot.Desires {
 
-			new_x, new_y := pilot.LocationAfterMove(desire)
+			new_loc := pilot.LocationAfterMove(desire)
 
-			if self.Booker(new_x, new_y) == nil {
+			if self.Booker(new_loc) == nil {
 				pilot.Ship.Move(desire)
-				self.SetBook(pilot, new_x, new_y)
+				self.SetBook(pilot, new_loc)
 				break
 			}
 		}
@@ -68,7 +68,7 @@ func (self *Overmind) Step() {
 
 	factory := self.Game.MyFactory()
 
-	if self.Game.MyBudget() >= 1000 && self.Booker(factory.X, factory.Y) == nil && self.Game.Turn() < self.Game.Constants.MAX_TURNS / 2 {
+	if self.Game.MyBudget() >= 1000 && self.Booker(factory) == nil && self.Game.Turn() < self.Game.Constants.MAX_TURNS / 2 {
 		self.Game.SetGenerate(true)
 	}
 
@@ -126,33 +126,32 @@ func (self *Overmind) ClearBook() {
 	}
 }
 
-func (self *Overmind) Booker(x, y int) *Pilot {
+func (self *Overmind) Booker(pos hal.XYer) *Pilot {
 
-	x = mod(x, self.Game.Width())
-	y = mod(y, self.Game.Height())
+	x := mod(pos.GetX(), self.Game.Width())
+	y := mod(pos.GetY(), self.Game.Height())
 
 	return self.Book[x][y]
 }
 
-func (self *Overmind) SetBook(pilot *Pilot, x, y int) {
+func (self *Overmind) SetBook(pilot *Pilot, pos hal.XYer) {
 
-	x = mod(x, self.Game.Width())
-	y = mod(y, self.Game.Height())
+	x := mod(pos.GetX(), self.Game.Width())
+	y := mod(pos.GetY(), self.Game.Height())
 
 	self.Book[x][y] = pilot
 }
 
 func (self *Overmind) SanityCheck() {
 
-	// targets := make(map[hal.Point]bool)
-
-	targets := make(map[hal.XYer]bool)
+	targets := make(map[*hal.Box]int)
 
 	for _, pilot := range self.Pilots {
-		if targets[pilot.Target] && pilot.CanDropoffAt(pilot.Target) == false {
-			self.Game.Log("Multiple \"Normal\" ships looking at same target")
+		targetter_sid, ok := targets[pilot.Target]
+		if ok && pilot.TargetIsDropoff() == false {
+			self.Game.Log("Ships %d and %d looking at same target!", pilot.Sid, targetter_sid)
 		} else {
-			targets[pilot.Target] = true
+			targets[pilot.Target] = pilot.Sid
 		}
 	}
 }
