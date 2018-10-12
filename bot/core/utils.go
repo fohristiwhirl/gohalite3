@@ -1,6 +1,6 @@
 package core
 
-func mod(x, n int) int {
+func Mod(x, n int) int {
 
 	// Works for negative x
 	// https://dev.to/maurobringolf/a-neat-trick-to-compute-modulo-of-negative-numbers-111e
@@ -8,12 +8,12 @@ func mod(x, n int) int {
 	return (x % n + n) % n
 }
 
-func abs(a int) int {
+func Abs(a int) int {
 	if a < 0 { return -a }
 	return a
 }
 
-func string_to_dxdy(s string) (int, int) {
+func StringToDxDy(s string) (int, int) {
 
 	switch s {
 
@@ -33,5 +33,5 @@ func string_to_dxdy(s string) (int, int) {
 		return 0, 0
 	}
 
-	panic("string_to_dxdy() got illegal string")
+	panic("StringToDxDy() got illegal string")
 }

@@ -19,11 +19,11 @@ func DxDy(self GameXYer, other XYer) (int, int) {
 	width := game.Width()
 	height := game.Height()
 
-	x1 := mod(self.GetX(), width)
-	y1 := mod(self.GetY(), height)
+	x1 := Mod(self.GetX(), width)
+	y1 := Mod(self.GetY(), height)
 
-	x2 := mod(other.GetX(), width)
-	y2 := mod(other.GetY(), height)
+	x2 := Mod(other.GetX(), width)
+	y2 := Mod(other.GetY(), height)
 
 	// Naive result:
 
@@ -62,7 +62,7 @@ func DxDy(self GameXYer, other XYer) (int, int) {
 
 func Dist(self GameXYer, other XYer) int {
 	dx, dy := DxDy(self, other)
-	return abs(dx) + abs(dy)
+	return Abs(dx) + Abs(dy)
 }
 
 func SamePlace(self GameXYer, other XYer) bool {
@@ -71,11 +71,11 @@ func SamePlace(self GameXYer, other XYer) bool {
 	width := game.Width()
 	height := game.Height()
 
-	x1 := mod(self.GetX(), width)
-	y1 := mod(self.GetY(), height)
+	x1 := Mod(self.GetX(), width)
+	y1 := Mod(self.GetY(), height)
 
-	x2 := mod(other.GetX(), width)
-	y2 := mod(other.GetY(), height)
+	x2 := Mod(other.GetX(), width)
+	y2 := Mod(other.GetY(), height)
 
 	if x1 == x2 && y1 == y2 {
 		return true

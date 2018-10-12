@@ -11,14 +11,14 @@ func (self *Game) Height() int { return self.height }
 func (self *Game) Players() int { return self.players }
 
 func (self *Game) BoxAt(pos XYer) *Box {
-	x := mod(pos.GetX(), self.width)
-	y := mod(pos.GetY(), self.height)
+	x := Mod(pos.GetX(), self.width)
+	y := Mod(pos.GetY(), self.height)
 	return self.boxes[x][y]
 }
 
 func (self *Game) ShipAt(pos XYer) *Ship {			// Maybe nil
-	x := mod(pos.GetX(), self.width)
-	y := mod(pos.GetY(), self.height)
+	x := Mod(pos.GetX(), self.width)
+	y := Mod(pos.GetY(), self.height)
 	return self.ship_xy_lookup[Point{x, y}]
 }
 

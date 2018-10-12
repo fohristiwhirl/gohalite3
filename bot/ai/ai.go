@@ -37,6 +37,7 @@ func (self *Overmind) Step() {
 
 	for _, pilot := range self.Pilots {
 		if len(pilot.Desires) == 0 {				// Should be impossible
+			self.Game.Log("Pilot %d had no desired!", pilot.Sid)
 			pilot.Desires = []string{"o"}
 		}
 	}
@@ -128,16 +129,16 @@ func (self *Overmind) ClearBook() {
 
 func (self *Overmind) Booker(pos hal.XYer) *Pilot {
 
-	x := mod(pos.GetX(), self.Game.Width())
-	y := mod(pos.GetY(), self.Game.Height())
+	x := hal.Mod(pos.GetX(), self.Game.Width())
+	y := hal.Mod(pos.GetY(), self.Game.Height())
 
 	return self.Book[x][y]
 }
 
 func (self *Overmind) SetBook(pilot *Pilot, pos hal.XYer) {
 
-	x := mod(pos.GetX(), self.Game.Width())
-	y := mod(pos.GetY(), self.Game.Height())
+	x := hal.Mod(pos.GetX(), self.Game.Width())
+	y := hal.Mod(pos.GetY(), self.Game.Height())
 
 	self.Book[x][y] = pilot
 }
