@@ -38,23 +38,3 @@ func NewGame() *Game {
 
 	return game
 }
-
-func (self *Game) Pid() int {
-	return self.pid
-}
-
-func (self *Game) Turn() int {
-	return self.turn
-}
-
-func (self *Game) Width() int {
-	return self.width
-}
-
-func (self *Game) Height() int {
-	return self.height
-}
-
-func (self *Game) Players() int {
-	return self.players
-}

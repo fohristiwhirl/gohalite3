@@ -95,6 +95,13 @@ func (self *Game) PreParse() {
 		}
 	}
 
+	// The factories are stored in the dropoffs
+	// list at the very start, in player order.
+
+	sort.Slice(self.dropoffs, func(a, b int) bool {
+		return self.dropoffs[a].Owner < self.dropoffs[b].Owner
+	})
+
 	self.width = self.token_parser.Int()
 	self.height = self.token_parser.Int()
 
@@ -245,7 +252,7 @@ func (self *Game) FixInspiration() {
 
 			for x := startx; x <= endx; x++ {
 
-				other := self.Ship(ship.X + x, ship.Y + y)			// Handles bounds automagically
+				other := self.ShipAt(ship.X + x, ship.Y + y)			// Handles bounds automagically
 				if other != nil {
 					if other.Owner != ship.Owner {
 						hits++
@@ -253,7 +260,7 @@ func (self *Game) FixInspiration() {
 				}
 
 				if y != 0 {
-					other := self.Ship(ship.X + x, ship.Y - y)		// Handles bounds automagically
+					other := self.ShipAt(ship.X + x, ship.Y - y)		// Handles bounds automagically
 					if other != nil {
 						if other.Owner != ship.Owner {
 							hits++

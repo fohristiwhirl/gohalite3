@@ -4,7 +4,11 @@ import (
 	"fmt"
 )
 
-// Game info, NOT including trivial properties (e.g. width, players)
+func (self *Game) Pid() int { return self.pid }
+func (self *Game) Turn() int { return self.turn }
+func (self *Game) Width() int { return self.width }
+func (self *Game) Height() int { return self.height }
+func (self *Game) Players() int { return self.players }
 
 func (self *Game) Box(x, y int) *Box {
 	x = mod(x, self.width)
@@ -12,17 +16,17 @@ func (self *Game) Box(x, y int) *Box {
 	return self.boxes[x][y]
 }
 
-func (self *Game) Ship(x, y int) *Ship {
+func (self *Game) ShipAt(x, y int) *Ship {			// Maybe nil
 	x = mod(x, self.width)
 	y = mod(y, self.height)
 	return self.ship_xy_lookup[Point{x, y}]
 }
 
-func (self *Game) Sid(sid int) *Ship {
+func (self *Game) Sid(sid int) *Ship {				// Maybe nil
 	return self.ship_id_lookup[sid]
 }
 
-func (self *Game) Dropoffs(pid int) []*Dropoff {
+func (self *Game) Dropoffs(pid int) []*Dropoff {	// Includes factory
 
 	var ret []*Dropoff
 
@@ -35,7 +39,7 @@ func (self *Game) Dropoffs(pid int) []*Dropoff {
 	return ret
 }
 
-func (self *Game) MyDropoffs() []*Dropoff {
+func (self *Game) MyDropoffs() []*Dropoff {			// Includes factory
 	return self.Dropoffs(self.pid)
 }
 
