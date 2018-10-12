@@ -17,7 +17,7 @@ type Ship struct {
 }
 
 func (self *Ship) String() string {
-	return fmt.Sprintf("Ship %v (%v,%v - owner %v)", self.Sid, self.X, self.Y, self.Owner)
+	return fmt.Sprintf("Ship %v (%v,%v, owner %v)", self.Sid, self.X, self.Y, self.Owner)
 }
 
 func (self *Ship) ClearMove() {
@@ -48,7 +48,11 @@ func (self *Ship) Box() *Box {
 }
 
 func (self *Ship) MoveCost() int {
-	return self.Box().Halite / 10
+	if self.Inspired {
+		return self.Box().Halite / self.Game.Constants.INSPIRED_MOVE_COST_RATIO
+	} else {
+		return self.Box().Halite / self.Game.Constants.MOVE_COST_RATIO
+	}
 }
 
 func (self *Ship) NearestDropoff() *Dropoff {

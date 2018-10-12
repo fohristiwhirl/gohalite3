@@ -68,13 +68,11 @@ func (self *Game) MyBudget() int {
 	return self.PlayerBudget(self.pid)
 }
 
-func (self *Game) MyFactory() *Dropoff {
-	return self.Factory(self.pid)
-}
-
 func (self *Game) Factory(pid int) *Dropoff {
 
 	factory := self.dropoffs[pid]
+
+	// Factories are stored in the dropoff list in player order... but best check...
 
 	if factory.Owner != pid || factory.Factory == false {
 		panic(fmt.Sprintf("self.dropoffs[%d] wasn't the right factory", pid))
@@ -83,7 +81,13 @@ func (self *Game) Factory(pid int) *Dropoff {
 	return factory
 }
 
+func (self *Game) MyFactory() *Dropoff {
+	return self.Factory(self.pid)
+}
+
 func (self *Game) ShipCanDropoffAt(ship *Ship, box *Box) bool {
+
+	// Does the box coincide with a friendly dropoff?
 
 	dropoffs := self.Dropoffs(ship.Owner)
 
