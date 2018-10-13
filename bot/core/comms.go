@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // ---------------------------------------
@@ -150,6 +151,8 @@ func (self *Game) Parse() {
 
 	self.turn = self.token_parser.Int() - 1			// Out by 1 correction
 
+	self.ParseTime = time.Now()						// Must come after the first read
+
 	for n := 0; n < self.players; n++ {
 
 		pid := self.token_parser.Int()
@@ -234,46 +237,10 @@ func (self *Game) Parse() {
 		return self.ships[a].Sid < self.ships[b].Sid
 	})
 
-	self.FixInspiration()
+	self.fix_inspiration()
+	self.set_hash()
 
 	return
-}
-
-func (self *Game) FixInspiration() {
-
-	for _, ship := range self.ships {
-
-		hits := 0
-
-		for y := 0; y <= self.Constants.INSPIRATION_RADIUS; y++ {
-
-			startx := y - self.Constants.INSPIRATION_RADIUS
-			endx := self.Constants.INSPIRATION_RADIUS - y
-
-			for x := startx; x <= endx; x++ {
-
-				other := self.ShipAt(Point{ship.X + x, ship.Y + y})			// Handles bounds automagically
-				if other != nil {
-					if other.Owner != ship.Owner {
-						hits++
-					}
-				}
-
-				if y != 0 {
-					other := self.ShipAt(Point{ship.X + x, ship.Y - y})		// Handles bounds automagically
-					if other != nil {
-						if other.Owner != ship.Owner {
-							hits++
-						}
-					}
-				}
-			}
-		}
-
-		if hits >= self.Constants.INSPIRATION_SHIP_COUNT {
-			ship.Inspired = true
-		}
-	}
 }
 
 // ---------------------------------------

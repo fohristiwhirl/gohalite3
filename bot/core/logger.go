@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 )
@@ -9,7 +10,7 @@ type Logfile struct {
 	outfile			*os.File
 	outfilename		string
 	logged_once		map[string]bool
-	failed			bool
+	closed			bool
 }
 
 func NewLog(outfilename string) *Logfile {
@@ -23,7 +24,7 @@ func NewLog(outfilename string) *Logfile {
 
 func (self *Logfile) Log(format_string string, args ...interface{}) {
 
-	if self == nil || self.failed {
+	if self == nil || self.closed {
 		return
 	}
 
@@ -40,7 +41,7 @@ func (self *Logfile) Log(format_string string, args ...interface{}) {
 		}
 
 		if err != nil {
-			self.failed = true
+			self.closed = true
 			return
 		}
 	}
@@ -55,6 +56,14 @@ func (self *Logfile) LogOnce(format_string string, args ...interface{}) bool {
 		return true
 	}
 	return false
+}
+
+func (self *Logfile) Close() {
+	if self == nil || self.closed {
+		return
+	}
+	self.closed = true
+	self.outfile.Close()
 }
 
 // ---------------------------------------------------------------
@@ -79,4 +88,90 @@ func (self *Game) LogOnce(format_string string, args ...interface{}) bool {
 
 func (self *Game) LogWithoutTurn(format_string string, args ...interface{}) {
 	self.logfile.Log(format_string + "\r\n", args...)
+}
+
+func (self *Game) StopLog() {
+	self.logfile.Close()
+}
+
+
+
+// ---------------------------------------------------------------
+// This is a simple logger that I use for saving a JSON array of
+// objects for later interpretation by Fluorine.
+
+type Flogfile struct {
+	outfile			*os.File
+	outfilename		string
+	at_start		bool
+	closed			bool
+}
+
+type FlogObject struct {
+	T				int			`json:"t"`
+	X				int			`json:"x"`
+	Y				int			`json:"y"`
+	Msg				string		`json:"msg"`
+}
+
+func NewFlog(outfilename string) *Flogfile {
+	return &Flogfile{
+		nil,
+		outfilename,
+		true,
+		false,
+	}
+}
+
+func (self *Flogfile) Flog(t, x, y int, msg string) {
+
+	if self == nil || self.closed {
+		return
+	}
+
+	if self.outfile == nil {
+		var err error
+		self.outfile, err = os.Create(self.outfilename)
+		if err != nil {
+			self.closed = true
+			return
+		}
+	}
+
+	f := FlogObject{T: t, X: x, Y: y, Msg: msg}
+
+	s, _ := json.Marshal(f)
+
+	if self.at_start {
+		fmt.Fprintf(self.outfile, "[\n  ")
+		self.at_start = false
+	} else {
+		fmt.Fprintf(self.outfile, ",\n  ")
+	}
+
+	fmt.Fprintf(self.outfile, string(s))
+}
+
+func (self *Flogfile) Close() {
+	if self == nil || self.closed {
+		return
+	}
+	fmt.Fprintf(self.outfile, "\n]")
+	self.closed = true
+	self.outfile.Close()
+}
+
+// ---------------------------------------------------------------
+// Methods on the Game object...
+
+func (self *Game) StartFlog(flogfilename string) {
+	self.flogfile = NewFlog(flogfilename)
+}
+
+func (self *Game) Flog(t, x, y int, msg string) {
+	self.flogfile.Flog(t, x, y, msg)
+}
+
+func (self *Game) StopFlog() {
+	self.flogfile.Close()
 }

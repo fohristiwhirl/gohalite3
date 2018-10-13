@@ -1,5 +1,10 @@
 package core
 
+import (
+	"crypto/sha1"
+	"fmt"
+)
+
 func Mod(x, n int) int {
 
 	// Works for negative x
@@ -34,4 +39,10 @@ func StringToDxDy(s string) (int, int) {
 	}
 
 	panic("StringToDxDy() got illegal string")
+}
+
+func HashFromString(datastring string) string {
+	data := []byte(datastring)
+	sum := sha1.Sum(data)
+	return fmt.Sprintf("%x", sum)
 }

@@ -43,7 +43,7 @@ func (self *Game) MyDropoffs() []*Dropoff {			// Includes factory
 	return self.Dropoffs(self.pid)
 }
 
-func (self *Game) PlayerShips(pid int) []*Ship {
+func (self *Game) Ships(pid int) []*Ship {
 
 	var ret []*Ship
 
@@ -57,15 +57,15 @@ func (self *Game) PlayerShips(pid int) []*Ship {
 }
 
 func (self *Game) MyShips() []*Ship {
-	return self.PlayerShips(self.pid)
+	return self.Ships(self.pid)
 }
 
-func (self *Game) PlayerBudget(pid int) int {
+func (self *Game) Budget(pid int) int {
 	return self.budgets[pid]
 }
 
 func (self *Game) MyBudget() int {
-	return self.PlayerBudget(self.pid)
+	return self.Budget(self.pid)
 }
 
 func (self *Game) Factory(pid int) *Dropoff {
@@ -97,4 +97,8 @@ func (self *Game) ShipCanDropoffAt(ship *Ship, pos XYer) bool {
 		}
 	}
 	return false
+}
+
+func (self *Game) Hash() string {
+	return self.hash
 }

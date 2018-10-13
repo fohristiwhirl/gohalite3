@@ -166,7 +166,7 @@ func (self *Pilot) DesireNav(target hal.XYer) {
 
 func (self *Pilot) Flog() {
 
-	if self.Game.ShipCanDropoffAt(self.Ship, self.Target) {
+	if self.CanDropoffAt(self.Target) {
 		self.Game.Flog(self.Game.Turn(), self.Ship.X, self.Ship.Y, "Returning")
 		return
 	}

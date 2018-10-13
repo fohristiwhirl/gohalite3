@@ -30,9 +30,7 @@ func (self *Overmind) Step() {
 	self.UpdatePilots()
 
 	for _, pilot := range self.Pilots {
-		if pilot.Ship.Command == "" {
-			pilot.SetDesires()
-		}
+		pilot.SetDesires()
 	}
 
 	for _, pilot := range self.Pilots {

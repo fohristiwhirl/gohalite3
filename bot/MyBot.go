@@ -31,7 +31,9 @@ func main() {
 		if p := recover(); p != nil {
 			fmt.Printf("%v", p)
 			game.Log("Quitting: %v", p)
+			game.Log("Last known hash: %s", game.Hash())
 			game.Log("Longest turn (%d) took %v", longest_turn_number, longest_turn)
+			game.StopLog()
 			game.StopFlog()
 		}
 	}()
@@ -65,18 +67,15 @@ func main() {
 	for {
 		game.Parse()
 
-		start_time := time.Now()
-
 		if config.Timeseed == false {
 			rand.Seed(int64(game.Turn() + game.Width() + game.Pid()))
 		}
 
 		overmind.Step()
-
 		game.Send()
 
-		if time.Now().Sub(start_time) > longest_turn {
-			longest_turn = time.Now().Sub(start_time)
+		if time.Now().Sub(game.ParseTime) > longest_turn {
+			longest_turn = time.Now().Sub(game.ParseTime)
 			longest_turn_number = game.Turn()
 		}
 	}
