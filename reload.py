@@ -175,7 +175,7 @@ class Game:
 			some_ships = this_frame["entities"][str(pid)]
 			ship_count = len(some_ships)
 
-			drop_count = 0	# FIXME get this number
+			drop_count = 0
 
 			for con in self.constructs:
 				if con.pid == pid and con.turn < n:
