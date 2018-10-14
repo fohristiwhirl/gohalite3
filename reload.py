@@ -276,8 +276,7 @@ def main():
 					if len(msg) < 18:
 						print(" " * (18 - len(msg)), end="")
 
-				if len(messages) > 0:
-					print()
+				print()
 
 # ------------------------------
 
