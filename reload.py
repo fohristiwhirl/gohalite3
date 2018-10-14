@@ -20,12 +20,24 @@ class MoveList:
 	def __init__(self, data):
 
 		self.moves = dict()
-		self.gen = False
 
 		if type(data) is str:
 			self.init_from_string(data)
-		elif type(data) is dict:
-			self.init_from_dict(data)
+		elif type(data) is list:
+			self.init_from_list(data)
+		else:
+			raise TypeError
+
+
+	def sids(self):
+
+		ret = set()
+
+		for key in self.moves:
+			ret.add(key)
+
+		return ret
+
 
 	def init_from_string(self, s):		# i.e. from bot output
 
@@ -40,7 +52,7 @@ class MoveList:
 			if command == None:
 				command = token
 				if command == "g":
-					self.gen = True
+					self.moves["g"] = "g"
 					command = None
 				continue
 
@@ -60,8 +72,18 @@ class MoveList:
 			direction = None
 
 
-	def init_from_dict(self, d):		# i.e. from replay
-		pass
+	def init_from_list(self, lst):		# i.e. from replay
+
+		for move in lst:
+
+			if move["type"] == "g":
+				self.moves["g"] = "g"
+
+			elif move["type"] == "c":
+				self.moves[move["id"]] = "c {}".format(move["id"])
+
+			elif move["type"] == "m":
+				self.moves[move["id"]] = "m {} {}".format(move["id"], move["direction"])
 
 
 # ------------------------------
@@ -202,18 +224,60 @@ def main():
 
 	pid = int(sys.argv[2])
 
-
 	for link in links:
 		game.send_pregame(link, pid)
 		link.stdout.readline()
 
+	bot_outputs = [ [] for n in range(len(links)) ]
+
+	for lst in bot_outputs:
+		lst.append(MoveList(""))	# No output for turn 0
 
 	for n in range(1, game.game_length()):
-		for link in links:
+
+		have_printed_turn = False
+
+		for i, link in enumerate(links):
 			game.send_frame(link, n)
-			link.stdout.readline()
+			bot_outputs[i].append(MoveList(link.stdout.readline().decode("utf-8")))
 
+		replay_moves = MoveList(game.game["full_frames"][n]["moves"][str(pid)])
 
+		sids = replay_moves.sids()
+
+		for i in range(len(links)):
+			sids = sids.union(bot_outputs[i][n].sids())
+
+		sids = list(sids)
+		sids = sorted(sids, key = lambda sid: -1 if type(sid) is str else sid)
+
+		for sid in sids:
+
+			diverges = False
+			baseline = replay_moves.moves.get(sid, "(blank)")
+
+			for i in range(0, len(links)):
+				other = bot_outputs[i][n].moves.get(sid, "(blank)")
+				if other != baseline:
+					diverges = True
+
+			if diverges:
+
+				if have_printed_turn == False:
+					print("Turn {}".format(n))
+					have_printed_turn = True
+
+				messages = [baseline] + [bot_outputs[i][n].moves.get(sid, "(blank)") for i in range(len(bot_outputs))]
+
+				print("    ", end="")
+
+				for msg in messages:
+					print(msg, end="")
+					if len(msg) < 18:
+						print(" " * (18 - len(msg)), end="")
+
+				if len(messages) > 0:
+					print()
 
 # ------------------------------
 
