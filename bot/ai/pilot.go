@@ -53,7 +53,7 @@ func (self *Pilot) NewTarget() {
 
 	old_target := self.Target
 
-	type Foo struct {
+	type Option struct {
 		Box		*hal.Box
 		Score	float32
 	}
@@ -66,7 +66,7 @@ func (self *Pilot) NewTarget() {
 
 	pilots := self.Overmind.Pilots
 
-	var all_foo []Foo
+	var all_options []Option
 
 	for x := 0; x < width; x++ {
 
@@ -81,7 +81,7 @@ func (self *Pilot) NewTarget() {
 				score -= 10000
 			}
 
-			all_foo = append(all_foo, Foo{
+			all_options = append(all_options, Option{
 				Box: box,
 				Score: score,
 			})
@@ -89,19 +89,19 @@ func (self *Pilot) NewTarget() {
 		}
 	}
 
-	sort.Slice(all_foo, func(a, b int) bool {
-		return all_foo[a].Score > all_foo[b].Score				// Highest first
+	sort.Slice(all_options, func(a, b int) bool {
+		return all_options[a].Score > all_options[b].Score					// Highest first
 	})
 
-	FooLoop:
-	for _, foo := range all_foo {
+	Outer:
+	for _, o := range all_options {
 		for _, pilot := range pilots {
-			if pilot.Target == foo.Box {
-				continue FooLoop
+			if pilot.Target == o.Box {
+				continue Outer
 			}
 		}
-		self.Target = foo.Box
-		break FooLoop
+		self.Target = o.Box
+		break Outer
 	}
 
 	if self.Target.Halite <= old_target.Halite {
