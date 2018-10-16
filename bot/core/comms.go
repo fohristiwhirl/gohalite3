@@ -274,7 +274,7 @@ func (self *Game) Send() {
 
 				if budget_left >= required {
 					commands = append(commands, fmt.Sprintf("c %d", ship.Sid))
-					budget_left -= self.Constants.DROPOFF_COST
+					budget_left -= required
 				} else {
 					self.Log("Warning: CONSTRUCT command blocked due to lack of resources!")
 				}
