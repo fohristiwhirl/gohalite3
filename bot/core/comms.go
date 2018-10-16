@@ -267,7 +267,12 @@ func (self *Game) Send() {
 	for _, ship := range self.ships {
 		if ship.Owner == self.pid && ship.Command != "" {
 			if ship.Command == "c" {
-				if budget_left >= self.Constants.DROPOFF_COST {
+
+				required := self.Constants.DROPOFF_COST
+				required -= ship.Halite
+				required -= ship.Box().Halite
+
+				if budget_left >= required {
 					commands = append(commands, fmt.Sprintf("c %d", ship.Sid))
 					budget_left -= self.Constants.DROPOFF_COST
 				} else {

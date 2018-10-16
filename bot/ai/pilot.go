@@ -29,7 +29,7 @@ func (self *Pilot) SetDesires() {
 	}
 
 	if ship.Halite < 800 {
-		if self.Box().Halite > 20 {					// We are happy where we are
+		if self.Box().Halite > 50 {					// We are happy where we are
 			self.Desires = []string{"o"}
 			return
 		}
