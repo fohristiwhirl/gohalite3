@@ -1,7 +1,13 @@
 # Usage: reload.py <filename> <player_id> <bot_path> <optional_2nd_bot_path>
-# Note that the replay file must be decompressed JSON (not zstd; use the Fluorine Viewer for this).
 
 import json, subprocess, sys
+
+try:
+	import zstandard
+	zstd_enabled = True
+except:
+	print("Couldn't import zstandard; therefore only .json can be opened, not .hlt")
+	zstd_enabled = False
 
 
 class Construct:
@@ -213,9 +219,25 @@ def main():
 
 	filename = sys.argv[1]
 
-	with open(filename) as infile:
-		replay = json.loads(infile.read())
-		game = Game(replay)
+	with open(filename, "rb") as infile:
+
+		if filename[-5:] != ".json":
+
+			if zstd_enabled == False:
+				"Run 'pip install zstandard' to read this file."
+				sys.exit()
+
+			dctx = zstandard.ZstdDecompressor()
+			compressed = infile.read()
+			j = dctx.decompress(compressed)
+			replay = json.loads(j)
+
+		else:
+
+			replay = json.loads(infile.read())
+
+
+	game = Game(replay)
 
 	links = []
 
