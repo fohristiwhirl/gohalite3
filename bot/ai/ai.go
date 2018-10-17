@@ -29,6 +29,8 @@ func (self *Overmind) Step() {
 	self.ClearBook()
 	self.UpdatePilots()
 
+	self.FindSwaps()
+
 	for _, pilot := range self.Pilots {
 		pilot.SetDesires()
 	}
@@ -158,5 +160,40 @@ func (self *Overmind) SanityCheck() {
 func (self *Overmind) Flog() {
 	for _, pilot := range self.Pilots {
 		pilot.Flog()
+	}
+}
+
+func (self *Overmind) FindSwaps() {
+
+	for cycle := 0; cycle < 4; cycle++ {
+
+		swap_count := 0
+
+		for i, pilot_a := range self.Pilots {
+
+			if pilot_a.TargetIsDropoff() {
+				continue
+			}
+
+			for _, pilot_b := range self.Pilots[i + 1:] {
+
+				if pilot_b.TargetIsDropoff() {
+					continue
+				}
+
+				swap_dist := pilot_a.Dist(pilot_b.Target) + pilot_b.Dist(pilot_a.Target)
+				curr_dist := pilot_a.Dist(pilot_a.Target) + pilot_b.Dist(pilot_b.Target)
+
+				if swap_dist < curr_dist {
+					pilot_a.Target, pilot_b.Target = pilot_b.Target, pilot_a.Target
+					self.Game.Log("Swapped targets for pilots %d, %d", pilot_a.Sid, pilot_b.Sid)
+					swap_count++
+				}
+			}
+		}
+
+		if swap_count == 0 {
+			return
+		}
 	}
 }

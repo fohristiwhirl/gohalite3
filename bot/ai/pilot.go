@@ -13,7 +13,7 @@ type Pilot struct {
 	Overmind				*Overmind
 	Ship					*hal.Ship
 	Sid						int
-	Target					*hal.Box
+	Target					*hal.Box				// Currently this is not allowed to be nil
 	Desires					[]string
 }
 

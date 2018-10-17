@@ -1,9 +1,9 @@
-
 *.txt
 *.exe
-*.hlt
 *.log
 tester.py
 stdrelay.py
 *.lnk
 *.json
+replays/*
+replays_local/*
