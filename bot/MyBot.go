@@ -12,7 +12,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "4"				// hash is 0925e1065f1c1e7798ee3554909661f15cc843c8
+	VERSION = "5"				// hash is ??
 )
 
 func main() {
