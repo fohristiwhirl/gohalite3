@@ -51,6 +51,9 @@ func (self *Overmind) Step() {
 		}
 	}
 
+	// --------------------------------------------------
+	// Resolve the desired moves...
+
 	for _, pilot := range self.Pilots {
 		if pilot.Desires[0] == "o" {
 			pilot.Ship.Move("o")
@@ -58,32 +61,51 @@ func (self *Overmind) Step() {
 		}
 	}
 
-	for _, pilot := range self.Pilots {
+	for cycle := 0; cycle < 5; cycle++ {
 
-		if pilot.Ship.Command != "" {
-			continue
-		}
+		for _, pilot := range self.Pilots {
 
-		// Special case: if ship is next to a dropoff and is in its mad dash, always move...
-
-		if pilot.TargetIsDropoff() && pilot.Dist(pilot.Target) == 1 && pilot.FinalDash {
-			new_loc := pilot.LocationAfterMove(pilot.Desires[0])
-			pilot.Ship.Move(pilot.Desires[0])
-			self.SetBook(pilot, new_loc)
-			continue
-		}
-
-		// Normal case...
-
-		for _, desire := range pilot.Desires {
-
-			new_loc := pilot.LocationAfterMove(desire)
-
-			if self.Booker(new_loc) == nil {
-				pilot.Ship.Move(desire)
-				self.SetBook(pilot, new_loc)
-				break
+			if pilot.Ship.Command != "" {
+				continue
 			}
+
+			// Special case: if ship is next to a dropoff and is in its mad dash, always move.
+			// And don't set the book, it can only confuse matters...
+
+			if pilot.TargetIsDropoff() && pilot.Dist(pilot.Target) == 1 && pilot.FinalDash {
+				pilot.Ship.Move(pilot.Desires[0])
+				continue
+			}
+
+			// Normal case...
+
+			for _, desire := range pilot.Desires {
+
+				new_loc := pilot.LocationAfterMove(desire)
+				booker := self.Booker(new_loc)
+
+				if booker == nil {
+					pilot.Ship.Move(desire)
+					self.SetBook(pilot, new_loc)
+					break
+				} else {
+					if booker.Ship.Command == "o" {		// Never clear a booking made by a stationary ship
+						continue
+					}
+					if booker.Ship.Halite < pilot.Ship.Halite {
+						pilot.Ship.Move(desire)
+						self.SetBook(pilot, new_loc)
+						booker.Ship.ClearMove()
+						break
+					}
+				}
+			}
+		}
+	}
+
+	for _, pilot := range self.Pilots {
+		if pilot.Ship.Command == "" {
+			self.Game.Log("Couldn't find a safe move for ship %d (first desire was %s)", pilot.Sid, pilot.Desires[0])
 		}
 	}
 
@@ -215,7 +237,7 @@ func (self *Overmind) FindSwaps() {
 
 				if swap_dist < curr_dist {
 					pilot_a.Target, pilot_b.Target = pilot_b.Target, pilot_a.Target
-					self.Game.Log("Swapped targets for pilots %d, %d", pilot_a.Sid, pilot_b.Sid)
+					// self.Game.Log("Swapped targets for pilots %d, %d", pilot_a.Sid, pilot_b.Sid)
 					swap_count++
 				}
 			}
