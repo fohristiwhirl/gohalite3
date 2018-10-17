@@ -18,18 +18,7 @@ type Pilot struct {
 	FinalDash				bool
 }
 
-func (self *Pilot) SetDesires() {
-
-	ship := self.Ship
-
-	// Maybe we want to stay still...
-
-	if ship.Halite < self.MoveCost() {				// We can't move
-		self.Desires = []string{"o"}
-		return
-	}
-
-	// Maybe we're on a mad dash to deliver stuff before end...
+func (self *Pilot) SetTarget() {
 
 	if self.Dist(self.NearestDropoff()) > self.Game.Constants.MAX_TURNS - self.Game.Turn() - 3 {
 		self.FinalDash = true
@@ -37,29 +26,45 @@ func (self *Pilot) SetDesires() {
 
 	if self.FinalDash {
 		self.Target = self.NearestDropoff().Box()
+		return
+	}
+
+	if self.SamePlace(self.Target) {
+		if self.Ship.Halite > 500 {
+			self.Target = self.NearestDropoff().Box()
+		} else {
+			self.NewTarget()
+		}
+		return
+	}
+}
+
+func (self *Pilot) SetDesires() {
+
+	// Maybe we can't move...
+
+	if self.Ship.Halite < self.MoveCost() {
+		self.Desires = []string{"o"}
+		return
+	}
+
+	// Maybe we're on a mad dash to deliver stuff before end...
+
+	if self.FinalDash {
 		self.DesireNav(self.Target)
 		return
 	}
 
 	// Maybe we're happy where we are...
 
-	if ship.Halite < 800 {
+	if self.Ship.Halite < 800 {
 		if self.Box().Halite > 50 {
 			self.Desires = []string{"o"}
 			return
 		}
 	}
 
-	// We're not holding, so if we're on our target square, we're either
-	// about to return or about to change target.
-
-	if self.SamePlace(self.Target) {
-		if ship.Halite > 500 {
-			self.Target = self.NearestDropoff().Box()
-		} else {
-			self.NewTarget()
-		}
-	}
+	// Normal case...
 
 	self.DesireNav(self.Target)
 }

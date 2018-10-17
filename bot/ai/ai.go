@@ -34,9 +34,10 @@ func (self *Overmind) Step() {
 	self.ClearBook()
 	self.UpdatePilots()
 
-	self.FindSwaps()
+	self.FindSwaps()		// FIXME order of things
 
 	for _, pilot := range self.Pilots {
+		pilot.SetTarget()
 		pilot.SetDesires()
 	}
 
