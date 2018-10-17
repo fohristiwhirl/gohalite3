@@ -11,6 +11,7 @@ type Config struct {
 type Overmind struct {
 	Config					*Config
 	Game					*hal.Game
+	InitialGroundHalite		int
 	Pilots					[]*Pilot
 	Book					[][]*Pilot
 }
@@ -25,6 +26,10 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 }
 
 func (self *Overmind) Step() {
+
+	if self.InitialGroundHalite == 0 {				// This will be at turn 0
+		self.InitialGroundHalite = self.Game.GroundHalite()
+	}
 
 	self.ClearBook()
 	self.UpdatePilots()
@@ -68,8 +73,17 @@ func (self *Overmind) Step() {
 	}
 
 	factory := self.Game.MyFactory()
+	willing := true
 
-	if self.Game.MyBudget() >= 1000 && self.Booker(factory) == nil && self.Game.Turn() < self.Game.Constants.MAX_TURNS / 2 {
+	if self.InitialGroundHalite / (self.Game.GroundHalite() + 1) >= 2 {		// remember int division, also div-by-zero
+		willing = false
+	}
+
+	if self.Game.Turn() >= self.Game.Constants.MAX_TURNS / 2 {
+		willing = false
+	}
+
+	if self.Game.MyBudget() >= 1000 && self.Booker(factory) == nil && willing {
 		self.Game.SetGenerate(true)
 	}
 

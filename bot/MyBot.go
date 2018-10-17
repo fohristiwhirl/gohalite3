@@ -12,7 +12,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "2"
+	VERSION = "3"				// 421ca79a3b01f5a48013c0a48796b2e60529d4ae
 )
 
 func main() {

@@ -102,3 +102,13 @@ func (self *Game) ShipCanDropoffAt(ship *Ship, pos XYer) bool {
 func (self *Game) Hash() string {
 	return self.hash
 }
+
+func (self *Game) GroundHalite() int {
+	var count int
+	for x := 0; x < self.width; x++ {
+		for y := 0; y < self.height; y++ {
+			count += self.boxes[x][y].Halite
+		}
+	}
+	return count
+}

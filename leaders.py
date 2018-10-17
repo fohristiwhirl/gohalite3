@@ -6,7 +6,7 @@ data.sort(key = lambda foo : foo["mu"], reverse = True)
 
 print()
 
-for item in data:
+for item in data[:30]:
 
 	print(" {0:>3} {1:<5}  {2:>18} v{3:<4}  {4:.2f} +/- {5:.2f}  ({6})".format(
 		item["rank"],
