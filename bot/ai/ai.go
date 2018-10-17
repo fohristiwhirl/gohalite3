@@ -60,6 +60,17 @@ func (self *Overmind) Step() {
 			continue
 		}
 
+		// Special case: if ship is next to a dropoff and is in its mad dash, always move...
+
+		if pilot.TargetIsDropoff() && pilot.Dist(pilot.Target) == 1 && pilot.FinalDash {
+			new_loc := pilot.LocationAfterMove(pilot.Desires[0])
+			pilot.Ship.Move(pilot.Desires[0])
+			self.SetBook(pilot, new_loc)
+			continue
+		}
+
+		// Normal case...
+
 		for _, desire := range pilot.Desires {
 
 			new_loc := pilot.LocationAfterMove(desire)

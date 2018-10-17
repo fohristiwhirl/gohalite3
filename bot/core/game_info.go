@@ -85,11 +85,9 @@ func (self *Game) MyFactory() *Dropoff {
 	return self.Factory(self.pid)
 }
 
-func (self *Game) ShipCanDropoffAt(ship *Ship, pos XYer) bool {
+func (self *Game) PlayerCanDropoffAt(pid int, pos XYer) bool {
 
-	// Does the box coincide with a friendly dropoff?
-
-	dropoffs := self.Dropoffs(ship.Owner)
+	dropoffs := self.Dropoffs(pid)
 
 	for _, dropoff := range dropoffs {
 		if dropoff.X == pos.GetX() && dropoff.Y == pos.GetY() {
@@ -97,6 +95,10 @@ func (self *Game) ShipCanDropoffAt(ship *Ship, pos XYer) bool {
 		}
 	}
 	return false
+}
+
+func (self *Game) ShipCanDropoffAt(ship *Ship, pos XYer) bool {
+	return self.PlayerCanDropoffAt(ship.Owner, pos)
 }
 
 func (self *Game) Hash() string {

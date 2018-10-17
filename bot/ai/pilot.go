@@ -15,6 +15,7 @@ type Pilot struct {
 	Sid						int
 	Target					*hal.Box				// Currently this is not allowed to be nil
 	Desires					[]string
+	FinalDash				bool
 }
 
 func (self *Pilot) SetDesires() {
@@ -28,8 +29,22 @@ func (self *Pilot) SetDesires() {
 		return
 	}
 
+	// Maybe we're on a mad dash to deliver stuff before end...
+
+	if self.Dist(self.NearestDropoff()) > self.Game.Constants.MAX_TURNS - self.Game.Turn() - 3 {
+		self.FinalDash = true
+	}
+
+	if self.FinalDash {
+		self.Target = self.NearestDropoff().Box()
+		self.DesireNav(self.Target)
+		return
+	}
+
+	// Maybe we're happy where we are...
+
 	if ship.Halite < 800 {
-		if self.Box().Halite > 50 {					// We are happy where we are
+		if self.Box().Halite > 50 {
 			self.Desires = []string{"o"}
 			return
 		}
