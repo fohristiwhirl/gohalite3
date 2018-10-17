@@ -20,6 +20,8 @@ type Pilot struct {
 
 func (self *Pilot) SetTarget() {
 
+	// Note that the ship may still not move if it's happy where it is.
+
 	if self.Dist(self.NearestDropoff()) > self.Game.Constants.MAX_TURNS - self.Game.Turn() - 3 {
 		self.FinalDash = true
 	}
@@ -32,10 +34,9 @@ func (self *Pilot) SetTarget() {
 	if self.SamePlace(self.Target) {
 		if self.Ship.Halite > 500 {
 			self.Target = self.NearestDropoff().Box()
-		} else {
+		} else if self.Box().Halite <= 50 {
 			self.NewTarget()
 		}
-		return
 	}
 }
 
