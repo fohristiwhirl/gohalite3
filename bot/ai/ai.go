@@ -46,7 +46,7 @@ func (self *Overmind) Step() {
 
 	for _, pilot := range self.Pilots {
 		if len(pilot.Desires) == 0 {				// Should be impossible
-			self.Game.Log("Pilot %d had no desired!", pilot.Sid)
+			self.Game.Log("Pilot %d had no desires!", pilot.Sid)
 			pilot.Desires = []string{"o"}
 		}
 	}
