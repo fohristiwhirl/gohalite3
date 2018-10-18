@@ -26,13 +26,15 @@ func (self *Pilot) SetTarget() {
 		return
 	}
 
+	// FIXME? There's some worry here about a ship going under the threshold on the way home...
+
 	if self.Ship.Halite > 500 {
 		self.Target = self.NearestDropoff().Box()
 		return
 	}
 
 	self.TargetBestBox()
-	self.Overmind.TargetBook[self.Target.X][self.Target.Y] = true
+	self.Overmind.TargetBook[self.Target.X][self.Target.Y] = true		// Only for normal targets
 }
 
 func (self *Pilot) FinalDash() bool {
@@ -58,7 +60,7 @@ func (self *Pilot) SetDesires() {
 	// Maybe we're happy where we are...
 
 	if self.Ship.Halite < 800 {
-		if self.Box().Halite > 50 {
+		if self.Box().Halite > 50 {			// FIXME: some sliding number??
 			self.Desires = []string{"o"}
 			return
 		}

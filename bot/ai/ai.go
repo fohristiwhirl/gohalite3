@@ -214,7 +214,7 @@ func (self *Overmind) TargetSwaps() {
 
 				if swap_dist < curr_dist {
 					pilot_a.Target, pilot_b.Target = pilot_b.Target, pilot_a.Target
-					// self.Game.Log("Swapped targets for pilots %d, %d", pilot_a.Sid, pilot_b.Sid)
+					// self.Game.Log("Swapped targets for pilots %d, %d (cycle %d)", pilot_a.Sid, pilot_b.Sid, cycle)
 					swap_count++
 				}
 			}
