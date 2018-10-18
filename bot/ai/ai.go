@@ -9,11 +9,17 @@ type Config struct {
 }
 
 type Overmind struct {
+
 	Config					*Config
 	Game					*hal.Game
+
 	InitialGroundHalite		int
 	Pilots					[]*Pilot
-	Book					[][]*Pilot
+
+	// ATC stuff:
+
+	TargetBook				[][]bool
+	MoveBook				[][]*Pilot
 }
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
@@ -27,37 +33,31 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 
 func (self *Overmind) Step() {
 
-	if self.InitialGroundHalite == 0 {				// This will be at turn 0
+	if self.InitialGroundHalite == 0 {							// i.e. uninitialised
 		self.InitialGroundHalite = self.Game.GroundHalite()
 	}
 
-	self.ClearBook()
+	self.ClearBooks()
 	self.UpdatePilots()
+
+	// What each ship wants to do............................
 
 	for _, pilot := range self.Pilots {
 		pilot.SetTarget()
 	}
 
-	self.FindSwaps()
+	self.TargetSwaps()
 
 	for _, pilot := range self.Pilots {
 		pilot.SetDesires()
 	}
 
-	for _, pilot := range self.Pilots {
-		if len(pilot.Desires) == 0 {				// Should be impossible
-			self.Game.Log("Pilot %d had no desires!", pilot.Sid)
-			pilot.Desires = []string{"o"}
-		}
-	}
-
-	// --------------------------------------------------
-	// Resolve the desired moves...
+	// Resolve the desired moves.............................
 
 	for _, pilot := range self.Pilots {
 		if pilot.Desires[0] == "o" {
 			pilot.Ship.Move("o")
-			self.SetBook(pilot, pilot)
+			self.SetMoveBook(pilot, pilot)
 		}
 	}
 
@@ -72,7 +72,7 @@ func (self *Overmind) Step() {
 			// Special case: if ship is next to a dropoff and is in its mad dash, always move.
 			// And don't set the book, it can only confuse matters...
 
-			if pilot.TargetIsDropoff() && pilot.Dist(pilot.Target) == 1 && pilot.FinalDash {
+			if pilot.TargetIsDropoff() && pilot.Dist(pilot.Target) == 1 && pilot.FinalDash() {
 				pilot.Ship.Move(pilot.Desires[0])
 				continue
 			}
@@ -82,11 +82,11 @@ func (self *Overmind) Step() {
 			for _, desire := range pilot.Desires {
 
 				new_loc := pilot.LocationAfterMove(desire)
-				booker := self.Booker(new_loc)
+				booker := self.MoveBooker(new_loc)
 
 				if booker == nil {
 					pilot.Ship.Move(desire)
-					self.SetBook(pilot, new_loc)
+					self.SetMoveBook(pilot, new_loc)
 					break
 				} else {
 					if booker.Ship.Command == "o" {		// Never clear a booking made by a stationary ship
@@ -94,7 +94,7 @@ func (self *Overmind) Step() {
 					}
 					if booker.Ship.Halite < pilot.Ship.Halite {
 						pilot.Ship.Move(desire)
-						self.SetBook(pilot, new_loc)
+						self.SetMoveBook(pilot, new_loc)
 						booker.Ship.ClearMove()
 						break
 					}
@@ -109,22 +109,9 @@ func (self *Overmind) Step() {
 		}
 	}
 
-	factory := self.Game.MyFactory()
-	willing := true
+	// Other.................................................
 
-	if self.InitialGroundHalite / (self.Game.GroundHalite() + 1) >= 2 {		// remember int division, also div-by-zero
-		willing = false
-	}
-
-	if self.Game.Turn() >= self.Game.Constants.MAX_TURNS / 2 {
-		willing = false
-	}
-
-	if self.Game.MyBudget() >= 1000 && self.Booker(factory) == nil && willing {
-		self.Game.SetGenerate(true)
-	}
-
-	self.SanityCheck()
+	self.MaybeBuild()
 
 	self.Flog()
 	return
@@ -171,41 +158,31 @@ func (self *Overmind) UpdatePilots() {
 	}
 }
 
-func (self *Overmind) ClearBook() {
-	self.Book = make([][]*Pilot, self.Game.Width())
+func (self *Overmind) ClearBooks() {
+
+	self.MoveBook = make([][]*Pilot, self.Game.Width())
+	self.TargetBook = make([][]bool, self.Game.Width())
+
 	for x := 0; x < self.Game.Width(); x++ {
-		self.Book[x] = make([]*Pilot, self.Game.Height())
+		self.MoveBook[x] = make([]*Pilot, self.Game.Height())
+		self.TargetBook[x] = make([]bool, self.Game.Height())
 	}
 }
 
-func (self *Overmind) Booker(pos hal.XYer) *Pilot {
+func (self *Overmind) MoveBooker(pos hal.XYer) *Pilot {
 
 	x := hal.Mod(pos.GetX(), self.Game.Width())
 	y := hal.Mod(pos.GetY(), self.Game.Height())
 
-	return self.Book[x][y]
+	return self.MoveBook[x][y]
 }
 
-func (self *Overmind) SetBook(pilot *Pilot, pos hal.XYer) {
+func (self *Overmind) SetMoveBook(pilot *Pilot, pos hal.XYer) {
 
 	x := hal.Mod(pos.GetX(), self.Game.Width())
 	y := hal.Mod(pos.GetY(), self.Game.Height())
 
-	self.Book[x][y] = pilot
-}
-
-func (self *Overmind) SanityCheck() {
-
-	targets := make(map[*hal.Box]int)
-
-	for _, pilot := range self.Pilots {
-		targetter_sid, ok := targets[pilot.Target]
-		if ok && pilot.TargetIsDropoff() == false {
-			self.Game.Log("Ships %d and %d looking at same target!", pilot.Sid, targetter_sid)
-		} else {
-			targets[pilot.Target] = pilot.Sid
-		}
-	}
+	self.MoveBook[x][y] = pilot
 }
 
 func (self *Overmind) Flog() {
@@ -214,7 +191,7 @@ func (self *Overmind) Flog() {
 	}
 }
 
-func (self *Overmind) FindSwaps() {
+func (self *Overmind) TargetSwaps() {
 
 	for cycle := 0; cycle < 4; cycle++ {
 
@@ -246,5 +223,23 @@ func (self *Overmind) FindSwaps() {
 		if swap_count == 0 {
 			return
 		}
+	}
+}
+
+func (self *Overmind) MaybeBuild() {
+
+	factory := self.Game.MyFactory()
+	willing := true
+
+	if self.InitialGroundHalite / (self.Game.GroundHalite() + 1) >= 2 {		// remember int division, also div-by-zero
+		willing = false
+	}
+
+	if self.Game.Turn() >= self.Game.Constants.MAX_TURNS / 2 {
+		willing = false
+	}
+
+	if self.Game.MyBudget() >= 1000 && self.MoveBooker(factory) == nil && willing {
+		self.Game.SetGenerate(true)
 	}
 }

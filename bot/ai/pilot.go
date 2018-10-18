@@ -13,31 +13,30 @@ type Pilot struct {
 	Overmind				*Overmind
 	Ship					*hal.Ship
 	Sid						int
-	Target					*hal.Box				// Currently this is not allowed to be nil
+	Target					*hal.Box				// Currently this is not allowed to be nil. Reset each turn (v7).
 	Desires					[]string
-	FinalDash				bool
 }
 
 func (self *Pilot) SetTarget() {
 
 	// Note that the ship may still not move if it's happy where it is.
 
-	if self.Dist(self.NearestDropoff()) > self.Game.Constants.MAX_TURNS - self.Game.Turn() - 3 {
-		self.FinalDash = true
-	}
-
-	if self.FinalDash {
+	if self.FinalDash() {
 		self.Target = self.NearestDropoff().Box()
 		return
 	}
 
-	if self.SamePlace(self.Target) {
-		if self.Ship.Halite > 500 {
-			self.Target = self.NearestDropoff().Box()
-		} else if self.Box().Halite <= 50 {
-			self.NewTarget()
-		}
+	if self.Ship.Halite > 500 {
+		self.Target = self.NearestDropoff().Box()
+		return
 	}
+
+	self.TargetBestBox()
+	self.Overmind.TargetBook[self.Target.X][self.Target.Y] = true
+}
+
+func (self *Pilot) FinalDash() bool {
+	return self.Dist(self.NearestDropoff()) > self.Game.Constants.MAX_TURNS - self.Game.Turn() - 3
 }
 
 func (self *Pilot) SetDesires() {
@@ -51,7 +50,7 @@ func (self *Pilot) SetDesires() {
 
 	// Maybe we're on a mad dash to deliver stuff before end...
 
-	if self.FinalDash {
+	if self.FinalDash() {
 		self.DesireNav(self.Target)
 		return
 	}
@@ -70,22 +69,22 @@ func (self *Pilot) SetDesires() {
 	self.DesireNav(self.Target)
 }
 
-func (self *Pilot) NewTarget() {
-
-	old_target := self.Target
+func (self *Pilot) TargetBestBox() {
 
 	type Option struct {
 		Box		*hal.Box
 		Score	float32
 	}
 
-	self.Target = self.Box()
+	self.Target = self.Box()			// Default - my own square
+
+	if self.Box().Halite > 50 {			// FIXME: some sliding number - or delete entirely
+		return
+	}
 
 	game := self.Game
 	width := game.Width()
 	height := game.Height()
-
-	pilots := self.Overmind.Pilots
 
 	var all_options []Option
 
@@ -93,14 +92,14 @@ func (self *Pilot) NewTarget() {
 
 		for y := 0; y < height; y++ {
 
-			box := game.BoxAt(hal.Point{x, y})
+			if self.Overmind.TargetBook[x][y] {
+				continue
+			}
+
+			box := game.BoxAtFast(x, y)
 			dist := self.Dist(box)
 
 			score := float32(box.Halite) / float32((dist + 1) * (dist + 1))		// Avoid divide by zero
-
-			if box.Halite <= 20 {
-				score -= 10000
-			}
 
 			all_options = append(all_options, Option{
 				Box: box,
@@ -114,19 +113,8 @@ func (self *Pilot) NewTarget() {
 		return all_options[a].Score > all_options[b].Score					// Highest first
 	})
 
-	Outer:
-	for _, o := range all_options {
-		for _, pilot := range pilots {
-			if pilot.Target == o.Box {
-				continue Outer
-			}
-		}
-		self.Target = o.Box
-		break Outer
-	}
-
-	if self.Target.Halite <= old_target.Halite {
-		self.Target = old_target
+	if len(all_options) > 0 {
+		self.Target = all_options[0].Box
 	}
 }
 

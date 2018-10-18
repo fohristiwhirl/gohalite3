@@ -16,6 +16,10 @@ func (self *Game) BoxAt(pos XYer) *Box {
 	return self.boxes[x][y]
 }
 
+func (self *Game) BoxAtFast(x, y int) *Box {		// For when caller is sure x and y are in bounds
+	return self.boxes[x][y]
+}
+
 func (self *Game) ShipAt(pos XYer) *Ship {			// Maybe nil
 	x := Mod(pos.GetX(), self.width)
 	y := Mod(pos.GetY(), self.height)

@@ -7,3 +7,4 @@ stdrelay.py
 *.json
 replays/*
 replays_local/*
+/*.hlt
