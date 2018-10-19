@@ -13,7 +13,7 @@ type Pilot struct {
 	Overmind				*Overmind
 	Ship					*hal.Ship
 	Sid						int
-	Target					*hal.Box				// Currently this is not allowed to be nil. Reset each turn (v7).
+	Target					*hal.Box	// Currently this is not allowed to be nil. It is also NOT used to preserve target info between turns.
 	Desires					[]string
 }
 
@@ -35,40 +35,6 @@ func (self *Pilot) SetTarget() {
 
 	self.TargetBestBox()
 	self.Overmind.TargetBook[self.Target.X][self.Target.Y] = true		// Only for normal targets
-}
-
-func (self *Pilot) FinalDash() bool {
-	return self.Dist(self.NearestDropoff()) > self.Game.Constants.MAX_TURNS - self.Game.Turn() - 3
-}
-
-func (self *Pilot) SetDesires() {
-
-	// Maybe we can't move...
-
-	if self.Ship.Halite < self.MoveCost() {
-		self.Desires = []string{"o"}
-		return
-	}
-
-	// Maybe we're on a mad dash to deliver stuff before end...
-
-	if self.FinalDash() {
-		self.DesireNav(self.Target)
-		return
-	}
-
-	// Maybe we're happy where we are...
-
-	if self.Ship.Halite < 800 {
-		if self.Box().Halite > 50 {			// FIXME: some sliding number??
-			self.Desires = []string{"o"}
-			return
-		}
-	}
-
-	// Normal case...
-
-	self.DesireNav(self.Target)
 }
 
 func (self *Pilot) TargetBestBox() {
@@ -118,6 +84,36 @@ func (self *Pilot) TargetBestBox() {
 	if len(all_options) > 0 {
 		self.Target = all_options[0].Box
 	}
+}
+
+func (self *Pilot) SetDesires() {
+
+	// Maybe we can't move...
+
+	if self.Ship.Halite < self.MoveCost() {
+		self.Desires = []string{"o"}
+		return
+	}
+
+	// Maybe we're on a mad dash to deliver stuff before end...
+
+	if self.FinalDash() {
+		self.DesireNav(self.Target)
+		return
+	}
+
+	// Maybe we're happy where we are...
+
+	if self.Ship.Halite < 800 {
+		if self.Box().Halite > 50 {			// FIXME: some sliding number??
+			self.Desires = []string{"o"}
+			return
+		}
+	}
+
+	// Normal case...
+
+	self.DesireNav(self.Target)
 }
 
 func (self *Pilot) DesireNav(target hal.XYer) {
@@ -173,6 +169,10 @@ func (self *Pilot) DesireNav(target hal.XYer) {
 	self.Desires = append(self.Desires, neutrals...)
 	self.Desires = append(self.Desires, dislikes...)
 	self.Desires = append(self.Desires, "o")
+}
+
+func (self *Pilot) FinalDash() bool {
+	return self.Dist(self.NearestDropoff()) > self.Game.Constants.MAX_TURNS - self.Game.Turn() - 3
 }
 
 func (self *Pilot) Flog() {

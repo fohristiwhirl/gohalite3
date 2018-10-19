@@ -113,8 +113,63 @@ func (self *Overmind) Step() {
 
 	self.MaybeBuild()
 
+	// FIXME: re-add the sanity checks.
+
 	self.Flog()
 	return
+}
+
+func (self *Overmind) MaybeBuild() {
+
+	factory := self.Game.MyFactory()
+	willing := true
+
+	if self.InitialGroundHalite / (self.Game.GroundHalite() + 1) >= 2 {		// remember int division, also div-by-zero
+		willing = false
+	}
+
+	if self.Game.Turn() >= self.Game.Constants.MAX_TURNS / 2 {
+		willing = false
+	}
+
+	if self.Game.MyBudget() >= 1000 && self.MoveBooker(factory) == nil && willing {
+		self.Game.SetGenerate(true)
+	}
+}
+
+func (self *Overmind) TargetSwaps() {
+
+	for cycle := 0; cycle < 4; cycle++ {
+
+		swap_count := 0
+
+		for i, pilot_a := range self.Pilots {
+
+			if pilot_a.TargetIsDropoff() {
+				continue
+			}
+
+			for _, pilot_b := range self.Pilots[i + 1:] {
+
+				if pilot_b.TargetIsDropoff() {
+					continue
+				}
+
+				swap_dist := pilot_a.Dist(pilot_b.Target) + pilot_b.Dist(pilot_a.Target)
+				curr_dist := pilot_a.Dist(pilot_a.Target) + pilot_b.Dist(pilot_b.Target)
+
+				if swap_dist < curr_dist {
+					pilot_a.Target, pilot_b.Target = pilot_b.Target, pilot_a.Target
+					// self.Game.Log("Swapped targets for pilots %d, %d (cycle %d)", pilot_a.Sid, pilot_b.Sid, cycle)
+					swap_count++
+				}
+			}
+		}
+
+		if swap_count == 0 {
+			return
+		}
+	}
 }
 
 func (self *Overmind) UpdatePilots() {
@@ -188,58 +243,5 @@ func (self *Overmind) SetMoveBook(pilot *Pilot, pos hal.XYer) {
 func (self *Overmind) Flog() {
 	for _, pilot := range self.Pilots {
 		pilot.Flog()
-	}
-}
-
-func (self *Overmind) TargetSwaps() {
-
-	for cycle := 0; cycle < 4; cycle++ {
-
-		swap_count := 0
-
-		for i, pilot_a := range self.Pilots {
-
-			if pilot_a.TargetIsDropoff() {
-				continue
-			}
-
-			for _, pilot_b := range self.Pilots[i + 1:] {
-
-				if pilot_b.TargetIsDropoff() {
-					continue
-				}
-
-				swap_dist := pilot_a.Dist(pilot_b.Target) + pilot_b.Dist(pilot_a.Target)
-				curr_dist := pilot_a.Dist(pilot_a.Target) + pilot_b.Dist(pilot_b.Target)
-
-				if swap_dist < curr_dist {
-					pilot_a.Target, pilot_b.Target = pilot_b.Target, pilot_a.Target
-					// self.Game.Log("Swapped targets for pilots %d, %d (cycle %d)", pilot_a.Sid, pilot_b.Sid, cycle)
-					swap_count++
-				}
-			}
-		}
-
-		if swap_count == 0 {
-			return
-		}
-	}
-}
-
-func (self *Overmind) MaybeBuild() {
-
-	factory := self.Game.MyFactory()
-	willing := true
-
-	if self.InitialGroundHalite / (self.Game.GroundHalite() + 1) >= 2 {		// remember int division, also div-by-zero
-		willing = false
-	}
-
-	if self.Game.Turn() >= self.Game.Constants.MAX_TURNS / 2 {
-		willing = false
-	}
-
-	if self.Game.MyBudget() >= 1000 && self.MoveBooker(factory) == nil && willing {
-		self.Game.SetGenerate(true)
 	}
 }
