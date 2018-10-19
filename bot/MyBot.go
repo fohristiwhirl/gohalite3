@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	ai "./ai"
@@ -60,7 +61,12 @@ func main() {
 	overmind := ai.NewOvermind(game, config)
 	fmt.Printf("%s %s\n", NAME, VERSION)
 
-	game.LogWithoutTurn("./halite.exe --width %d --height %d -s %v    <%d players>", game.Width(), game.Height(), game.Constants.GameSeed, game.Players())
+	var player_strings []string
+	for n := 0; n < game.Players(); n++ {
+		player_strings = append(player_strings, "bot.exe")
+	}
+
+	game.LogWithoutTurn("./halite.exe --width %d --height %d -s %v %s", game.Width(), game.Height(), game.Constants.GameSeed, strings.Join(player_strings, " "))
 
 	// -------------------------------------------------------------------------------
 
