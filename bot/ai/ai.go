@@ -186,8 +186,6 @@ func (self *Overmind) MaybeBuild() {
 
 func (self *Overmind) TargetSwaps() {
 
-	// FIXME: this should probably consider "scores" -- i.e. same as TargetBestBox() -- instead of distance
-
 	for cycle := 0; cycle < 4; cycle++ {
 
 		swap_count := 0
@@ -204,12 +202,20 @@ func (self *Overmind) TargetSwaps() {
 					continue
 				}
 
-				swap_dist := pilot_a.Dist(pilot_b.Target) + pilot_b.Dist(pilot_a.Target)
-				curr_dist := pilot_a.Dist(pilot_a.Target) + pilot_b.Dist(pilot_b.Target)
+				a_dist_b := pilot_a.Dist(pilot_b.Target)
+				b_dist_a := pilot_b.Dist(pilot_a.Target)
 
-				if swap_dist < curr_dist {
+				alt_score_a := halite_dist_score(pilot_b.Target.Halite, a_dist_b)
+				alt_score_b := halite_dist_score(pilot_a.Target.Halite, b_dist_a)
+
+				if alt_score_a + alt_score_b > pilot_a.Score + pilot_b.Score {
+
 					pilot_a.Target, pilot_b.Target = pilot_b.Target, pilot_a.Target
-					// self.Game.Log("Swapped targets for pilots %d, %d (cycle %d)", pilot_a.Sid, pilot_b.Sid, cycle)
+
+					pilot_a.Score = alt_score_a
+					pilot_b.Score = alt_score_b
+
+					self.Game.Log("Swapped targets for pilots %d, %d (cycle %d)", pilot_a.Sid, pilot_b.Sid, cycle)
 					swap_count++
 				}
 			}
@@ -259,6 +265,8 @@ func (self *Overmind) UpdatePilots() {
 
 	for _, pilot := range self.Pilots {
 		pilot.Desires = nil
+		pilot.Target = pilot.Box()
+		pilot.Score = 0
 	}
 }
 
@@ -293,4 +301,8 @@ func (self *Overmind) Flog() {
 	for _, pilot := range self.Pilots {
 		pilot.Flog()
 	}
+}
+
+func halite_dist_score(halite, dist int) float32 {
+	return float32(halite) / float32((dist + 1) * (dist + 1))	// Avoid div-by-zero
 }

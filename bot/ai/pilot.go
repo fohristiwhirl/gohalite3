@@ -14,6 +14,7 @@ type Pilot struct {
 	Ship					*hal.Ship
 	Sid						int
 	Target					*hal.Box	// Currently this is not allowed to be nil. It is also NOT used to preserve target info between turns.
+	Score					float32		// Score if our target is a mineable box.
 	Desires					[]string
 }
 
@@ -45,6 +46,7 @@ func (self *Pilot) TargetBestBox() {
 	}
 
 	self.Target = self.Box()			// Default - my own square
+	self.Score = 0
 
 	if self.Box().Halite > 50 {			// FIXME: some sliding number - or delete entirely
 		return
@@ -67,11 +69,9 @@ func (self *Pilot) TargetBestBox() {
 			box := game.BoxAtFast(x, y)
 			dist := self.Dist(box)
 
-			score := float32(box.Halite) / float32((dist + 1) * (dist + 1))		// Avoid divide by zero
-
 			all_options = append(all_options, Option{
 				Box: box,
-				Score: score,
+				Score: halite_dist_score(box.Halite, dist),
 			})
 
 		}
@@ -83,6 +83,7 @@ func (self *Pilot) TargetBestBox() {
 
 	if len(all_options) > 0 {
 		self.Target = all_options[0].Box
+		self.Score = all_options[0].Score
 	}
 }
 
