@@ -16,9 +16,8 @@ type Overmind struct {
 	Game					*hal.Game
 
 	InitialGroundHalite		int
-	Pilots					[]*Pilot
-
 	NiceMap					*NiceMap
+	Pilots					[]*Pilot
 
 	// ATC stuff:
 
@@ -28,30 +27,21 @@ type Overmind struct {
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
 
+	// At this point, game has already been pre-pre-parsed and pre-parsed, so the map data exists.
+
 	o := new(Overmind)
 	o.Game = game
+
 	o.Config = config
+	o.InitialGroundHalite = game.GroundHalite()
+	o.NiceMap = NewNiceMap(game)
 
 	return o
 }
 
 func (self *Overmind) Step() {
 
-	if self.InitialGroundHalite == 0 {							// i.e. uninitialised
-		self.InitialGroundHalite = self.Game.GroundHalite()
-	}
-
-	if self.NiceMap == nil {
-		self.NiceMap = NewNiceMap(self.Game)
-		self.NiceMap.Log()
-	}
-
 	self.NiceMap.Update()
-
-	if self.Game.Turn() == self.Game.Constants.MAX_TURNS - 1 {
-		self.NiceMap.Log()
-	}
-
 	self.ClearBooks()
 	self.UpdatePilots()
 
