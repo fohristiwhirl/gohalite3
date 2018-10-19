@@ -163,6 +163,10 @@ func (self *Overmind) MaybeBuild() {
 			continue
 		}
 
+		if pilot.Box().Halite == 0 {		// Cheap way to avoid building on enemy dropoff / factory
+			continue
+		}
+
 		possible_constructs = append(possible_constructs, pilot)
 	}
 
@@ -181,6 +185,8 @@ func (self *Overmind) MaybeBuild() {
 }
 
 func (self *Overmind) TargetSwaps() {
+
+	// FIXME: this should probably consider "scores" -- i.e. same as TargetBestBox() -- instead of distance
 
 	for cycle := 0; cycle < 4; cycle++ {
 
