@@ -7,31 +7,44 @@ import (
 	hal "../core"
 )
 
+const (
+	NICE_RADIUS = 0
+)
+
 type NiceMap struct {
+	Game			*hal.Game
 	Values			[][]int
 }
 
-func NewNiceMap(width, height int) *NiceMap {
+func NewNiceMap(game *hal.Game) *NiceMap {
 	o := new(NiceMap)
-	o.Values = make([][]int, width)
-	for x := 0; x < width; x++ {
-		o.Values[x] = make([]int, height)
+	o.Game = game
+	o.Values = make([][]int, game.Width())
+	for x := 0; x < game.Width(); x++ {
+		o.Values[x] = make([]int, game.Height())
 	}
 	return o
 }
 
-func (self *NiceMap) Init(game *hal.Game) {
+func (self *NiceMap) Init() {
 	for x := 0; x < len(self.Values); x++ {
 		for y := 0; y < len(self.Values[0]); y++ {
-			self.Propagate(game, hal.Point{x, y}, game.BoxAtFast(x, y).Halite, 4)		// FIXME: 0 is a test
+			self.Propagate(hal.Point{x, y}, self.Game.BoxAtFast(x, y).Halite, NICE_RADIUS)
 		}
 	}
 }
 
-func (self *NiceMap) Propagate(game *hal.Game, origin hal.XYer, value int, radius int) {
+func (self *NiceMap) Update() {
+	all_changed := self.Game.ChangedBoxes()
+	for _, box := range all_changed {
+		self.Propagate(box, box.Delta, NICE_RADIUS)
+	}
+}
 
-	width := len(self.Values)
-	height := len(self.Values[0])
+func (self *NiceMap) Propagate(origin hal.XYer, value int, radius int) {
+
+	width := self.Game.Width()
+	height := self.Game.Height()
 
 	ox := origin.GetX()
 	oy := origin.GetY()
@@ -58,7 +71,7 @@ func (self *NiceMap) Propagate(game *hal.Game, origin hal.XYer, value int, radiu
 	}
 }
 
-func (self *NiceMap) Log(game *hal.Game) {
+func (self *NiceMap) Log() {
 
 	for y := 0; y < len(self.Values[0]); y++ {
 
@@ -70,6 +83,6 @@ func (self *NiceMap) Log(game *hal.Game) {
 
 		line := strings.Join(parts, " ")
 
-		game.Log(line)
+		self.Game.Log(line)
 	}
 }

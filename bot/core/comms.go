@@ -119,7 +119,7 @@ func (self *Game) PreParse() {
 				X: x,
 				Y: y,
 				Halite: val,
-				Delta: val,			// This is a useful fudge
+				Delta: 0,
 			}
 		}
 	}

@@ -40,10 +40,16 @@ func (self *Overmind) Step() {
 	}
 
 	if self.NiceMap == nil {
-		self.NiceMap = NewNiceMap(self.Game.Width(), self.Game.Height())
-		self.NiceMap.Init(self.Game)
-		self.NiceMap.Log(self.Game)
+		self.NiceMap = NewNiceMap(self.Game)
+		self.NiceMap.Init()
+		//	self.NiceMap.Log()
 	}
+
+	self.NiceMap.Update()
+
+	//	if self.Game.Turn() == 499 {
+	//		self.NiceMap.Log()
+	//	}
 
 	self.ClearBooks()
 	self.UpdatePilots()
