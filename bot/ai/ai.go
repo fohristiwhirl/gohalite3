@@ -132,7 +132,7 @@ func (self *Overmind) MaybeBuild() {
 		willing = false
 	}
 
-	if self.Game.MyBudget() >= 1000 && self.MoveBooker(factory) == nil && willing {
+	if self.Game.MyBudget() >= self.Game.Constants.NEW_ENTITY_ENERGY_COST && self.MoveBooker(factory) == nil && willing {
 		self.Game.SetGenerate(true)
 	}
 }
