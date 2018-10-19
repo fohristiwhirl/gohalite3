@@ -46,9 +46,9 @@ func (self *Pilot) TargetBestBox() {
 	}
 
 	self.Target = self.Box()			// Default - my own square
-	self.Score = 0
+	self.Score = halite_dist_score(self.Box().Halite, 0)
 
-	if self.Box().Halite > 50 {			// FIXME: some sliding number - or delete entirely
+	if self.Box().Halite > self.Overmind.HappyThreshold {
 		return
 	}
 
@@ -106,7 +106,7 @@ func (self *Pilot) SetDesires() {
 	// Maybe we're happy where we are...
 
 	if self.Ship.Halite < 800 {
-		if self.Box().Halite > 50 {			// FIXME: some sliding number??
+		if self.Box().Halite > self.Overmind.HappyThreshold {
 			self.Desires = []string{"o"}
 			return
 		}

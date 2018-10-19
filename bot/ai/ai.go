@@ -19,15 +19,19 @@ type Overmind struct {
 
 	Config					*Config
 	Game					*hal.Game
-
-	InitialGroundHalite		int
-	NiceMap					*NiceMap
 	Pilots					[]*Pilot
 
 	// ATC stuff:
 
 	TargetBook				[][]bool
 	MoveBook				[][]*Pilot
+
+	// Stategic stats:
+
+	NiceMap					*NiceMap
+
+	InitialGroundHalite		int
+	HappyThreshold			int
 }
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
@@ -47,6 +51,7 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 func (self *Overmind) Step() {
 
 	self.NiceMap.Update()
+	self.InspectGround()
 	self.ClearBooks()
 	self.UpdatePilots()
 
@@ -268,6 +273,21 @@ func (self *Overmind) UpdatePilots() {
 		pilot.Target = pilot.Box()
 		pilot.Score = 0
 	}
+}
+
+func (self *Overmind) InspectGround() {
+
+	current_ground_halite := 0
+
+	for x := 0; x < self.Game.Width(); x++ {
+		for y := 0; y < self.Game.Height(); y++ {
+			current_ground_halite += self.Game.BoxAtFast(x, y).Halite
+		}
+	}
+
+	avg_ground_halite := current_ground_halite / (self.Game.Width() * self.Game.Height())
+
+	self.HappyThreshold = avg_ground_halite / 2
 }
 
 func (self *Overmind) ClearBooks() {
