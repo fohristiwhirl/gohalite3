@@ -6,10 +6,10 @@ data.sort(key = lambda foo : foo["mu"], reverse = True)
 
 print()
 
-for item in data[:30]:
+for n, item in enumerate(data[:38]):
 
 	print(" {0:>3} {1:<6}  {2:>22} v{3:<4}  {4:.2f} +/- {5:.2f}  ({6})".format(
-		item["rank"],
+		n + 1,
 		"(" + str(item["user_id"]) + ")",
 		item["username"],
 		item["version_number"],
