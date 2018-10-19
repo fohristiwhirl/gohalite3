@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	NICE_RADIUS = 0
+	NICE_RADIUS = 4
 )
 
 type NiceMap struct {
@@ -23,6 +23,7 @@ func NewNiceMap(game *hal.Game) *NiceMap {
 	for x := 0; x < game.Width(); x++ {
 		o.Values[x] = make([]int, game.Height())
 	}
+	o.Init()
 	return o
 }
 

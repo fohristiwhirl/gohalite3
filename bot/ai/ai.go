@@ -1,6 +1,8 @@
 package ai
 
 import (
+	"sort"
+
 	hal "../core"
 )
 
@@ -41,15 +43,14 @@ func (self *Overmind) Step() {
 
 	if self.NiceMap == nil {
 		self.NiceMap = NewNiceMap(self.Game)
-		self.NiceMap.Init()
-		//	self.NiceMap.Log()
+		self.NiceMap.Log()
 	}
 
 	self.NiceMap.Update()
 
-	//	if self.Game.Turn() == 499 {
-	//		self.NiceMap.Log()
-	//	}
+	if self.Game.Turn() == self.Game.Constants.MAX_TURNS - 1 {
+		self.NiceMap.Log()
+	}
 
 	self.ClearBooks()
 	self.UpdatePilots()
@@ -135,6 +136,8 @@ func (self *Overmind) Step() {
 
 func (self *Overmind) MaybeBuild() {
 
+	budget := self.Game.MyBudget()
+
 	factory := self.Game.MyFactory()
 	willing := true
 
@@ -146,8 +149,39 @@ func (self *Overmind) MaybeBuild() {
 		willing = false
 	}
 
-	if self.Game.MyBudget() >= self.Game.Constants.NEW_ENTITY_ENERGY_COST && self.MoveBooker(factory) == nil && willing {
+	if budget >= self.Game.Constants.NEW_ENTITY_ENERGY_COST && self.MoveBooker(factory) == nil && willing {
 		self.Game.SetGenerate(true)
+		budget -= self.Game.Constants.NEW_ENTITY_ENERGY_COST
+	}
+
+	// -------------------------------------------
+
+	var possible_constructs []*Pilot
+
+	for _, pilot := range self.Pilots {
+
+		if pilot.Dist(pilot.NearestDropoff()) < 8 {
+			continue
+		}
+
+		if self.NiceMap.Values[pilot.GetX()][pilot.GetY()] < 8000 {
+			continue
+		}
+
+		possible_constructs = append(possible_constructs, pilot)
+	}
+
+	sort.Slice(possible_constructs, func (a, b int) bool {
+
+		return	self.NiceMap.Values[possible_constructs[a].GetX()][possible_constructs[a].GetY()] <
+				self.NiceMap.Values[possible_constructs[b].GetX()][possible_constructs[b].GetY()]
+	})
+
+	for _, pilot := range possible_constructs {
+		if pilot.Ship.Halite + pilot.Box().Halite + budget >= self.Game.Constants.DROPOFF_COST {
+			pilot.Ship.Command = "c"
+			break
+		}
 	}
 }
 
