@@ -118,3 +118,7 @@ func (self *Game) GroundHalite() int {
 	}
 	return count
 }
+
+func (self *Game) ChangedBoxes() []*Box {
+	return self.changed_boxes					// No real need for a defensive copy.
+}

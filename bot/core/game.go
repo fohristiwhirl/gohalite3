@@ -25,6 +25,8 @@ type Game struct {
 	ship_xy_lookup				map[Point]*Ship
 	ship_id_lookup				map[int]*Ship
 
+	changed_boxes				[]*Box			// Changed since last frame
+
 	logfile						*Logfile
 	flogfile					*Flogfile
 	token_parser				*TokenParser

@@ -219,6 +219,8 @@ func (self *Game) Parse() {
 		}
 	}
 
+	self.changed_boxes = nil
+
 	cell_update_count := self.token_parser.Int()
 
 	for n := 0; n < cell_update_count; n++ {
@@ -228,6 +230,7 @@ func (self *Game) Parse() {
 		val := self.token_parser.Int()
 
 		self.boxes[x][y].Halite = val
+		self.changed_boxes = append(self.changed_boxes, self.boxes[x][y])
 	}
 
 	// ------------------------------------------------
