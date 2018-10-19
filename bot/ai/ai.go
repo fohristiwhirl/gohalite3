@@ -6,6 +6,11 @@ import (
 	hal "../core"
 )
 
+const (
+	DROPOFF_SPACING = 12
+	NICE_THRESHOLD = 8000
+)
+
 type Config struct {
 	Timeseed				bool
 }
@@ -150,11 +155,11 @@ func (self *Overmind) MaybeBuild() {
 
 	for _, pilot := range self.Pilots {
 
-		if pilot.Dist(pilot.NearestDropoff()) < 8 {
+		if pilot.Dist(pilot.NearestDropoff()) < DROPOFF_SPACING {
 			continue
 		}
 
-		if self.NiceMap.Values[pilot.GetX()][pilot.GetY()] < 8000 {
+		if self.NiceMap.Values[pilot.GetX()][pilot.GetY()] < NICE_THRESHOLD {
 			continue
 		}
 
