@@ -16,6 +16,8 @@ type Overmind struct {
 	InitialGroundHalite		int
 	Pilots					[]*Pilot
 
+	NiceMap					*NiceMap
+
 	// ATC stuff:
 
 	TargetBook				[][]bool
@@ -35,6 +37,12 @@ func (self *Overmind) Step() {
 
 	if self.InitialGroundHalite == 0 {							// i.e. uninitialised
 		self.InitialGroundHalite = self.Game.GroundHalite()
+	}
+
+	if self.NiceMap == nil {
+		self.NiceMap = NewNiceMap(self.Game.Width(), self.Game.Height())
+		self.NiceMap.Init(self.Game)
+		self.NiceMap.Log(self.Game)
 	}
 
 	self.ClearBooks()

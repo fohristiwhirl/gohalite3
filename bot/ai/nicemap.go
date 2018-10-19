@@ -1,6 +1,9 @@
 package ai
 
 import (
+	"strconv"
+	"strings"
+
 	hal "../core"
 )
 
@@ -17,15 +20,15 @@ func NewNiceMap(width, height int) *NiceMap {
 	return o
 }
 
-func (self *NiceMap) Init(game hal.Game) {
+func (self *NiceMap) Init(game *hal.Game) {
 	for x := 0; x < len(self.Values); x++ {
-		for y := 0; y < len(self.Values); y++ {
-			self.Propagate(game, hal.Point{x, y}, game.BoxAtFast(x, y).Halite, 0)		// FIXME: 0 is a test
+		for y := 0; y < len(self.Values[0]); y++ {
+			self.Propagate(game, hal.Point{x, y}, game.BoxAtFast(x, y).Halite, 4)		// FIXME: 0 is a test
 		}
 	}
 }
 
-func (self *NiceMap) Propagate(game hal.Game, origin hal.XYer, value int, radius int) {
+func (self *NiceMap) Propagate(game *hal.Game, origin hal.XYer, value int, radius int) {
 
 	width := len(self.Values)
 	height := len(self.Values[0])
@@ -52,5 +55,21 @@ func (self *NiceMap) Propagate(game hal.Game, origin hal.XYer, value int, radius
 				self.Values[loc_x][loc_y] += value
 			}
 		}
+	}
+}
+
+func (self *NiceMap) Log(game *hal.Game) {
+
+	for y := 0; y < len(self.Values[0]); y++ {
+
+		var parts []string
+
+		for x := 0; x < len(self.Values); x++ {
+			parts = append(parts, strconv.Itoa(self.Values[x][y]))
+		}
+
+		line := strings.Join(parts, " ")
+
+		game.Log(line)
 	}
 }

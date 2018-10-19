@@ -5,6 +5,7 @@ type Box struct {
 	X							int
 	Y							int
 	Halite						int
+	Delta						int		// Change in Halite since last turn
 }
 
 func (self *Box) GetGame() *Game { return self.Game }

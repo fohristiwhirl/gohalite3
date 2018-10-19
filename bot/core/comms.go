@@ -113,11 +113,13 @@ func (self *Game) PreParse() {
 
 	for y := 0; y < self.height; y++ {
 		for x := 0; x < self.width; x++ {
+			val := self.token_parser.Int()
 			self.boxes[x][y] = &Box{
 				Game: self,
 				X: x,
 				Y: y,
-				Halite: self.token_parser.Int(),
+				Halite: val,
+				Delta: val,			// This is a useful fudge
 			}
 		}
 	}
@@ -221,15 +223,25 @@ func (self *Game) Parse() {
 
 	self.changed_boxes = nil
 
+	for x := 0; x < self.width; x++ {
+		for y := 0; y < self.height; y++ {
+			self.boxes[x][y].Delta = 0
+		}
+	}
+
 	cell_update_count := self.token_parser.Int()
 
 	for n := 0; n < cell_update_count; n++ {
 
 		x := self.token_parser.Int()
 		y := self.token_parser.Int()
+
 		val := self.token_parser.Int()
+		old_val := self.boxes[x][y].Halite
 
 		self.boxes[x][y].Halite = val
+		self.boxes[x][y].Delta = val - old_val
+
 		self.changed_boxes = append(self.changed_boxes, self.boxes[x][y])
 	}
 
