@@ -275,7 +275,7 @@ func (self *Overmind) UpdatePilots() {
 	}
 }
 
-func (self *Overmind) InspectGround() {
+func (self *Overmind) InspectGround() {		// Old behaviour used to be simply self.HappyThreshold = 50
 
 	current_ground_halite := 0
 

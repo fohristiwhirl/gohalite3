@@ -45,7 +45,7 @@ func (self *Pilot) TargetBestBox() {
 		Score	float32
 	}
 
-	self.Target = self.Box()			// Default - my own square
+	self.Target = self.Box()											// Default - my own square
 	self.Score = halite_dist_score(self.Box().Halite, 0)
 
 	if self.Box().Halite > self.Overmind.HappyThreshold {
