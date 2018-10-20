@@ -220,7 +220,7 @@ func (self *Overmind) TargetSwaps() {
 					pilot_a.Score = alt_score_a
 					pilot_b.Score = alt_score_b
 
-					self.Game.Log("Swapped targets for pilots %d, %d (cycle %d)", pilot_a.Sid, pilot_b.Sid, cycle)
+					// self.Game.Log("Swapped targets for pilots %d, %d (cycle %d)", pilot_a.Sid, pilot_b.Sid, cycle)
 					swap_count++
 				}
 			}
