@@ -8,7 +8,7 @@ print()
 
 for n, item in enumerate(data[:38]):
 
-	print(" {0:>3} {1:<6}  {2:>22} v{3:<4}  {4:.2f} +/- {5:.2f}  ({6})".format(
+	print(" {0:>3} {1:<6}  {2:>22} v{3:<4}  {4:.2f} +/- {5:.2f}    {6}".format(
 		n + 1,
 		"(" + str(item["user_id"]) + ")",
 		item["username"],
