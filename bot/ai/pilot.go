@@ -183,11 +183,7 @@ func (self *Pilot) Flog() {
 		return
 	}
 
-	style := `color: #ffffff`
-	if (self.Dist(self.Target) == 0) {
-		style = `color: #d9b3ff`
-	}
-	msg := fmt.Sprintf(`Target: %v, %v &ndash; <span style="%v">dist: %v</span>`, self.Target.X, self.Target.Y, style, self.Dist(self.Target))
+	msg := fmt.Sprintf("Target: %v, %v &ndash; dist: %v", self.Target.X, self.Target.Y, self.Dist(self.Target))
 	self.Game.Flog(self.Game.Turn(), self.Ship.X, self.Ship.Y, msg)
 }
 
