@@ -1,8 +1,11 @@
-import json, subprocess, sys
 
 REPLAY_FOLDER = "replays_local"
 
-add = ["--no-logs", "--results-as-json", "-i", REPLAY_FOLDER]
+# ------------------------------------------------------------------
+
+import json, subprocess, sys
+
+add = ["--no-compression", "--no-logs", "--results-as-json", "-i", REPLAY_FOLDER]
 
 if sys.argv[0] == "python":
 	new_args = sys.argv[2:] + add
@@ -11,8 +14,6 @@ else:
 
 new_args_string = " ".join(new_args)
 cmd = "__halite.exe {}".format(new_args_string)
-
-print(cmd)
 
 output = subprocess.check_output(cmd).decode("ascii")
 

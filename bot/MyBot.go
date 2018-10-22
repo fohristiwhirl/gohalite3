@@ -28,12 +28,15 @@ func main() {
 	var longest_turn time.Duration
 	var longest_turn_number int
 
+	start_time := time.Now()
+
 	defer func() {
 		if p := recover(); p != nil {
 			fmt.Printf("%v", p)
 			game.Log("Quitting: %v", p)
 			game.Log("Last known hash: %s", game.Hash())
 			game.Log("Longest turn (%d) took %v", longest_turn_number, longest_turn)
+			game.Log("Real-world time elapsed: %v", time.Now().Sub(start_time))
 			game.StopLog()
 			game.StopFlog()
 		}
@@ -77,7 +80,9 @@ func main() {
 			rand.Seed(int64(game.Turn() + game.Width() + game.Pid()))
 		}
 
+		// om_start_time := time.Now()
 		overmind.Step()
+		// game.Log("Overmind took: %v", time.Now().Sub(om_start_time))
 		game.Send()
 
 		if time.Now().Sub(game.ParseTime) > longest_turn {

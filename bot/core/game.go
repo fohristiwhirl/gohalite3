@@ -110,6 +110,8 @@ func (self *Game) fix_inspiration() {
 
 		if hits >= self.Constants.INSPIRATION_SHIP_COUNT {
 			ship.Inspired = true
+		} else {
+			ship.Inspired = false
 		}
 	}
 }

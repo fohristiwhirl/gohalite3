@@ -255,6 +255,8 @@ func (self *Game) Parse() {
 	self.fix_inspiration()
 	self.set_hash()
 
+	// self.Log("Parsing took %v", time.Now().Sub(self.ParseTime))
+
 	return
 }
 

@@ -40,11 +40,20 @@ class Ship:
 
 class Game:
 	def __init__(self):
+
+		# Attributes are mostly listed here just for info.
+
 		self.map = []
 		self.factories = []
 		self.ships = []
 		self.dropoffs = []
-		self.energy = dict()	# player ID --> energy (stored halite)
+		self.energy = dict()		# player ID --> energy (stored halite)
+
+		self.constants = dict()
+		self.players = -1
+		self.pid = -1
+		self.width = -1
+		self.height = -1
 
 	def pre_parse(self):
 
