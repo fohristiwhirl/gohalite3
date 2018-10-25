@@ -1,6 +1,8 @@
 
 REPLAY_FOLDER = "replays_local"
 
+EXE = "C:\\Users\\Owner\\github\\dubnium\\dubnium.exe"
+
 # ------------------------------------------------------------------
 
 import json, subprocess, sys, time
@@ -12,8 +14,11 @@ if sys.argv[0] == "python":
 else:
 	new_args = sys.argv[1:] + add
 
+for n, arg in enumerate(new_args):
+	new_args[n] = '"' + arg + '"'
+
 new_args_string = " ".join(new_args)
-cmd = "__halite.exe {}".format(new_args_string)
+cmd = "{} {}".format(EXE, new_args_string)
 
 start_time = time.time()
 output = subprocess.check_output(cmd).decode("ascii")
