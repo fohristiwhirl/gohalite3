@@ -30,7 +30,7 @@ def main():
 			run_ref_and_quit()
 		count = int(ask)
 
-	args += [BOT for n in range(count)]
+	args = base_args + [BOT for n in range(count)]
 	subprocess.run(args, shell = True)
 
 
