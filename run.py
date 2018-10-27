@@ -7,18 +7,31 @@ BOT = "bot.exe"
 
 # ------------------------------------------------------------------
 
-args = ["electron", IODINE_DIR, "-i", REPLAY_FOLDER]
+base_args = ["electron", IODINE_DIR, "-i", REPLAY_FOLDER]
 
-if sys.argv[-1] == "ref":
-	args += [BOT for n in range(4)]
+# ------------------------------------------------------------------
+
+def run_ref_and_quit():
+	args = base_args + [BOT for n in range(4)]
 	args += ["-s", "0"]
-else:
+	subprocess.run(args, shell = True)
+	sys.exit()
+
+def main():
+
+	if sys.argv[-1] == "ref":
+		run_ref_and_quit()
+
 	try:
 		count = int(sys.argv[-1])
 	except:
-		print("Need number of bots")
-		sys.exit()
+		ask = input("Number of bots? ")
+		if ask == "ref":
+			run_ref_and_quit()
+		count = int(ask)
+
 	args += [BOT for n in range(count)]
+	subprocess.run(args, shell = True)
 
-subprocess.run(args, shell = True)
 
+main()
