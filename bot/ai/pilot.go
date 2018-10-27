@@ -107,8 +107,10 @@ func (self *Pilot) SetDesires() {
 
 	if self.Ship.Halite < 800 {
 		if self.Box().Halite > self.Overmind.HappyThreshold {
-			self.Desires = []string{"o"}
-			return
+			if self.Box().Halite > self.Target.Halite / 3 {
+				self.Desires = []string{"o"}
+				return
+			}
 		}
 	}
 
