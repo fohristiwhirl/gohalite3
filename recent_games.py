@@ -38,6 +38,8 @@ class RecentGames:
 				for i, name in enumerate(player_names):
 					if len(name) < 16:
 						player_names[i] = name + ((16 - len(name)) * " ")
+					elif len(name) > 16:
+						player_names[i] = name[:16]
 
 				print("{0:>3}: {1}   ({2}x{3})   {4}".format(
 					len(self.game_ids) - 1,
