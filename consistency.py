@@ -6,16 +6,25 @@ bot = "bot.exe"
 import json, random, subprocess, sys
 
 random.seed()
-game_seed = random.randint(0, 2000000000)
 
-args = [bot for n in range(4)] + ["--no-logs", "--no-replay", "--results-as-json", "-s", str(game_seed)]
+while 1:
 
-result_one = subprocess.check_output([one] + args, shell=True)
-result_two = subprocess.check_output([two] + args, shell=True)
+	game_seed = random.randint(0, 2000000000)
 
-j_one = json.loads(result_one)
-j_two = json.loads(result_two)
+	args = [bot for n in range(4)] + ["--no-logs", "--no-replay", "--results-as-json", "-s", str(game_seed)]
 
-print("Seed {}".format(game_seed))
-for key in j_one["stats"]:
-	print("     pass" if j_one["stats"][key]["score"] == j_two["stats"][key]["score"] else "     FAIL <-----------------------------------")
+	result_one = subprocess.check_output([one] + args, shell=True)
+	result_two = subprocess.check_output([two] + args, shell=True)
+
+	j_one = json.loads(result_one)
+	j_two = json.loads(result_two)
+
+	print("Seed {}".format(game_seed))
+
+	fail = False
+
+	for key in j_one["stats"]:
+		if j_one["stats"][key]["score"] != j_two["stats"][key]["score"]:
+			fail = True
+
+	print("     pass" if not fail else "     FAIL <-----------------------------------")
