@@ -65,7 +65,7 @@ func (self *Game) set_hash() {
 	}
 
 	for _, ship := range self.ships {
-		z := fmt.Sprintf("%d %d %d %d %d", ship.Owner, ship.Sid, ship.X, ship.Y, ship.Halite)
+		z := fmt.Sprintf("%d %d %d %d", ship.Owner, ship.X, ship.Y, ship.Halite)		// Don't use ship.Sid, not consistent across engines
 		s = append(s, z)
 	}
 
