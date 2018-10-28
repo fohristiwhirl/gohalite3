@@ -64,14 +64,26 @@ func (self *Game) set_hash() {
 		}
 	}
 
-	for _, ship := range self.ships {
-		z := fmt.Sprintf("%d %d %d %d", ship.Owner, ship.X, ship.Y, ship.Halite)		// Don't use ship.Sid, not consistent across engines
-		s = append(s, z)
-	}
+	// To hash the ships and dropoffs consistently we need to do it 1 player at a time...
 
-	for _, dropoff := range self.dropoffs {
-		z := fmt.Sprintf("%d %d %d", dropoff.Owner, dropoff.X, dropoff.Y)
-		s = append(s, z)
+	for pid := 0; pid < self.players; pid++ {
+
+		ships := self.Ships(pid)
+
+		for _, ship := range ships {
+			z := fmt.Sprintf("%d %d %d %d", ship.Owner, ship.X, ship.Y, ship.Halite)		// Don't use ship.Sid, not consistent across engines
+			s = append(s, z)
+		}
+
+		// FIXME: there's some chance of dropoffs coming in alternate orders.
+		// Need to sort dropoffs somehow.
+
+		dropoffs := self.Dropoffs(pid)
+
+		for _, dropoff := range dropoffs {
+			z := fmt.Sprintf("%d %d %d", dropoff.Owner, dropoff.X, dropoff.Y)
+			s = append(s, z)
+		}
 	}
 
 	self.hash = HashFromString(strings.Join(s, "-"))
