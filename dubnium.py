@@ -1,9 +1,9 @@
 REPLAY_FOLDER = "replays_local"
-EXE = "__halite.exe"
+EXE = "C:\\Users\\Owner\\github\\dubnium\\dubnium.exe"
 
 # ------------------------------------------------------------------
 # The idea is we invoke this script with whatever optional flags...
-# ./halite.py bot.exe bot.exe -w 64 -h 64 -s 123
+# ./dubnium.py bot.exe bot.exe -w 64 -h 64 -s 123
 
 import json, subprocess, sys, time
 
