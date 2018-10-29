@@ -32,6 +32,7 @@ type Overmind struct {
 
 	InitialGroundHalite		int
 	HappyThreshold			int
+	IgnoreThreshold			int
 }
 
 func NewOvermind(game *hal.Game, config *Config) *Overmind {
@@ -51,7 +52,7 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 func (self *Overmind) Step() {
 
 	self.NiceMap.Update()
-	self.InspectGround()
+	self.SetTurnParameters()
 	self.ClearBooks()
 	self.UpdatePilots()
 
@@ -269,13 +270,11 @@ func (self *Overmind) UpdatePilots() {
 	// Step 3: other maintainence...
 
 	for _, pilot := range self.Pilots {
-		pilot.Desires = nil
-		pilot.Target = pilot.Box()
-		pilot.Score = 0
+		pilot.NewTurn()
 	}
 }
 
-func (self *Overmind) InspectGround() {		// Old behaviour used to be simply self.HappyThreshold = 50
+func (self *Overmind) SetTurnParameters() {
 
 	current_ground_halite := 0
 
@@ -287,7 +286,8 @@ func (self *Overmind) InspectGround() {		// Old behaviour used to be simply self
 
 	avg_ground_halite := current_ground_halite / (self.Game.Width() * self.Game.Height())
 
-	self.HappyThreshold = avg_ground_halite / 2
+	self.HappyThreshold = avg_ground_halite / 2			// Above this, ground is sticky
+	self.IgnoreThreshold = avg_ground_halite * 2 / 3	// Less than this not counted for targeting
 }
 
 func (self *Overmind) ClearBooks() {

@@ -16,6 +16,17 @@ type Pilot struct {
 	Target					*hal.Box	// Currently this is not allowed to be nil. It is also NOT used to preserve target info between turns.
 	Score					float32		// Score if our target is a mineable box.
 	Desires					[]string
+	Returning				bool
+}
+
+func (self *Pilot) NewTurn() {
+	self.Desires = nil
+	self.Target = self.Box()
+	self.Score = 0
+
+	if self.OnDropoff() {
+		self.Returning = false
+	}
 }
 
 func (self *Pilot) SetTarget() {
@@ -24,13 +35,13 @@ func (self *Pilot) SetTarget() {
 
 	if self.FinalDash() {
 		self.Target = self.NearestDropoff().Box()
+		self.Returning = true
 		return
 	}
 
-	// FIXME? There's some worry here about a ship going under the threshold on the way home...
-
-	if self.Ship.Halite > 500 {
+	if self.Ship.Halite > 500 {					// || self.Returning {		-- deleted for test
 		self.Target = self.NearestDropoff().Box()
+		self.Returning = true
 		return
 	}
 
@@ -67,6 +78,11 @@ func (self *Pilot) TargetBestBox() {
 			}
 
 			box := game.BoxAtFast(x, y)
+
+			if box.Halite < self.Overmind.IgnoreThreshold {
+				continue
+			}
+
 			dist := self.Dist(box)
 
 			all_options = append(all_options, Option{
