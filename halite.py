@@ -14,6 +14,11 @@ if sys.argv[0] == "python":
 else:
 	args += sys.argv[1:]
 
+# Official Halite doesn't have -w and -h flags...
+
+args = [s if s != "-w" else "--width" for s in args]
+args = [s if s != "-h" else "--height" for s in args]
+
 start_time = time.time()
 
 raw = subprocess.check_output(args, shell=True)

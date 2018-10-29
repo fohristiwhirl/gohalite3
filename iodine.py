@@ -9,6 +9,11 @@ import subprocess, sys
 
 args = ["electron", IODINE_DIR, "-i", REPLAY_FOLDER]
 
+# Official Halite doesn't have -w and -h flags...
+
+args = [s if s != "-w" else "--width" for s in args]
+args = [s if s != "-h" else "--height" for s in args]
+
 if sys.argv[0] == "python":
 	args += sys.argv[2:]
 else:
