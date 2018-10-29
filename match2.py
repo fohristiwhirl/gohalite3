@@ -4,7 +4,7 @@ REPLAY_FOLDER = "replays_local"
 
 bots = [
 	"bot.exe",
-	".\\old\\v10.exe",
+	"node .\\other\\dvf_29\\mybot.js"
 ]
 
 # ------------------------------------------------------------------------

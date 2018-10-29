@@ -11,7 +11,7 @@ while 1:
 
 	game_seed = random.randint(0, 2000000000)
 
-	args = [bot for n in range(4)] + ["--no-logs", "--no-replay", "--results-as-json", "-s", str(game_seed)]
+	args = [bot for n in range(4)] + ["--no-logs", "--no-replay", "--results-as-json", "-s", str(game_seed), "--width", "32", "--height", "32"]
 
 	result_one = subprocess.check_output([one] + args, shell=True)
 	result_two = subprocess.check_output([two] + args, shell=True)
