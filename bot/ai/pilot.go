@@ -3,7 +3,6 @@ package ai
 import (
 	"fmt"
 	"math/rand"
-	"sort"
 
 	hal "../core"
 )
@@ -51,23 +50,12 @@ func (self *Pilot) SetTarget() {
 
 func (self *Pilot) TargetBestBox() {
 
-	type Option struct {
-		Box		*hal.Box
-		Score	float32
-	}
-
-	self.Target = self.Box()											// Default - my own square
-	self.Score = halite_dist_score(self.Box().Halite, 0)
-
-	if self.Box().Halite > self.Overmind.HappyThreshold {
-		return
-	}
+	self.Target = nil
+	self.Score = -999999
 
 	game := self.Game
 	width := game.Width()
 	height := game.Height()
-
-	var all_options []Option
 
 	for x := 0; x < width; x++ {
 
@@ -84,22 +72,23 @@ func (self *Pilot) TargetBestBox() {
 			}
 
 			dist := self.Dist(box)
+			score := halite_dist_score(box.Halite, dist)
 
-			all_options = append(all_options, Option{
-				Box: box,
-				Score: halite_dist_score(box.Halite, dist),
-			})
-
+			if score > self.Score {
+				self.Target = box
+				self.Score = score
+			}
 		}
 	}
 
-	sort.Slice(all_options, func(a, b int) bool {
-		return all_options[a].Score > all_options[b].Score					// Highest first
-	})
+	// It's best not to set a default at top because it can confuse the logic.
+	// i.e. we want to ignore boxes below a certain halite threshold, even if
+	// they have a good score. Our default might be such a square, so comparing
+	// against its core might lead us to reject a box we should pick.
 
-	if len(all_options) > 0 {
-		self.Target = all_options[0].Box
-		self.Score = all_options[0].Score
+	if self.Target == nil {
+		self.Target = self.Box()											// Default - my own square
+		self.Score = halite_dist_score(self.Box().Halite, 0)
 	}
 }
 

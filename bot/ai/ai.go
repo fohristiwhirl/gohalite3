@@ -128,9 +128,7 @@ func (self *Overmind) Step() {
 	// Other.................................................
 
 	self.MaybeBuild()
-
-	// FIXME: re-add the sanity checks.
-
+	self.SameTargetCheck()		// Just logs
 	self.Flog()
 	return
 }
@@ -320,6 +318,20 @@ func (self *Overmind) SetMoveBook(pilot *Pilot, pos hal.XYer) {
 func (self *Overmind) Flog() {
 	for _, pilot := range self.Pilots {
 		pilot.Flog()
+	}
+}
+
+func (self *Overmind) SameTargetCheck() {
+
+	targets := make(map[*hal.Box]int)
+
+	for _, pilot := range self.Pilots {
+		targetter_sid, ok := targets[pilot.Target]
+		if ok && pilot.TargetIsDropoff() == false {
+			self.Game.Log("Ships %d and %d looking at same target: %d %d", pilot.Sid, targetter_sid, pilot.Target.X, pilot.Target.Y)
+		} else {
+			targets[pilot.Target] = pilot.Sid
+		}
 	}
 }
 
