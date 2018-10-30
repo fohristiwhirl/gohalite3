@@ -50,7 +50,7 @@ func (self *Pilot) SetTarget() {
 
 func (self *Pilot) TargetBestBox() {
 
-	self.Target = nil
+	self.Target = nil		// Spooky. This is not allowed in the long run.
 	self.Score = -999999
 
 	game := self.Game
@@ -84,7 +84,7 @@ func (self *Pilot) TargetBestBox() {
 	// It's best not to set a default at top because it can confuse the logic.
 	// i.e. we want to ignore boxes below a certain halite threshold, even if
 	// they have a good score. Our default might be such a square, so comparing
-	// against its core might lead us to reject a box we should pick.
+	// against its score might lead us to reject a box we should pick.
 
 	if self.Target == nil {
 		self.Target = self.Box()											// Default - my own square
