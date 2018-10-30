@@ -38,7 +38,7 @@ func (self *Pilot) SetTarget() {
 		return
 	}
 
-	if self.Ship.Halite > 500 {					// || self.Returning {		-- deleted for test
+	if self.Ship.Halite > 500 || self.Returning {						// Is this good to have?
 		self.Target = self.NearestDropoff().Box()
 		self.Returning = true
 		return
@@ -112,7 +112,7 @@ func (self *Pilot) SetDesires() {
 
 	if self.Ship.Halite < 800 {
 		if self.Box().Halite > self.Overmind.HappyThreshold {
-			if self.Box().Halite > self.Target.Halite / 3 {
+			if self.Box().Halite > self.Target.Halite / 3 {					// This is a bit odd since the test even happens when target is dropoff.
 				self.Desires = []string{"o"}
 				return
 			}
