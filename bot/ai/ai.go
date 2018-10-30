@@ -128,8 +128,8 @@ func (self *Overmind) Step() {
 	// Other.................................................
 
 	self.MaybeBuild()
+
 	self.SameTargetCheck()		// Just logs
-	self.Flog()
 	return
 }
 
@@ -313,12 +313,6 @@ func (self *Overmind) SetMoveBook(pilot *Pilot, pos hal.XYer) {
 	y := hal.Mod(pos.GetY(), self.Game.Height())
 
 	self.MoveBook[x][y] = pilot
-}
-
-func (self *Overmind) Flog() {
-	for _, pilot := range self.Pilots {
-		pilot.Flog()
-	}
 }
 
 func (self *Overmind) SameTargetCheck() {

@@ -46,3 +46,9 @@ func HashFromString(datastring string) string {
 	sum := sha1.Sum(data)
 	return fmt.Sprintf("%x", sum)
 }
+
+var fluorine_colours = []string{"#c5ec98", "#ff9999", "#ffbe00", "#66cccc"}
+
+func FluorineColour(pid int) string {
+	return fluorine_colours[pid]
+}

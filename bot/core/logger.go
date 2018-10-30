@@ -111,7 +111,8 @@ type FlogObject struct {
 	T				int			`json:"t"`
 	X				int			`json:"x"`
 	Y				int			`json:"y"`
-	Msg				string		`json:"msg"`
+	Msg				string		`json:"msg,omitempty"`
+	Colour			string		`json:"colour,omitempty"`
 }
 
 func NewFlog(outfilename string) *Flogfile {
@@ -123,7 +124,9 @@ func NewFlog(outfilename string) *Flogfile {
 	}
 }
 
-func (self *Flogfile) Flog(t, x, y int, msg string) {
+func (self *Flogfile) Flog(t, x, y int, msg, colour string) {
+
+	// msg or colour can be ""
 
 	if self == nil || self.closed {
 		return
@@ -138,7 +141,7 @@ func (self *Flogfile) Flog(t, x, y int, msg string) {
 		}
 	}
 
-	f := FlogObject{T: t, X: x, Y: y, Msg: msg}
+	f := FlogObject{T: t, X: x, Y: y, Msg: msg, Colour: colour}
 
 	s, _ := json.Marshal(f)
 
@@ -168,8 +171,8 @@ func (self *Game) StartFlog(flogfilename string) {
 	self.flogfile = NewFlog(flogfilename)
 }
 
-func (self *Game) Flog(t, x, y int, msg string) {
-	self.flogfile.Flog(t, x, y, msg)
+func (self *Game) Flog(x, y int, msg, colour string) {
+	self.flogfile.Flog(self.Turn(), x, y, msg, colour)
 }
 
 func (self *Game) StopFlog() {

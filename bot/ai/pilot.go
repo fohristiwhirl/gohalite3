@@ -30,6 +30,11 @@ func (self *Pilot) NewTurn() {
 
 func (self *Pilot) SetTarget() {
 
+	defer func() {
+		self.Game.Flog(self.Ship.X, self.Ship.Y, fmt.Sprintf("Target: %d %d - Dist: %d", self.Target.X, self.Target.Y, hal.Dist(self, self.Target)), "")
+		self.Game.Flog(self.Target.X, self.Target.Y, "", "LemonChiffon")
+	}()
+
 	// Note that the ship may still not move if it's happy where it is.
 
 	if self.FinalDash() {
@@ -181,17 +186,6 @@ func (self *Pilot) DesireNav(target hal.XYer) {
 
 func (self *Pilot) FinalDash() bool {
 	return self.Dist(self.NearestDropoff()) > self.Game.Constants.MAX_TURNS - self.Game.Turn() - 3
-}
-
-func (self *Pilot) Flog() {
-
-	if self.CanDropoffAt(self.Target) {
-		self.Game.Flog(self.Game.Turn(), self.Ship.X, self.Ship.Y, "Returning")
-		return
-	}
-
-	msg := fmt.Sprintf("Target: %v, %v &ndash; dist: %v", self.Target.X, self.Target.Y, self.Dist(self.Target))
-	self.Game.Flog(self.Game.Turn(), self.Ship.X, self.Ship.Y, msg)
 }
 
 func (self *Pilot) OnDropoff() bool {
