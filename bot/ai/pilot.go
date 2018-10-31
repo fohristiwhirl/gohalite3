@@ -3,6 +3,7 @@ package ai
 import (
 	"fmt"
 	"math/rand"
+	"sort"
 
 	hal "../core"
 )
@@ -30,11 +31,6 @@ func (self *Pilot) NewTurn() {
 
 func (self *Pilot) SetTarget() {
 
-	defer func() {
-		self.Game.Flog(self.Ship.X, self.Ship.Y, fmt.Sprintf("Target: %d %d - Dist: %d", self.Target.X, self.Target.Y, hal.Dist(self, self.Target)), "")
-		self.Game.Flog(self.Target.X, self.Target.Y, "", "LemonChiffon")
-	}()
-
 	// Note that the ship may still not move if it's happy where it is.
 
 	if self.FinalDash() {
@@ -43,7 +39,7 @@ func (self *Pilot) SetTarget() {
 		return
 	}
 
-	if self.Ship.Halite > 500 || self.Returning {						// Is this good to have?
+	if self.Ship.Halite > 500 || self.Returning {
 		self.Target = self.NearestDropoff().Box()
 		self.Returning = true
 		return
@@ -115,13 +111,9 @@ func (self *Pilot) SetDesires() {
 
 	// Maybe we're happy where we are...
 
-	if self.Ship.Halite < 800 {
-		if self.Box().Halite > self.Overmind.HappyThreshold {
-			if self.Box().Halite > self.Target.Halite / 3 {					// This is a bit odd since the test even happens when target is dropoff.
-				self.Desires = []string{"o"}
-				return
-			}
-		}
+	if self.Overmind.ShouldMine(self.Ship.Halite, self, self.Target) {
+		self.Desires = []string{"o"}
+		return
 	}
 
 	// Normal case...
@@ -166,9 +158,23 @@ func (self *Pilot) DesireNav(target hal.XYer) {
 		neutrals = append(neutrals, "n")
 	}
 
-	rand.Shuffle(len(likes), func(i, j int) {
-		likes[i], likes[j] = likes[j], likes[i]
-	})
+	// If lowish halite, prefer going to high halite rather than low halite boxes (so we can mine en route).
+	// This is a crude approach, really we should test whether the mining will actually happen.
+
+	if self.Ship.Halite < 750 {
+		sort.Slice(likes, func(a, b int) bool {
+			loc1 := self.LocationAfterMove(likes[a])
+			loc2 := self.LocationAfterMove(likes[b])
+			if self.Game.BoxAtFast(loc1.X, loc1.Y).Halite > self.Game.BoxAtFast(loc2.X, loc2.Y).Halite {
+				return true
+			}
+			return false
+		})
+	} else {
+		rand.Shuffle(len(likes), func(i, j int) {
+			likes[i], likes[j] = likes[j], likes[i]
+		})
+	}
 
 	rand.Shuffle(len(neutrals), func(i, j int) {
 		neutrals[i], neutrals[j] = neutrals[j], neutrals[i]
@@ -222,3 +228,8 @@ func (self *Pilot) GetY() int { return self.Ship.Y }
 func (self *Pilot) DxDy(other hal.XYer) (int, int) { return hal.DxDy(self, other) }
 func (self *Pilot) Dist(other hal.XYer) int { return hal.Dist(self, other) }
 func (self *Pilot) SamePlace(other hal.XYer) bool { return hal.SamePlace(self, other) }
+
+func (self *Pilot) FlogTarget() {
+	self.Game.Flog(self.Ship.X, self.Ship.Y, fmt.Sprintf("Target: %d %d - Dist: %d", self.Target.X, self.Target.Y, hal.Dist(self, self.Target)), "")
+	self.Game.Flog(self.Target.X, self.Target.Y, "", "LemonChiffon")
+}

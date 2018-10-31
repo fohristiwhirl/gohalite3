@@ -50,5 +50,8 @@ func HashFromString(datastring string) string {
 var fluorine_colours = []string{"#c5ec98", "#ff9999", "#ffbe00", "#66cccc"}
 
 func FluorineColour(pid int) string {
-	return fluorine_colours[pid]
+	if pid >= 0 && pid < len(fluorine_colours) {
+		return fluorine_colours[pid]
+	}
+	return "#ffffff"
 }

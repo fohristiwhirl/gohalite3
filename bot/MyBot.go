@@ -13,7 +13,7 @@ import (
 
 const (
 	NAME = "Fohristiwhirl"
-	VERSION = "14"				// hash is 061269837c8791f18df4a2f23010fbf00b55391b
+	VERSION = "15.b"				// hash is ??
 )
 
 func main() {
@@ -21,6 +21,7 @@ func main() {
 	config := new(ai.Config)
 
 	flag.BoolVar(&config.Timeseed, "timeseed", false, "seed RNG with time")
+	flag.BoolVar(&config.Crash, "crash", false, "randomly crash")
 	flag.Parse()
 
 	game := hal.NewGame()
@@ -77,7 +78,15 @@ func main() {
 		game.Parse()
 
 		if config.Timeseed == false {
-			rand.Seed(int64(game.Turn() + game.Width() + game.Pid()))
+			rand.Seed(int64(game.MyBudget() + game.Pid()))
+		}
+
+		if config.Crash {
+			if rand.Intn(100) == 40 {
+				fmt.Printf("g g\n")
+			} else if rand.Intn(100) == 40 {
+				time.Sleep(5 * time.Second)
+			}
 		}
 
 		// om_start_time := time.Now()

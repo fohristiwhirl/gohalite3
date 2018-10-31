@@ -13,6 +13,7 @@ const (
 
 type Config struct {
 	Timeseed				bool
+	Crash					bool
 }
 
 type Overmind struct {
@@ -128,6 +129,10 @@ func (self *Overmind) Step() {
 	// Other.................................................
 
 	self.MaybeBuild()
+
+	for _, pilot := range self.Pilots {
+		pilot.FlogTarget()
+	}
 
 	self.SameTargetCheck()		// Just logs
 	return
@@ -327,6 +332,26 @@ func (self *Overmind) SameTargetCheck() {
 			targets[pilot.Target] = pilot.Sid
 		}
 	}
+}
+
+func (self *Overmind) ShouldMine(halite_carried int, pos, tar hal.XYer) bool {
+
+	// Whether a ship -- if it were carrying n halite, at pos, with specified target -- would stop to mine.
+
+	if halite_carried >= 800 {
+		return false
+	}
+
+	box := self.Game.BoxAt(pos)
+	target := self.Game.BoxAt(tar)
+
+	if box.Halite > self.HappyThreshold {
+		if box.Halite > target.Halite / 3 {			// This is a bit odd since the test even happens when target is dropoff.
+			return true
+		}
+	}
+
+	return false
 }
 
 func halite_dist_score(halite, dist int) float32 {
