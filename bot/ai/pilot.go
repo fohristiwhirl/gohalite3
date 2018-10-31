@@ -162,18 +162,34 @@ func (self *Pilot) DesireNav(target hal.XYer) {
 	// This is a crude approach, really we should test whether the mining will actually happen.
 
 	if self.Ship.Halite < 750 {
+
 		sort.Slice(likes, func(a, b int) bool {
+
+			halite_after_move := self.Ship.Halite - self.Ship.MoveCost()
+
 			loc1 := self.LocationAfterMove(likes[a])
 			loc2 := self.LocationAfterMove(likes[b])
-			if self.Game.BoxAtFast(loc1.X, loc1.Y).Halite > self.Game.BoxAtFast(loc2.X, loc2.Y).Halite {
+
+			would_mine_1 := self.Overmind.ShouldMine(halite_after_move, loc1, self.Target)
+			would_mine_2 := self.Overmind.ShouldMine(halite_after_move, loc2, self.Target)
+
+			if would_mine_1 && would_mine_2 == false {				// Only mines at 1
 				return true
+			} else if would_mine_1 == false && would_mine_2 {		// Only mines at 2
+				return false
+			} else if would_mine_1 && would_mine_2 {				// Mines at both, choose higher
+				return self.Game.BoxAtFast(loc1.X, loc1.Y).Halite > self.Game.BoxAtFast(loc2.X, loc2.Y).Halite
+			} else {												// Mines at neither, choose lower
+				return self.Game.BoxAtFast(loc1.X, loc1.Y).Halite < self.Game.BoxAtFast(loc2.X, loc2.Y).Halite
 			}
-			return false
 		})
+
 	} else {
+
 		rand.Shuffle(len(likes), func(i, j int) {
 			likes[i], likes[j] = likes[j], likes[i]
 		})
+
 	}
 
 	rand.Shuffle(len(neutrals), func(i, j int) {
