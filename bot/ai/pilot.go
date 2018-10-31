@@ -158,8 +158,7 @@ func (self *Pilot) DesireNav(target hal.XYer) {
 		neutrals = append(neutrals, "n")
 	}
 
-	// If lowish halite, prefer going to high halite rather than low halite boxes (so we can mine en route).
-	// This is a crude approach, really we should test whether the mining will actually happen.
+	// If lowish halite, prefer mining en route...
 
 	if self.Ship.Halite < 750 {
 
