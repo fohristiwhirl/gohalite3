@@ -4,7 +4,7 @@ REPLAY_FOLDER = "replays_local"
 
 bots = [
 	"bot.exe",
-	".\\other\\v13.exe"
+	".\\other\\v14.exe"
 ]
 
 # ------------------------------------------------------------------------
