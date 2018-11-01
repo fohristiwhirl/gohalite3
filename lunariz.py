@@ -3,12 +3,13 @@ import requests
 def main():
 
 	user = int(input("User ID? "))
-	print()
 
 	result = requests.get(
 		"https://api.2018.halite.io/v1/api/user/{}/match?order_by=desc,time_played&limit=250"
 		.format(user)
 	).json()
+
+	username = result[0]["players"][str(user)]["username"]
 
 	totalGames = 0
 	totalScore = 0
@@ -73,24 +74,27 @@ def main():
 		totalGames += 1
 		totalScore += score
 
+	print(username)
+	print()
+
 	print("For a well-rounded bot, a score of 50 in all types of games is expected.")
 	print()
 
-	print("Out of " + str(totalGames) + " total games, your average score is " + str(totalScore / totalGames))
+	print("Out of {0} total games, your average score is {1:.2f}".format(totalGames, totalScore / totalGames))
 	print()
 
-	print("Out of " + str(duelGames) + " duel games, your average score is " + str(duelScore / duelGames))
-	print("Out of " + str(FFAGames) + " FFA games, your average score is " + str(FFAScore / FFAGames))
+	print("Out of {0} duel games, your average score is {1:.2f}".format(duelGames, duelScore / duelGames))
+	print("Out of {0} FFA games, your average score is {1:.2f}".format(FFAGames, FFAScore / FFAGames))
 	print()
 
-	print("Out of " + str(smallGames) + " small games, your average score is " + str(smallScore / smallGames))
-	print("Out of " + str(largeGames) + " large games, your average score is " + str(largeScore / largeGames))
+	print("Out of {0} small games, your average score is {1:.2f}".format(smallGames, smallScore / smallGames))
+	print("Out of {0} large games, your average score is {1:.2f}".format(largeGames, largeScore / largeGames))
 	print()
 
-	print("Out of " + str(smallDuelGames) + " small duel games, your average score is " + str(smallDuelScore / smallDuelGames))
-	print("Out of " + str(largeDuelGames) + " large duel games, your average score is " + str(largeDuelScore / largeDuelGames))
-	print("Out of " + str(smallFFAGames) + " small FFA games, your average score is " + str(smallFFAScore / smallFFAGames))
-	print("Out of " + str(largeFFAGames) + " large FFA games, your average score is " + str(largeFFAScore / largeFFAGames))
+	print("Out of {0} small duel games, your average score is {1:.2f}".format(smallDuelGames, smallDuelScore / smallDuelGames))
+	print("Out of {0} large duel games, your average score is {1:.2f}".format(largeDuelGames, largeDuelScore / largeDuelGames))
+	print("Out of {0} small FFA games, your average score is {1:.2f}".format(smallFFAGames, smallFFAScore / smallFFAGames))
+	print("Out of {0} large FFA games, your average score is {1:.2f}".format(largeFFAGames, largeFFAScore / largeFFAGames))
 	print()
 
 
