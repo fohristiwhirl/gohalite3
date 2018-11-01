@@ -13,9 +13,11 @@ type Game struct {
 
 	turn						int
 	players						int
-	pid							int
+	pid							int				// When simulating, if all sides are being played, this can be set by each bot
 	width						int
 	height						int
+
+	true_pid					int				// Never changed; the PID of the player in the real game, regardless of sims
 
 	budgets						[]int
 	boxes						[][]*Box
@@ -33,7 +35,7 @@ type Game struct {
 
 	hash						string
 
-	generate					bool			// Whether the AI wants to send a "g" command
+	generate					map[int]bool	// Whether the AI wants to send a "g" command
 }
 
 func NewGame() *Game {

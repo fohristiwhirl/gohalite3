@@ -62,7 +62,7 @@ func main() {
 		game.LogWithoutTurn("Seeding own RNG: %v", seed)
 	}
 
-	overmind := ai.NewOvermind(game, config)
+	overmind := ai.NewOvermind(game, config, game.TruePid())
 	fmt.Printf("%s %s\n", NAME, VERSION)
 
 	var player_strings []string

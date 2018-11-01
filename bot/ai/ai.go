@@ -18,6 +18,8 @@ type Config struct {
 
 type Overmind struct {
 
+	Pid						int
+
 	Config					*Config
 	Game					*hal.Game
 	Pilots					[]*Pilot
@@ -36,11 +38,12 @@ type Overmind struct {
 	IgnoreThreshold			int
 }
 
-func NewOvermind(game *hal.Game, config *Config) *Overmind {
+func NewOvermind(game *hal.Game, config *Config, pid int) *Overmind {
 
 	// At this point, game has already been pre-pre-parsed and pre-parsed, so the map data exists.
 
 	o := new(Overmind)
+	o.Pid = pid
 	o.Game = game
 
 	o.Config = config
@@ -51,6 +54,8 @@ func NewOvermind(game *hal.Game, config *Config) *Overmind {
 }
 
 func (self *Overmind) Step() {
+
+	self.Game.SetPid(self.Pid)
 
 	self.NiceMap.Update()
 	self.SetTurnParameters()

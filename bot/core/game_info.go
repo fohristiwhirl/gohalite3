@@ -4,7 +4,8 @@ import (
 	"fmt"
 )
 
-func (self *Game) Pid() int { return self.pid }
+func (self *Game) Pid() int { return self.pid }				// Note that simulated bots will be changing this
+func (self *Game) TruePid() int { return self.true_pid }	// The AI should never call this
 func (self *Game) Turn() int { return self.turn }
 func (self *Game) Width() int { return self.width }
 func (self *Game) Height() int { return self.height }

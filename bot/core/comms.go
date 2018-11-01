@@ -72,7 +72,8 @@ func (self *Game) PrePreParse() {
 	}
 
 	self.players = self.token_parser.Int()
-	self.pid = self.token_parser.Int()
+	self.true_pid = self.token_parser.Int()
+	self.pid = self.true_pid
 }
 
 func (self *Game) PreParse() {
@@ -127,7 +128,7 @@ func (self *Game) PreParse() {
 
 func (self *Game) Parse() {
 
-	self.generate = false
+	self.generate = make(map[int]bool)
 
 	// Set all ships as dead (for stale ref detection by the AI).
 	// Also clear all commands...
@@ -262,17 +263,19 @@ func (self *Game) Parse() {
 
 // ---------------------------------------
 
-func (self *Game) SetGenerate(x bool) {
-	self.generate = x
+func (self *Game) SetGenerate(val bool) {
+	self.generate[self.pid] = val
 }
 
 func (self *Game) Send() {
+
+	self.pid = self.true_pid		// In case any simulating has been going on.
 
 	var commands []string
 
 	budget_left := self.MyBudget()
 
-	if self.generate {
+	if self.generate[self.pid] {
 		if budget_left >= self.Constants.NEW_ENTITY_ENERGY_COST {
 			commands = append(commands, "g")
 			budget_left -= self.Constants.NEW_ENTITY_ENERGY_COST
