@@ -32,8 +32,9 @@ type Overmind struct {
 	// Stategic stats:
 
 	WealthMap				*WealthMap
-	EnemyDistMap			*EnemyDistMap
 	DistMap					*DistMap
+	EnemyDistMap			*EnemyDistMap
+	ContestMap				*ContestMap
 
 	InitialGroundHalite		int
 	HappyThreshold			int
@@ -52,8 +53,9 @@ func NewOvermind(game *hal.Game, config *Config, pid int) *Overmind {
 	o.InitialGroundHalite = game.GroundHalite()
 
 	o.WealthMap = NewWealthMap(game)
-	o.EnemyDistMap = NewEnemyDistMap(game)
 	o.DistMap = NewDistMap(game)
+	o.EnemyDistMap = NewEnemyDistMap(game)
+	o.ContestMap = NewContestMap(game)
 
 	return o
 }
@@ -65,8 +67,9 @@ func (self *Overmind) Step() {
 	rand.Seed(int64(self.Game.MyBudget() + self.Pid))
 
 	self.WealthMap.Update()
-	self.EnemyDistMap.Update()
 	self.DistMap.Update()
+	self.EnemyDistMap.Update()
+	self.ContestMap.Update(self.DistMap, self.EnemyDistMap)
 
 	self.SetTurnParameters()
 	self.ClearBooks()
