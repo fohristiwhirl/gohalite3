@@ -20,7 +20,6 @@ func main() {
 
 	config := new(ai.Config)
 
-	flag.BoolVar(&config.Timeseed, "timeseed", false, "seed RNG with time")
 	flag.BoolVar(&config.Crash, "crash", false, "randomly crash")
 	flag.Parse()
 
@@ -56,12 +55,6 @@ func main() {
 	game.LogWithoutTurn("--------------------------------------------------------------------------------")
 	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02 15:04:05"))
 
-	if config.Timeseed {
-		seed := time.Now().UTC().UnixNano()
-		rand.Seed(seed)
-		game.LogWithoutTurn("Seeding own RNG: %v", seed)
-	}
-
 	overmind := ai.NewOvermind(game, config, game.TruePid())
 	fmt.Printf("%s %s\n", NAME, VERSION)
 
@@ -77,10 +70,6 @@ func main() {
 	for {
 		game.Parse()
 
-		if config.Timeseed == false {
-			rand.Seed(int64(game.MyBudget() + game.Pid()))
-		}
-
 		if config.Crash {
 			if rand.Intn(100) == 40 {
 				fmt.Printf("g g\n")
@@ -89,9 +78,7 @@ func main() {
 			}
 		}
 
-		// om_start_time := time.Now()
 		overmind.Step()
-		// game.Log("Overmind took: %v", time.Now().Sub(om_start_time))
 		game.Send()
 
 		if time.Now().Sub(game.ParseTime) > longest_turn {

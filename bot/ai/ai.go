@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"math/rand"
 	"sort"
 
 	hal "../core"
@@ -12,7 +13,6 @@ const (
 )
 
 type Config struct {
-	Timeseed				bool
 	Crash					bool
 }
 
@@ -55,7 +55,9 @@ func NewOvermind(game *hal.Game, config *Config, pid int) *Overmind {
 
 func (self *Overmind) Step() {
 
-	self.Game.SetPid(self.Pid)
+	self.Game.SetPid(self.Pid)		// Always first thing!
+
+	rand.Seed(int64(self.Game.MyBudget() + self.Pid))
 
 	self.NiceMap.Update()
 	self.SetTurnParameters()
