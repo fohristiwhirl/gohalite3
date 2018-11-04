@@ -34,6 +34,7 @@ type Overmind struct {
 	WealthMap				*WealthMap
 	DistMap					*DistMap
 	EnemyDistMap			*EnemyDistMap
+	DropoffDistMap			*DropoffDistMap
 	ContestMap				*ContestMap
 
 	InitialGroundHalite		int
@@ -55,6 +56,7 @@ func NewOvermind(game *hal.Game, config *Config, pid int) *Overmind {
 	o.WealthMap = NewWealthMap(game)
 	o.DistMap = NewDistMap(game)
 	o.EnemyDistMap = NewEnemyDistMap(game)
+	o.DropoffDistMap = NewDropoffDistMap(game)
 	o.ContestMap = NewContestMap(game)
 
 	return o
@@ -69,6 +71,7 @@ func (self *Overmind) Step() {
 	self.WealthMap.Update()
 	self.DistMap.Update()
 	self.EnemyDistMap.Update()
+	self.DropoffDistMap.Update()
 	self.ContestMap.Update(self.DistMap, self.EnemyDistMap)
 
 	self.SetTurnParameters()
