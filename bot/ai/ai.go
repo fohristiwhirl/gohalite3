@@ -31,7 +31,9 @@ type Overmind struct {
 
 	// Stategic stats:
 
-	NiceMap					*NiceMap
+	WealthMap				*WealthMap
+	EnemyDistMap			*EnemyDistMap
+	DistMap					*DistMap
 
 	InitialGroundHalite		int
 	HappyThreshold			int
@@ -48,7 +50,10 @@ func NewOvermind(game *hal.Game, config *Config, pid int) *Overmind {
 
 	o.Config = config
 	o.InitialGroundHalite = game.GroundHalite()
-	o.NiceMap = NewNiceMap(game)
+
+	o.WealthMap = NewWealthMap(game)
+	o.EnemyDistMap = NewEnemyDistMap(game)
+	o.DistMap = NewDistMap(game)
 
 	return o
 }
@@ -59,7 +64,10 @@ func (self *Overmind) Step() {
 
 	rand.Seed(int64(self.Game.MyBudget() + self.Pid))
 
-	self.NiceMap.Update()
+	self.WealthMap.Update()
+	self.EnemyDistMap.Update()
+	self.DistMap.Update()
+
 	self.SetTurnParameters()
 	self.ClearBooks()
 	self.UpdatePilots()
@@ -175,7 +183,7 @@ func (self *Overmind) MaybeBuild() {
 			continue
 		}
 
-		if self.NiceMap.Values[pilot.GetX()][pilot.GetY()] < NICE_THRESHOLD {
+		if self.WealthMap.Values[pilot.GetX()][pilot.GetY()] < NICE_THRESHOLD {
 			continue
 		}
 
@@ -188,8 +196,8 @@ func (self *Overmind) MaybeBuild() {
 
 	sort.Slice(possible_constructs, func (a, b int) bool {
 
-		return	self.NiceMap.Values[possible_constructs[a].GetX()][possible_constructs[a].GetY()] <
-				self.NiceMap.Values[possible_constructs[b].GetX()][possible_constructs[b].GetY()]
+		return	self.WealthMap.Values[possible_constructs[a].GetX()][possible_constructs[a].GetY()] <
+				self.WealthMap.Values[possible_constructs[b].GetX()][possible_constructs[b].GetY()]
 	})
 
 	for _, pilot := range possible_constructs {

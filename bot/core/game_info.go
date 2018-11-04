@@ -48,6 +48,19 @@ func (self *Game) MyDropoffs() []*Dropoff {			// Includes factory
 	return self.Dropoffs(self.pid)
 }
 
+func (self *Game) EnemyDropoffs() []*Dropoff {		// Includes factory
+
+	var ret []*Dropoff
+
+	for _, dropoff := range self.dropoffs {
+		if dropoff.Owner != self.pid {
+			ret = append(ret, dropoff)
+		}
+	}
+
+	return ret
+}
+
 func (self *Game) Ships(pid int) []*Ship {
 
 	var ret []*Ship
@@ -63,6 +76,19 @@ func (self *Game) Ships(pid int) []*Ship {
 
 func (self *Game) MyShips() []*Ship {
 	return self.Ships(self.pid)
+}
+
+func (self *Game) EnemyShips() []*Ship {
+
+	var ret []*Ship
+
+	for _, ship := range self.ships {
+		if ship.Owner != self.pid {
+			ret = append(ret, ship)
+		}
+	}
+
+	return ret
 }
 
 func (self *Game) Budget(pid int) int {
@@ -88,6 +114,21 @@ func (self *Game) Factory(pid int) *Dropoff {
 
 func (self *Game) MyFactory() *Dropoff {
 	return self.Factory(self.pid)
+}
+
+func (self *Game) EnemyFactories() []*Dropoff {
+
+	var ret []*Dropoff
+
+	// Factories are stored in the dropoff list in player order...
+
+	for n := 0; n < self.players; n++ {
+		if n != self.pid {
+			ret = append(ret, self.dropoffs[n])
+		}
+	}
+
+	return ret
 }
 
 func (self *Game) PlayerCanDropoffAt(pid int, pos XYer) bool {
@@ -121,5 +162,32 @@ func (self *Game) GroundHalite() int {
 }
 
 func (self *Game) ChangedBoxes() []*Box {
-	return self.changed_boxes					// No real need for a defensive copy.
+	return self.changed_boxes
+}
+
+func (self *Game) Neighbours(x, y int) []*Box {
+
+	ret := make([]*Box, 0, 4)
+
+	x1, y1 := x + 1, y
+	x2, y2 := x - 1, y
+	x3, y3 := x, y + 1
+	x4, y4 := x, y - 1
+
+	x1 = Mod(x1, self.width)
+	x2 = Mod(x2, self.width)
+	x3 = Mod(x3, self.width)
+	x4 = Mod(x4, self.width)
+
+	y1 = Mod(y1, self.height)
+	y2 = Mod(y2, self.height)
+	y3 = Mod(y3, self.height)
+	y4 = Mod(y4, self.height)
+
+	ret = append(ret, self.BoxAtFast(x1, y1))
+	ret = append(ret, self.BoxAtFast(x2, y2))
+	ret = append(ret, self.BoxAtFast(x3, y3))
+	ret = append(ret, self.BoxAtFast(x4, y4))
+
+	return ret
 }

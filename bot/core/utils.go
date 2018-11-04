@@ -55,3 +55,11 @@ func FluorineColour(pid int) string {
 	}
 	return "#ffffff"
 }
+
+func Make2dIntArray(width, height int) [][]int {
+	ret := make([][]int, width)
+	for x := 0; x < width; x++ {
+		ret[x] = make([]int, height)
+	}
+	return ret
+}
