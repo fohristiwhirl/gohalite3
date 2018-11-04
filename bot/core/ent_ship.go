@@ -87,7 +87,7 @@ func (self *Ship) LocationAfterMove(s string) Point {
 }
 
 func (self *Ship) Box() *Box {
-	return self.Game.BoxAt(self)
+	return self.Game.BoxAtFast(self.X, self.Y)
 }
 
 func (self *Ship) GetGame() *Game { return self.Game }

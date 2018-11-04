@@ -234,7 +234,7 @@ func (self *Pilot) LocationAfterMove(s string) hal.Point {
 }
 
 func (self *Pilot) Box() *hal.Box {
-	return self.Game.BoxAt(self)
+	return self.Ship.Box()
 }
 
 func (self *Pilot) GetGame() *hal.Game { return self.Game }
