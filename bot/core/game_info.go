@@ -10,14 +10,14 @@ func (self *Game) Width() int { return self.width }
 func (self *Game) Height() int { return self.height }
 func (self *Game) Players() int { return self.players }
 
-func (self *Game) BoxAt(pos XYer) *Box {
+func (self *Game) HaliteAt(pos XYer) int {
 	x := Mod(pos.GetX(), self.width)
 	y := Mod(pos.GetY(), self.height)
-	return self.boxes[x][y]
+	return self.halite[x][y]
 }
 
-func (self *Game) BoxAtFast(x, y int) *Box {		// For when caller is sure x and y are in bounds
-	return self.boxes[x][y]
+func (self *Game) HaliteAtFast(x, y int) int {
+	return self.halite[x][y]
 }
 
 func (self *Game) ShipAt(pos XYer) *Ship {			// Maybe nil
@@ -154,19 +154,15 @@ func (self *Game) GroundHalite() int {
 	var count int
 	for x := 0; x < self.width; x++ {
 		for y := 0; y < self.height; y++ {
-			count += self.boxes[x][y].Halite
+			count += self.halite[x][y]
 		}
 	}
 	return count
 }
 
-func (self *Game) ChangedBoxes() []*Box {
-	return self.changed_boxes
-}
+func (self *Game) Neighbours(x, y int) []Point {
 
-func (self *Game) Neighbours(x, y int) []*Box {
-
-	ret := make([]*Box, 0, 4)
+	ret := make([]Point, 0, 4)
 
 	x1, y1 := x + 1, y
 	x2, y2 := x - 1, y
@@ -183,10 +179,27 @@ func (self *Game) Neighbours(x, y int) []*Box {
 	y3 = Mod(y3, self.height)
 	y4 = Mod(y4, self.height)
 
-	ret = append(ret, self.BoxAtFast(x1, y1))
-	ret = append(ret, self.BoxAtFast(x2, y2))
-	ret = append(ret, self.BoxAtFast(x3, y3))
-	ret = append(ret, self.BoxAtFast(x4, y4))
+	ret = append(ret, Point{x1, y1})
+	ret = append(ret, Point{x2, y2})
+	ret = append(ret, Point{x3, y3})
+	ret = append(ret, Point{x4, y4})
+
+	return ret
+}
+
+type Change struct {
+	X		int
+	Y		int
+	Delta	int
+}
+
+func (self *Game) Changes() []Change {
+
+	var ret []Change
+
+	for key, val := range self.box_deltas {				// Iterating over a map, order not deterministic
+		ret = append(ret, Change{key.X, key.Y, val})
+	}
 
 	return ret
 }

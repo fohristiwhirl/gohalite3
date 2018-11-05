@@ -201,7 +201,7 @@ func (self *Overmind) MaybeBuild() {
 			continue
 		}
 
-		if pilot.Box().Halite == 0 {		// Cheap way to avoid building on enemy dropoff / factory
+		if self.Game.HaliteAt(pilot) == 0 {		// Cheap way to avoid building on enemy dropoff / factory
 			continue
 		}
 
@@ -215,7 +215,7 @@ func (self *Overmind) MaybeBuild() {
 	})
 
 	for _, pilot := range possible_constructs {
-		if pilot.Ship.Halite + pilot.Box().Halite + budget >= self.Game.Constants.DROPOFF_COST {
+		if pilot.Ship.Halite + self.Game.HaliteAt(pilot) + budget >= self.Game.Constants.DROPOFF_COST {
 			pilot.Ship.Command = "c"
 			break
 		}
@@ -243,8 +243,8 @@ func (self *Overmind) TargetSwaps() {
 				a_dist_b := pilot_a.Dist(pilot_b.Target)
 				b_dist_a := pilot_b.Dist(pilot_a.Target)
 
-				alt_score_a := halite_dist_score(pilot_b.Target.Halite, a_dist_b)
-				alt_score_b := halite_dist_score(pilot_a.Target.Halite, b_dist_a)
+				alt_score_a := halite_dist_score(pilot_b.TargetHalite(), a_dist_b)
+				alt_score_b := halite_dist_score(pilot_a.TargetHalite(), b_dist_a)
 
 				if alt_score_a + alt_score_b > pilot_a.Score + pilot_b.Score {
 
@@ -267,43 +267,41 @@ func (self *Overmind) TargetSwaps() {
 
 func (self *Overmind) UpdatePilots() {
 
-	// Step 1: add new pilots...
+	var live_pilots []*Pilot		// Pilots with valid ships this turn
 
-	known_ships := make(map[int]bool)		// Ships that have a pilot already
+	sid_pilot_map := make(map[int]*Pilot)
 
 	for _, pilot := range self.Pilots {
-		known_ships[pilot.Sid] = true
+		sid_pilot_map[pilot.Sid] = pilot
 	}
 
 	for _, ship := range self.Game.MyShips() {
 
-		if known_ships[ship.Sid] == false {
+		pilot, ok := sid_pilot_map[ship.Sid]
 
-			pilot := new(Pilot)
+		if ok {
+
+			pilot.Ship = ship
+
+			live_pilots = append(live_pilots, pilot)
+
+		} else {
+
+			pilot = new(Pilot)
 			pilot.Game = self.Game
 			pilot.Overmind = self
 			pilot.Ship = ship
 			pilot.Sid = ship.Sid
-			pilot.Target = ship.Box()
 
-			self.Pilots = append(self.Pilots, pilot)
+			live_pilots = append(live_pilots, pilot)
 		}
 	}
 
-	// Step 2: delete dead pilots...
-
-	for n := len(self.Pilots) - 1; n >= 0 ; n-- {
-		pilot := self.Pilots[n]
-		if pilot.Ship.Alive == false {
-			self.Pilots = append(self.Pilots[:n], self.Pilots[n+1:]...)
-		}
-	}
-
-	// Step 3: other maintainence...
-
-	for _, pilot := range self.Pilots {
+	for _, pilot := range live_pilots {
 		pilot.NewTurn()
 	}
+
+	self.Pilots = live_pilots
 }
 
 func (self *Overmind) SetTurnParameters() {
@@ -312,7 +310,7 @@ func (self *Overmind) SetTurnParameters() {
 
 	for x := 0; x < self.Game.Width(); x++ {
 		for y := 0; y < self.Game.Height(); y++ {
-			current_ground_halite += self.Game.BoxAtFast(x, y).Halite
+			current_ground_halite += self.Game.HaliteAtFast(x, y)
 		}
 	}
 
@@ -351,7 +349,7 @@ func (self *Overmind) SetMoveBook(pilot *Pilot, pos hal.XYer) {
 
 func (self *Overmind) SameTargetCheck() {
 
-	targets := make(map[*hal.Box]int)
+	targets := make(map[hal.Point]int)
 
 	for _, pilot := range self.Pilots {
 		targetter_sid, ok := targets[pilot.Target]
@@ -371,11 +369,11 @@ func (self *Overmind) ShouldMine(halite_carried int, pos, tar hal.XYer) bool {
 		return false
 	}
 
-	box := self.Game.BoxAt(pos)
-	target := self.Game.BoxAt(tar)
+	pos_halite := self.Game.HaliteAt(pos)
+	tar_halite := self.Game.HaliteAt(tar)
 
-	if box.Halite > self.HappyThreshold {
-		if box.Halite > target.Halite / 3 {			// This is a bit odd since the test even happens when target is dropoff.
+	if pos_halite > self.HappyThreshold {
+		if pos_halite > tar_halite / 3 {			// This is a bit odd since the test even happens when target is dropoff.
 			return true
 		}
 	}

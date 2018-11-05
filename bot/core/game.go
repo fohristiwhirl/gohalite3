@@ -11,30 +11,29 @@ type Game struct {
 	Constants
 	ParseTime					time.Time
 
-	turn						int
 	players						int
-	pid							int				// When simulating, if all sides are being played, this can be set by each bot
 	width						int
 	height						int
 
+	pid							int				// When simulating, if all sides are being played, this can be set by each bot
 	__true_pid					int				// The PID of the player in the real game, regardless of sims; should almost never be read
-
-	budgets						[]int
-	boxes						[][]*Box
-	ships						[]*Ship			// Each ship contains a command field for the AI to set
-	dropoffs					[]*Dropoff		// The first <player_count> items are always the factories
-
-	ship_xy_lookup				map[Point]*Ship
-	ship_id_lookup				map[int]*Ship
-
-	changed_boxes				[]*Box			// Changed since last frame
 
 	logfile						*Logfile
 	flogfile					*Flogfile
 	token_parser				*TokenParser
 
+	turn						int
 	hash						string
 
+	// All of the following are regenerated from scratch each turn...
+
+	budgets						[]int
+	halite						[][]int
+	ships						[]*Ship			// Each ship contains a command field for the AI to set
+	dropoffs					[]*Dropoff		// The first <player_count> items are always the factories
+	ship_xy_lookup				map[Point]*Ship
+	ship_id_lookup				map[int]*Ship
+	box_deltas					map[Point]int
 	generate					map[int]bool	// Whether the AI wants to send a "g" command
 }
 
@@ -43,9 +42,6 @@ func NewGame() *Game {
 	game := new(Game)
 	game.turn = -1
 	game.token_parser = NewTokenParser()
-
-	game.ship_xy_lookup = make(map[Point]*Ship)
-	game.ship_id_lookup = make(map[int]*Ship)
 
 	return game
 }
@@ -61,7 +57,7 @@ func (self *Game) set_hash() {
 
 	for x := 0; x < self.width; x++ {
 		for y := 0; y < self.height; y++ {
-			z := fmt.Sprintf("%d", self.boxes[x][y].Halite)
+			z := fmt.Sprintf("%d", self.halite[x][y])
 			s = append(s, z)
 		}
 	}

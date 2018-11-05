@@ -1,23 +1,9 @@
 package core
 
-type Box struct {
-	Game						*Game
-	X							int
-	Y							int
-	Halite						int
-	Delta						int		// Change in Halite since last turn
-}
-
-func (self *Box) GetGame() *Game { return self.Game }
-func (self *Box) GetX() int { return self.X }
-func (self *Box) GetY() int { return self.Y }
-func (self *Box) DxDy(other XYer) (int, int) { return DxDy(self, other) }
-func (self *Box) Dist(other XYer) int { return Dist(self, other) }
-func (self *Box) SamePlace(other XYer) bool { return SamePlace(self, other) }
-
-// ------------------------------------------------------------
-
 type Dropoff struct {
+
+	// A short lived data structure, valid only for 1 turn. (Well, it's not like they move, but...)
+
 	Game						*Game
 	Factory						bool
 	Owner						int
@@ -25,8 +11,8 @@ type Dropoff struct {
 	Y							int
 }
 
-func (self *Dropoff) Box() *Box {
-	return self.Game.BoxAt(self)
+func (self *Dropoff) Point() Point {
+	return Point{self.X, self.Y}
 }
 
 func (self *Dropoff) GetGame() *Game { return self.Game }

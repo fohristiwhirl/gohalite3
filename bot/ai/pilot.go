@@ -13,7 +13,7 @@ type Pilot struct {
 	Overmind				*Overmind
 	Ship					*hal.Ship
 	Sid						int
-	Target					*hal.Box	// Currently this is not allowed to be nil. It is also NOT used to preserve target info between turns.
+	Target					hal.Point	// This is NOT used to preserve target info between turns.
 	Score					float32		// Score if our target is a mineable box.
 	Desires					[]string
 	Returning				bool
@@ -21,7 +21,7 @@ type Pilot struct {
 
 func (self *Pilot) NewTurn() {
 	self.Desires = nil
-	self.Target = self.Box()
+	self.Target = hal.Point{self.Ship.X, self.Ship.Y}
 	self.Score = 0
 
 	if self.OnDropoff() {
@@ -34,13 +34,13 @@ func (self *Pilot) SetTarget() {
 	// Note that the ship may still not move if it's happy where it is.
 
 	if self.FinalDash() {
-		self.Target = self.NearestDropoff().Box()
+		self.Target = self.NearestDropoff().Point()
 		self.Returning = true
 		return
 	}
 
 	if self.Ship.Halite > 500 || self.Returning {
-		self.Target = self.NearestDropoff().Box()
+		self.Target = self.NearestDropoff().Point()
 		self.Returning = true
 		return
 	}
@@ -51,7 +51,7 @@ func (self *Pilot) SetTarget() {
 
 func (self *Pilot) TargetBestBox() {
 
-	self.Target = nil		// Spooky. This is not allowed in the long run.
+	self.Target = hal.Point{-1, -1}		// Spooky
 	self.Score = -999999
 
 	game := self.Game
@@ -66,17 +66,17 @@ func (self *Pilot) TargetBestBox() {
 				continue
 			}
 
-			box := game.BoxAtFast(x, y)
+			halite := game.HaliteAtFast(x, y)
 
-			if box.Halite < self.Overmind.IgnoreThreshold {
+			if halite < self.Overmind.IgnoreThreshold {
 				continue
 			}
 
-			dist := self.Dist(box)
-			score := halite_dist_score(box.Halite, dist)
+			dist := self.Dist(hal.Point{x, y})
+			score := halite_dist_score(halite, dist)
 
 			if score > self.Score {
-				self.Target = box
+				self.Target = hal.Point{x, y}
 				self.Score = score
 			}
 		}
@@ -87,9 +87,9 @@ func (self *Pilot) TargetBestBox() {
 	// they have a good score. Our default might be such a square, so comparing
 	// against its score might lead us to reject a box we should pick.
 
-	if self.Target == nil {
-		self.Target = self.Box()											// Default - my own square
-		self.Score = halite_dist_score(self.Box().Halite, 0)
+	if self.Target == (hal.Point{-1, -1}) {
+		self.Target = self.Ship.Point()											// Default - my own square
+		self.Score = halite_dist_score(self.Ship.HaliteAt(), 0)
 	}
 }
 
@@ -177,9 +177,9 @@ func (self *Pilot) DesireNav(target hal.XYer) {
 			} else if would_mine_1 == false && would_mine_2 {		// Only mines at 2
 				return false
 			} else if would_mine_1 && would_mine_2 {				// Mines at both, choose higher
-				return self.Game.BoxAtFast(loc1.X, loc1.Y).Halite > self.Game.BoxAtFast(loc2.X, loc2.Y).Halite
+				return self.Game.HaliteAtFast(loc1.X, loc1.Y) > self.Game.HaliteAtFast(loc2.X, loc2.Y)
 			} else {												// Mines at neither, choose lower
-				return self.Game.BoxAtFast(loc1.X, loc1.Y).Halite < self.Game.BoxAtFast(loc2.X, loc2.Y).Halite
+				return self.Game.HaliteAtFast(loc1.X, loc1.Y) < self.Game.HaliteAtFast(loc2.X, loc2.Y)
 			}
 		})
 
@@ -233,8 +233,8 @@ func (self *Pilot) LocationAfterMove(s string) hal.Point {
 	return self.Ship.LocationAfterMove(s)
 }
 
-func (self *Pilot) Box() *hal.Box {
-	return self.Ship.Box()
+func (self *Pilot) TargetHalite() int {
+	return self.Game.HaliteAt(self.Target)
 }
 
 func (self *Pilot) GetGame() *hal.Game { return self.Game }

@@ -107,48 +107,43 @@ func (self *Game) PreParse() {
 	self.width = self.token_parser.Int()
 	self.height = self.token_parser.Int()
 
-	self.boxes = make([][]*Box, self.width)
-	for x := 0; x < self.width; x++ {
-		self.boxes[x] = make([]*Box, self.height)
-	}
+	self.halite = Make2dIntArray(self.width, self.height)
 
 	for y := 0; y < self.height; y++ {
 		for x := 0; x < self.width; x++ {
 			val := self.token_parser.Int()
-			self.boxes[x][y] = &Box{
-				Game: self,
-				X: x,
-				Y: y,
-				Halite: val,
-				Delta: 0,
-			}
+			self.halite[x][y] = val
 		}
 	}
 }
 
 func (self *Game) Parse() {
 
-	self.generate = make(map[int]bool)
+	// Note: creates brand new objects for literally everything;
+	// No holding onto the old ones.
 
-	// Set all ships as dead (for stale ref detection by the AI).
-	// Also clear all commands...
+	// Save some things we will need later...
 
-	for _, ship := range self.ships {
-		ship.Alive = false
-		ship.Command = ""
-	}
+	old_dropoffs := self.dropoffs
+	old_halite := self.halite
 
-	// Hold onto the sid lookup map so we can find
-	// the entities while still creating a new map...
-
-	old_ship_id_lookup := self.ship_id_lookup
-
-	// Clear some slices and maps (not dropoffs; old dropoffs are always OK)...
+	// Clear all the things...
 
 	self.budgets = make([]int, self.players)
+	self.halite = Make2dIntArray(self.width, self.height)
 	self.ships = nil
+	self.dropoffs = nil
 	self.ship_xy_lookup = make(map[Point]*Ship)
 	self.ship_id_lookup = make(map[int]*Ship)
+	self.box_deltas = make(map[Point]int)
+	self.generate = make(map[int]bool)
+
+	// Remake the factories...
+
+	for _, factory := range old_dropoffs[0:self.players] {
+		remade := *factory
+		self.dropoffs = append(self.dropoffs, &remade)
+	}
 
 	// ------------------------------------------------
 
@@ -166,26 +161,16 @@ func (self *Game) Parse() {
 
 		for i := 0; i < ships; i++ {
 
-			// Either update the ship or create it if needed.
-			// In any case, it ends up placed in the new maps.
+			ship := new(Ship)
+			ship.Game = self
 
-			sid := self.token_parser.Int()
-
-			ship, ok := old_ship_id_lookup[sid]
-
-			if ok == false {
-				ship = new(Ship)
-				ship.Game = self
-			}
-
-			ship.Alive = true
-			ship.Inspired = false			// Will detect later
-
-			ship.Owner = pid
-			ship.Sid = sid
+			ship.Sid = self.token_parser.Int()
 			ship.X = self.token_parser.Int()
 			ship.Y = self.token_parser.Int()
 			ship.Halite = self.token_parser.Int()
+
+			ship.Inspired = false					// Will detect later
+			ship.Owner = pid
 
 			self.ships = append(self.ships, ship)
 			self.ship_xy_lookup[Point{ship.X, ship.Y}] = ship
@@ -194,39 +179,24 @@ func (self *Game) Parse() {
 
 		for i := 0; i < dropoffs; i++ {
 
-			_ = self.token_parser.Int()					// sid (not needed)
-			x := self.token_parser.Int()
-			y := self.token_parser.Int()
+			_ = self.token_parser.Int()				// sid (not needed)
 
-			known := false
+			dropoff := new(Dropoff)
+			dropoff.Game = self
 
-			for _, dropoff := range self.dropoffs {
-				if dropoff.X == x && dropoff.Y == y {
-					known = true
-					break
-				}
-			}
+			dropoff.X = self.token_parser.Int()
+			dropoff.Y = self.token_parser.Int()
 
-			if known == false {
+			dropoff.Factory = false
+			dropoff.Owner = pid
 
-				new_dropoff := &Dropoff{
-					Game:		self,
-					Factory:	false,
-					Owner:		pid,
-					X:			x,
-					Y:			y,
-				}
-
-				self.dropoffs = append(self.dropoffs, new_dropoff)
-			}
+			self.dropoffs = append(self.dropoffs, dropoff)
 		}
 	}
 
-	self.changed_boxes = nil
-
 	for x := 0; x < self.width; x++ {
 		for y := 0; y < self.height; y++ {
-			self.boxes[x][y].Delta = 0
+			self.halite[x][y] = old_halite[x][y]
 		}
 	}
 
@@ -238,12 +208,12 @@ func (self *Game) Parse() {
 		y := self.token_parser.Int()
 
 		val := self.token_parser.Int()
-		old_val := self.boxes[x][y].Halite
+		old_val := old_halite[x][y]
 
-		self.boxes[x][y].Halite = val
-		self.boxes[x][y].Delta = val - old_val
-
-		self.changed_boxes = append(self.changed_boxes, self.boxes[x][y])
+		if val != old_val {
+			self.halite[x][y] = val
+			self.box_deltas[Point{x, y}] = val - old_val
+		}
 	}
 
 	// ------------------------------------------------
@@ -290,7 +260,7 @@ func (self *Game) Send() {
 
 				required := self.Constants.DROPOFF_COST
 				required -= ship.Halite
-				required -= ship.Box().Halite
+				required -= self.HaliteAt(ship)
 
 				if budget_left >= required {
 					commands = append(commands, fmt.Sprintf("c %d", ship.Sid))

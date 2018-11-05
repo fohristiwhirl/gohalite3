@@ -25,27 +25,28 @@ func NewWealthMap(game *hal.Game) *WealthMap {
 }
 
 func (self *WealthMap) Init() {
+
+	// Assumes the map is zeroed.
+	// Can't be used as a way to update.
+
 	for x := 0; x < len(self.Values); x++ {
 		for y := 0; y < len(self.Values[0]); y++ {
-			self.Propagate(hal.Point{x, y}, self.Game.BoxAtFast(x, y).Halite, WEALTH_MAP_RADIUS)
+			self.Propagate(x, y, self.Game.HaliteAtFast(x, y), WEALTH_MAP_RADIUS)
 		}
 	}
 }
 
 func (self *WealthMap) Update() {
-	all_changed := self.Game.ChangedBoxes()
-	for _, box := range all_changed {
-		self.Propagate(box, box.Delta, WEALTH_MAP_RADIUS)
+	all_changed := self.Game.Changes()
+	for _, c := range all_changed {
+		self.Propagate(c.X, c.Y, c.Delta, WEALTH_MAP_RADIUS)
 	}
 }
 
-func (self *WealthMap) Propagate(origin hal.XYer, value int, radius int) {
+func (self *WealthMap) Propagate(ox, oy, value int, radius int) {
 
 	width := self.Game.Width()
 	height := self.Game.Height()
-
-	ox := origin.GetX()
-	oy := origin.GetY()
 
 	for y := 0; y <= radius; y++ {
 

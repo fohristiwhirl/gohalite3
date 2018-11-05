@@ -5,6 +5,9 @@ import (
 )
 
 type Ship struct {
+
+	// A short lived data structure, valid only for 1 turn.
+
 	Game						*Game
 	Owner						int			// Player ID
 	Sid							int			// Ship ID
@@ -12,7 +15,6 @@ type Ship struct {
 	Y							int
 	Halite						int
 	Inspired					bool
-	Alive						bool		// Parser updates this so stale refs can be detected by the AI
 	Command						string		// Note that "o" means chosen-no-move while "" means no-choice-yet
 }
 
@@ -45,9 +47,9 @@ func (self *Ship) OnDropoff() bool {
 
 func (self *Ship) MoveCost() int {
 	if self.Inspired {
-		return self.Box().Halite / self.Game.Constants.INSPIRED_MOVE_COST_RATIO
+		return self.Game.HaliteAt(self) / self.Game.Constants.INSPIRED_MOVE_COST_RATIO
 	} else {
-		return self.Box().Halite / self.Game.Constants.MOVE_COST_RATIO
+		return self.Game.HaliteAt(self) / self.Game.Constants.MOVE_COST_RATIO
 	}
 }
 
@@ -73,6 +75,10 @@ func (self *Ship) CanDropoffAt(pos XYer) bool {
 	return self.Game.ShipCanDropoffAt(self, pos)
 }
 
+func (self *Ship) HaliteAt() int {
+	return self.Game.HaliteAtFast(self.X, self.Y)
+}
+
 func (self *Ship) LocationAfterMove(s string) Point {
 
 	dx, dy := StringToDxDy(s)
@@ -86,8 +92,8 @@ func (self *Ship) LocationAfterMove(s string) Point {
 	return Point{x, y}
 }
 
-func (self *Ship) Box() *Box {
-	return self.Game.BoxAtFast(self.X, self.Y)
+func (self *Ship) Point() Point {
+	return Point{self.X, self.Y}
 }
 
 func (self *Ship) GetGame() *Game { return self.Game }
