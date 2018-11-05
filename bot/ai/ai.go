@@ -59,8 +59,6 @@ func NewOvermind(game *hal.Game, config *Config, pid int) *Overmind {
 	o.DropoffDistMap = NewDropoffDistMap(game)
 	o.ContestMap = NewContestMap(game)
 
-	game.Log("Overmind started for pid %d", o.Pid)
-
 	return o
 }
 
@@ -164,11 +162,11 @@ func (self *Overmind) Step(game *hal.Game) {
 	// Other.................................................
 
 	self.MaybeBuild()
-/*
+
 	for _, pilot := range self.Pilots {
 		pilot.FlogTarget()
 	}
-*/
+
 	self.SameTargetCheck()		// Just logs
 	return
 }

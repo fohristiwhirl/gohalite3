@@ -10,6 +10,10 @@ func (self *Game) SetPid(pid int) {
 
 func (self *Game) Init() {
 
+	if self.turn != -1 {
+		panic("Game.Init() called on live game.")
+	}
+
 	// For making a valid turn 0 without calling Parse()
 
 	self.turn = 0
@@ -34,9 +38,9 @@ func (self *Game) SimGen() *Game {
 
 	// Can comment the next 2 lines out if wanting logs from tests...
 
-	// g.logfile = nil
-	// g.flogfile = nil
-	// g.token_parser = nil
+	g.logfile = nil
+	g.flogfile = nil
+	g.token_parser = nil
 
 	g.turn += 1
 	g.hash = ""

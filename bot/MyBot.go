@@ -12,11 +12,6 @@ import (
 )
 
 func main() {
-	simtest()
-	// bot()
-}
-
-func bot() {
 
 	const (
 		NAME = "Fohristiwhirl"
@@ -62,7 +57,6 @@ func bot() {
 	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02 15:04:05"))
 
 	overmind := ai.NewOvermind(game, config, true_pid)
-	fmt.Printf("%s %s\n", NAME, VERSION)
 
 	var player_strings []string
 	for n := 0; n < game.Players(); n++ {
@@ -72,6 +66,11 @@ func bot() {
 	game.LogWithoutTurn("./halite.exe --width %d --height %d -s %v %s", game.Width(), game.Height(), game.Constants.GameSeed, strings.Join(player_strings, " "))
 
 	// -------------------------------------------------------------------------------
+
+	prediction := sim_test(game, config)
+	game.Log("Simulator predicts final hash %s", prediction)
+
+	fmt.Printf("%s %s\n", NAME, VERSION)
 
 	for {
 		game.Parse()
