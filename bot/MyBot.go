@@ -21,6 +21,7 @@ func main() {
 	config := new(ai.Config)
 
 	flag.BoolVar(&config.Crash, "crash", false, "randomly crash")
+	flag.BoolVar(&config.SimTest, "simtest", false, "test the simulator")
 	flag.Parse()
 
 	game := hal.NewGame()
@@ -67,8 +68,10 @@ func main() {
 
 	// -------------------------------------------------------------------------------
 
-	prediction := sim_test(game, config)
-	game.Log("Simulator predicts final hash %s", prediction)
+	if config.SimTest {
+		prediction := sim_check(game, config)
+		game.Log("Simulator predicts final hash %s", prediction)
+	}
 
 	fmt.Printf("%s %s\n", NAME, VERSION)
 

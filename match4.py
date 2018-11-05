@@ -3,10 +3,10 @@ import json, random, subprocess
 REPLAY_FOLDER = "replays_local"
 
 bots = [
+	"bot.exe --simtest",
 	"bot.exe",
 	"bot.exe",
-	".\\other\\v15.exe",
-	".\\other\\v15.exe",
+	"bot.exe",
 ]
 
 # ------------------------------------------------------------------------
