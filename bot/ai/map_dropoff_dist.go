@@ -6,21 +6,19 @@ import (
 )
 
 type DropoffDistMap struct {
-	Game			*hal.Game
 	Values			[][]int
 }
 
 func NewDropoffDistMap(game *hal.Game) *DropoffDistMap {
 	o := new(DropoffDistMap)
-	o.Game = game
 	o.Values = hal.Make2dIntArray(game.Width(), game.Height())
 	return o
 }
 
-func (self *DropoffDistMap) Update() {
+func (self *DropoffDistMap) Update(game *hal.Game) {
 
-	width := self.Game.Width()
-	height := self.Game.Height()
+	width := game.Width()
+	height := game.Height()
 
 	var hotpoints []hal.Point
 
@@ -30,7 +28,7 @@ func (self *DropoffDistMap) Update() {
 		}
 	}
 
-	for _, dropoff := range self.Game.MyDropoffs() {
+	for _, dropoff := range game.MyDropoffs() {
 		self.Values[dropoff.X][dropoff.Y] = 0
 		hotpoints = append(hotpoints, hal.Point{dropoff.X, dropoff.Y})
 	}
@@ -41,7 +39,7 @@ func (self *DropoffDistMap) Update() {
 
 		for _, hotpoint := range hotpoints {
 
-			neighbours := self.Game.Neighbours(hotpoint.X, hotpoint.Y)
+			neighbours := game.Neighbours(hotpoint.X, hotpoint.Y)
 
 			for _, box := range neighbours {
 
@@ -61,11 +59,11 @@ func (self *DropoffDistMap) Update() {
 	}
 }
 
-func (self *DropoffDistMap) Flog() {
-	for x := 0; x < self.Game.Width(); x++ {
-		for y := 0; y < self.Game.Height(); y++ {
+func (self *DropoffDistMap) Flog(game *hal.Game) {
+	for x := 0; x < game.Width(); x++ {
+		for y := 0; y < game.Height(); y++ {
 			s := fmt.Sprintf("Dropoff dist: %v", self.Values[x][y])
-			self.Game.Flog(x, y, s, "")
+			game.Flog(x, y, s, "")
 		}
 	}
 }

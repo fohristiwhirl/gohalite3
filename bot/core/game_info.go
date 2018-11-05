@@ -47,6 +47,10 @@ func (self *Game) MyDropoffs() []*Dropoff {			// Includes factory
 	return self.Dropoffs(self.pid)
 }
 
+func (self *Game) AllDropoffs() []*Dropoff {
+	return self.dropoffs
+}
+
 func (self *Game) EnemyDropoffs() []*Dropoff {		// Includes factory
 
 	var ret []*Dropoff

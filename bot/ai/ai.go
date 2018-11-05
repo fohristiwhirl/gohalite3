@@ -71,20 +71,23 @@ func (self *Overmind) Step(game *hal.Game) {
 
 	rand.Seed(int64(self.Game.MyBudget() + self.Pid))
 
-	self.WealthMap.Update()
-	self.DistMap.Update()
-	self.EnemyDistMap.Update()
-	self.DropoffDistMap.Update()
-	self.ContestMap.Update(self.DistMap, self.EnemyDistMap)
+	self.WealthMap.Update(game)
+	self.DistMap.Update(game)
+	self.EnemyDistMap.Update(game)
+	self.DropoffDistMap.Update(game)
+	self.ContestMap.Update(game, self.DistMap, self.EnemyDistMap)
+
 /*
 	if self.Game.Turn() % 100 == 0 {
-		self.WealthMap.Flog()
-		self.DistMap.Flog()
-		self.EnemyDistMap.Flog()
-		self.DropoffDistMap.Flog()
-		self.ContestMap.Flog()
+		self.Game.Log("Flogging all stats at turn %d", self.Game.Turn())
+		self.WealthMap.Flog(game)
+		self.DistMap.Flog(game)
+		self.EnemyDistMap.Flog(game)
+		self.DropoffDistMap.Flog(game)
+		self.ContestMap.Flog(game)
 	}
 */
+
 	self.SetTurnParameters()
 	self.ClearBooks()
 	self.UpdatePilots()
@@ -220,6 +223,7 @@ func (self *Overmind) MaybeBuild() {
 	for _, pilot := range possible_constructs {
 		if pilot.Ship.Halite + self.Game.HaliteAt(pilot) + budget >= self.Game.Constants.DROPOFF_COST {
 			pilot.Ship.Command = "c"
+			self.Game.Log("Ship %d building dropoff (wmap: %d)", pilot.Sid, self.WealthMap.Values[pilot.Ship.X][pilot.Ship.Y])
 			break
 		}
 	}

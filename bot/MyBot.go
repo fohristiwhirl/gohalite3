@@ -1,5 +1,5 @@
 package main
-/*
+
 import (
 	"flag"
 	"fmt"
@@ -11,12 +11,17 @@ import (
 	hal "./core"
 )
 
-const (
-	NAME = "Fohristiwhirl"
-	VERSION = "16.b"				// hash is ??
-)
-
 func main() {
+	simtest()
+	// bot()
+}
+
+func bot() {
+
+	const (
+		NAME = "Fohristiwhirl"
+		VERSION = "16.b"				// hash is ??
+	)
 
 	config := new(ai.Config)
 
@@ -79,7 +84,7 @@ func main() {
 			}
 		}
 
-		overmind.Step()
+		overmind.Step(game)
 		game.Send()
 
 		if time.Now().Sub(game.ParseTime) > longest_turn {
@@ -88,4 +93,4 @@ func main() {
 		}
 	}
 }
-*/
+

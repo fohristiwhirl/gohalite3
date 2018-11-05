@@ -87,6 +87,14 @@ func (self *Game) set_hash() {
 	}
 
 	self.hash = HashFromString(strings.Join(s, "-"))
+
+	// FIXME
+
+	if self.turn == 162 {
+		for _, st := range s {
+			self.Log(st)
+		}
+	}
 }
 
 func (self *Game) fix_inspiration() {

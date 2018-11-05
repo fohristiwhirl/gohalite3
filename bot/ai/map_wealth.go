@@ -10,34 +10,32 @@ const (
 )
 
 type WealthMap struct {
-	Game			*hal.Game
 	Values			[][]int
 }
 
 func NewWealthMap(game *hal.Game) *WealthMap {
 
 	o := new(WealthMap)
-	o.Game = game
 	o.Values = hal.Make2dIntArray(game.Width(), game.Height())
 
-	o.Init()		// Unlike some other maps, this one needs inited.
+	o.Init(game)		// Unlike some other maps, this one needs inited.
 	return o
 }
 
-func (self *WealthMap) Init() {
+func (self *WealthMap) Init(game *hal.Game) {
 
 	// Assumes the map is zeroed.
 	// Can't be used as a way to update.
 
 	for x := 0; x < len(self.Values); x++ {
 		for y := 0; y < len(self.Values[0]); y++ {
-			self.Propagate(x, y, self.Game.HaliteAtFast(x, y), WEALTH_MAP_RADIUS)
+			self.Propagate(x, y, game.HaliteAtFast(x, y), WEALTH_MAP_RADIUS)
 		}
 	}
 }
 
-func (self *WealthMap) Update() {
-	all_changed := self.Game.Changes()
+func (self *WealthMap) Update(game *hal.Game) {
+	all_changed := game.Changes()
 	for _, c := range all_changed {
 		self.Propagate(c.X, c.Y, c.Delta, WEALTH_MAP_RADIUS)
 	}
@@ -45,8 +43,8 @@ func (self *WealthMap) Update() {
 
 func (self *WealthMap) Propagate(ox, oy, value int, radius int) {
 
-	width := self.Game.Width()
-	height := self.Game.Height()
+	width := len(self.Values)
+	height := len(self.Values[0])
 
 	for y := 0; y <= radius; y++ {
 
@@ -70,11 +68,11 @@ func (self *WealthMap) Propagate(ox, oy, value int, radius int) {
 	}
 }
 
-func (self *WealthMap) Flog() {
-	for x := 0; x < self.Game.Width(); x++ {
-		for y := 0; y < self.Game.Height(); y++ {
+func (self *WealthMap) Flog(game *hal.Game) {
+	for x := 0; x < game.Width(); x++ {
+		for y := 0; y < game.Height(); y++ {
 			s := fmt.Sprintf("Wealth: %v", self.Values[x][y])
-			self.Game.Flog(x, y, s, "")
+			game.Flog(x, y, s, "")
 		}
 	}
 }

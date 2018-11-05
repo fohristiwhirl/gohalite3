@@ -1,5 +1,9 @@
 package core
 
+import (
+	"fmt"
+)
+
 type Dropoff struct {
 
 	// A short lived data structure, valid only for 1 turn. (Well, it's not like they move, but...)
@@ -9,6 +13,10 @@ type Dropoff struct {
 	Owner						int
 	X							int
 	Y							int
+}
+
+func (self *Dropoff) String() string {
+	return fmt.Sprintf("Dropoff (%v,%v, owner %v)", self.X, self.Y, self.Owner)
 }
 
 func (self *Dropoff) Point() Point {

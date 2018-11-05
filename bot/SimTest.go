@@ -9,12 +9,12 @@ import (
 	hal "./core"
 )
 
-const (
-	NAME = "SimTest"
-	VERSION = "16.b"				// hash is ??
-)
+func simtest() {
 
-func main() {
+	const (
+		NAME = "SimTest"
+		VERSION = "16.b"				// hash is ??
+	)
 
 	config := new(ai.Config)
 
@@ -63,9 +63,14 @@ func main() {
 		}
 
 		game = game.SimGen()
-
+/*
 		for _, ship := range game.AllShips() {
-			game.Flog(ship.X, ship.Y, "", hal.FluorineColour(ship.Owner))
+			game.Flog(ship.X, ship.Y, fmt.Sprintf("Ship %d", ship.Sid), hal.FluorineColour(ship.Owner))
 		}
+*/
+		game.Log("Dropoffs: %v", len(game.AllDropoffs()))
+		game.Log("Actually: %v", game.AllDropoffs())
+
+		game.Log(game.Hash())
 	}
 }

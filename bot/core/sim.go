@@ -87,6 +87,8 @@ func (self *Game) SimGen() *Game {
 
 		if ship.Command == "c" {
 
+			g.Log("Dropoff")
+
 			pid := ship.Owner
 
 			g.budgets[pid] -= g.Constants.DROPOFF_COST
@@ -112,7 +114,7 @@ func (self *Game) SimGen() *Game {
 		dropoff := &Dropoff{
 			Game:		g,
 			Factory:	false,
-			Owner: 		ship.Sid,
+			Owner: 		ship.Owner,
 			X:			ship.X,
 			Y:			ship.Y,
 		}
@@ -329,6 +331,8 @@ func (self *Game) SimGen() *Game {
 
 	g.fix_inspiration()
 	g.set_hash()			// How slow is this?
+
+	g.Log("Total halite: %d", g.GroundHalite())
 
 	return g
 }

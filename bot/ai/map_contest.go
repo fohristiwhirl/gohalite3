@@ -6,7 +6,6 @@ import (
 )
 
 type ContestMap struct {
-	Game			*hal.Game
 	Values			[][]int
 }
 
@@ -15,15 +14,14 @@ type ContestMap struct {
 
 func NewContestMap(game *hal.Game) *ContestMap {
 	o := new(ContestMap)
-	o.Game = game
 	o.Values = hal.Make2dIntArray(game.Width(), game.Height())
 	return o
 }
 
-func (self *ContestMap) Update(a *DistMap, b *EnemyDistMap) {
+func (self *ContestMap) Update(game *hal.Game, a *DistMap, b *EnemyDistMap) {
 
-	width := self.Game.Width()
-	height := self.Game.Height()
+	width := game.Width()
+	height := game.Height()
 
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
@@ -32,11 +30,11 @@ func (self *ContestMap) Update(a *DistMap, b *EnemyDistMap) {
 	}
 }
 
-func (self *ContestMap) Flog() {
-	for x := 0; x < self.Game.Width(); x++ {
-		for y := 0; y < self.Game.Height(); y++ {
+func (self *ContestMap) Flog(game *hal.Game) {
+	for x := 0; x < game.Width(); x++ {
+		for y := 0; y < game.Height(); y++ {
 			s := fmt.Sprintf("Contest: %v", self.Values[x][y])
-			self.Game.Flog(x, y, s, "")
+			game.Flog(x, y, s, "")
 		}
 	}
 }
