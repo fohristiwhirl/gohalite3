@@ -73,7 +73,15 @@ func (self *Overmind) Step() {
 	self.EnemyDistMap.Update()
 	self.DropoffDistMap.Update()
 	self.ContestMap.Update(self.DistMap, self.EnemyDistMap)
-
+/*
+	if self.Game.Turn() % 100 == 0 {
+		self.WealthMap.Flog()
+		self.DistMap.Flog()
+		self.EnemyDistMap.Flog()
+		self.DropoffDistMap.Flog()
+		self.ContestMap.Flog()
+	}
+*/
 	self.SetTurnParameters()
 	self.ClearBooks()
 	self.UpdatePilots()
