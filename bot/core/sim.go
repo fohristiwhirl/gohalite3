@@ -10,10 +10,6 @@ func (self *Game) SetPid(pid int) {
 
 func (self *Game) SimGen() *Game {
 
-	// FIXME - clean up nils in the ship list
-	// FIXME - clear ship commands
-	// FIXME - check all self
-
 	duplicate := *self
 	g := &duplicate
 
@@ -24,12 +20,12 @@ func (self *Game) SimGen() *Game {
 	g.turn += 1
 	g.hash = ""
 
-	g.budgets = make([]int, self.players)
-	g.halite = Make2dIntArray(self.width, self.height)
+	g.budgets = make([]int, g.players)
+	g.halite = Make2dIntArray(g.width, g.height)
 	g.ships	= nil
 	g.dropoffs = nil
-	g.ship_xy_lookup = make(map[Point]*Ship)	// FIXME - do
-	g.ship_id_lookup = make(map[int]*Ship)		// FIXME - do
+	g.ship_xy_lookup = make(map[Point]*Ship)
+	g.ship_id_lookup = make(map[int]*Ship)
 	g.box_deltas = make(map[Point]int)			// FIXME - do
 	g.generate = make(map[int]bool)
 
@@ -282,6 +278,8 @@ func (self *Game) SimGen() *Game {
 		}
 	}
 
+	// Clear nils from the ship list...
+
 	var live_ships []*Ship
 
 	for _, ship := range g.ships {
@@ -291,6 +289,22 @@ func (self *Game) SimGen() *Game {
 	}
 
 	g.ships = live_ships
+
+	// Final cleanups...
+
+	for _, ship := range g.ships {
+		ship.Command = ""
+		g.ship_xy_lookup[Point{ship.X, ship.Y}] = ship
+		g.ship_id_lookup[ship.Sid] = ship
+	}
+
+	for x := 0; x < g.width; x++ {
+		for y := 0; y < g.height; y++ {
+			if g.halite[x][y] != self.halite[x][y] {
+				g.box_deltas[Point{x, y}] = g.halite[x][y] - self.halite[x][y]
+			}
+		}
+	}
 
 	g.fix_inspiration()
 
