@@ -8,8 +8,7 @@ import (
 	hal "../core"
 )
 
-type Pilot struct {
-	Game					*hal.Game
+type Pilot struct {			// Best not to have a reference to the game since that changes in sims.
 	Overmind				*Overmind
 	Ship					*hal.Ship
 	Sid						int
@@ -54,7 +53,7 @@ func (self *Pilot) TargetBestBox() {
 	self.Target = hal.Point{-1, -1}		// Spooky
 	self.Score = -999999
 
-	game := self.Game
+	game := self.GetGame()
 	width := game.Width()
 	height := game.Height()
 
@@ -160,6 +159,8 @@ func (self *Pilot) DesireNav(target hal.XYer) {
 
 	// If lowish halite, prefer mining en route...
 
+	game := self.GetGame()
+
 	if self.Ship.Halite < 750 {
 
 		sort.Slice(likes, func(a, b int) bool {
@@ -177,9 +178,9 @@ func (self *Pilot) DesireNav(target hal.XYer) {
 			} else if would_mine_1 == false && would_mine_2 {		// Only mines at 2
 				return false
 			} else if would_mine_1 && would_mine_2 {				// Mines at both, choose higher
-				return self.Game.HaliteAtFast(loc1.X, loc1.Y) > self.Game.HaliteAtFast(loc2.X, loc2.Y)
+				return game.HaliteAtFast(loc1.X, loc1.Y) > game.HaliteAtFast(loc2.X, loc2.Y)
 			} else {												// Mines at neither, choose lower
-				return self.Game.HaliteAtFast(loc1.X, loc1.Y) < self.Game.HaliteAtFast(loc2.X, loc2.Y)
+				return game.HaliteAtFast(loc1.X, loc1.Y) < game.HaliteAtFast(loc2.X, loc2.Y)
 			}
 		})
 
@@ -206,7 +207,7 @@ func (self *Pilot) DesireNav(target hal.XYer) {
 }
 
 func (self *Pilot) FinalDash() bool {
-	return self.Dist(self.NearestDropoff()) > self.Game.Constants.MAX_TURNS - self.Game.Turn() - 3
+	return self.Dist(self.NearestDropoff()) > self.GetGame().Constants.MAX_TURNS - self.GetGame().Turn() - 3
 }
 
 func (self *Pilot) OnDropoff() bool {
@@ -234,10 +235,10 @@ func (self *Pilot) LocationAfterMove(s string) hal.Point {
 }
 
 func (self *Pilot) TargetHalite() int {
-	return self.Game.HaliteAt(self.Target)
+	return self.GetGame().HaliteAt(self.Target)
 }
 
-func (self *Pilot) GetGame() *hal.Game { return self.Game }
+func (self *Pilot) GetGame() *hal.Game { return self.Overmind.Game }
 func (self *Pilot) GetX() int { return self.Ship.X }
 func (self *Pilot) GetY() int { return self.Ship.Y }
 func (self *Pilot) DxDy(other hal.XYer) (int, int) { return hal.DxDy(self, other) }
@@ -245,6 +246,6 @@ func (self *Pilot) Dist(other hal.XYer) int { return hal.Dist(self, other) }
 func (self *Pilot) SamePlace(other hal.XYer) bool { return hal.SamePlace(self, other) }
 
 func (self *Pilot) FlogTarget() {
-	self.Game.Flog(self.Ship.X, self.Ship.Y, fmt.Sprintf("Target: %d %d - Dist: %d", self.Target.X, self.Target.Y, hal.Dist(self, self.Target)), "")
-	self.Game.Flog(self.Target.X, self.Target.Y, "", "LemonChiffon")
+	self.GetGame().Flog(self.Ship.X, self.Ship.Y, fmt.Sprintf("Target: %d %d - Dist: %d", self.Target.X, self.Target.Y, hal.Dist(self, self.Target)), "")
+	self.GetGame().Flog(self.Target.X, self.Target.Y, "", "LemonChiffon")
 }

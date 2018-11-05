@@ -1,10 +1,8 @@
 package main
-/*
+
 import (
 	"flag"
 	"fmt"
-	"math/rand"
-	"strings"
 	"time"
 
 	ai "./ai"
@@ -12,7 +10,7 @@ import (
 )
 
 const (
-	NAME = "Fohristiwhirl"
+	NAME = "SimTest"
 	VERSION = "16.b"				// hash is ??
 )
 
@@ -25,18 +23,11 @@ func main() {
 
 	game := hal.NewGame()
 
-	var longest_turn time.Duration
-	var longest_turn_number int
-
-	start_time := time.Now()
-
 	defer func() {
 		if p := recover(); p != nil {
 			fmt.Printf("%v", p)
 			game.Log("Quitting: %v", p)
 			game.Log("Last known hash: %s", game.Hash())
-			game.Log("Longest turn (%d) took %v", longest_turn_number, longest_turn)
-			game.Log("Real-world time elapsed: %v", time.Now().Sub(start_time))
 			game.StopLog()
 			game.StopFlog()
 		}
@@ -52,40 +43,29 @@ func main() {
 	game.StartFlog(fmt.Sprintf("flogs/flog-%v-%v.json", game.Constants.GameSeed, true_pid))
 
 	game.PreParse()					// Reads the map data.
+	game.Init()						// Set game to a valid turn 0 state.
 
 	game.LogWithoutTurn("--------------------------------------------------------------------------------")
 	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02 15:04:05"))
 
-	overmind := ai.NewOvermind(game, config, true_pid)
-	fmt.Printf("%s %s\n", NAME, VERSION)
+	var overminds []*ai.Overmind
 
-	var player_strings []string
-	for n := 0; n < game.Players(); n++ {
-		player_strings = append(player_strings, "bot.exe")
+	for pid := 0; pid < game.Players(); pid++ {
+		overminds = append(overminds, ai.NewOvermind(game, config, pid))
 	}
 
-	game.LogWithoutTurn("./halite.exe --width %d --height %d -s %v %s", game.Width(), game.Height(), game.Constants.GameSeed, strings.Join(player_strings, " "))
+	// fmt.Printf("%s %s\n", NAME, VERSION)
 
-	// -------------------------------------------------------------------------------
+	for turn := 0; turn < 500; turn++ {
 
-	for {
-		game.Parse()
-
-		if config.Crash {
-			if rand.Intn(100) == 40 {
-				fmt.Printf("g g\n")
-			} else if rand.Intn(100) == 40 {
-				time.Sleep(5 * time.Second)
-			}
+		for _, o := range overminds {
+			o.Step(game)
 		}
 
-		overmind.Step()
-		game.Send()
-
-		if time.Now().Sub(game.ParseTime) > longest_turn {
-			longest_turn = time.Now().Sub(game.ParseTime)
-			longest_turn_number = game.Turn()
+		if turn < 10 {
+			game.Log(game.Hash())
 		}
+
+		game = game.SimGen()
 	}
 }
-*/

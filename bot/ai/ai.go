@@ -21,7 +21,7 @@ type Overmind struct {
 	Pid						int
 
 	Config					*Config
-	Game					*hal.Game
+	Game					*hal.Game				// Needs to be updated every turn for sims
 	Pilots					[]*Pilot
 
 	// ATC stuff:
@@ -59,12 +59,15 @@ func NewOvermind(game *hal.Game, config *Config, pid int) *Overmind {
 	o.DropoffDistMap = NewDropoffDistMap(game)
 	o.ContestMap = NewContestMap(game)
 
+	game.Log("Overmind started for pid %d", o.Pid)
+
 	return o
 }
 
-func (self *Overmind) Step() {
+func (self *Overmind) Step(game *hal.Game) {
 
-	self.Game.SetPid(self.Pid)		// Always first thing!
+	self.Game = game
+	self.Game.SetPid(self.Pid)
 
 	rand.Seed(int64(self.Game.MyBudget() + self.Pid))
 
@@ -288,7 +291,6 @@ func (self *Overmind) UpdatePilots() {
 		} else {
 
 			pilot = new(Pilot)
-			pilot.Game = self.Game
 			pilot.Overmind = self
 			pilot.Ship = ship
 			pilot.Sid = ship.Sid

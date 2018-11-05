@@ -8,14 +8,35 @@ func (self *Game) SetPid(pid int) {
 	self.pid = pid
 }
 
+func (self *Game) Init() {
+
+	// For making a valid turn 0 without calling Parse()
+
+	self.turn = 0
+	self.set_hash()
+
+	self.budgets = make([]int, self.players)
+
+	for pid := 0; pid < self.players; pid++ {
+		self.budgets[pid] = self.Constants.INITIAL_ENERGY
+	}
+
+	self.ship_xy_lookup = make(map[Point]*Ship)
+	self.ship_id_lookup = make(map[int]*Ship)
+	self.box_deltas = make(map[Point]int)
+	self.generate = make(map[int]bool)
+}
+
 func (self *Game) SimGen() *Game {
 
 	duplicate := *self
 	g := &duplicate
 
-	g.logfile = nil
-	g.flogfile = nil
-	g.token_parser = nil
+	// Can comment the next 2 lines out if wanting logs from tests...
+
+	// g.logfile = nil
+	// g.flogfile = nil
+	// g.token_parser = nil
 
 	g.turn += 1
 	g.hash = ""
@@ -307,6 +328,7 @@ func (self *Game) SimGen() *Game {
 	}
 
 	g.fix_inspiration()
+	g.set_hash()			// How slow is this?
 
 	return g
 }
