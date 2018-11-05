@@ -161,11 +161,11 @@ func (self *Overmind) Step(game *hal.Game) {
 	// Other.................................................
 
 	self.MaybeBuild()
-
+/*
 	for _, pilot := range self.Pilots {
 		pilot.FlogTarget()
 	}
-
+*/
 	self.SameTargetCheck()		// Just logs
 	return
 }

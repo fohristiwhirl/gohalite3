@@ -77,6 +77,10 @@ func (self *Game) MyShips() []*Ship {
 	return self.Ships(self.pid)
 }
 
+func (self *Game) AllShips() []*Ship {
+	return self.ships
+}
+
 func (self *Game) EnemyShips() []*Ship {
 
 	var ret []*Ship
@@ -158,6 +162,10 @@ func (self *Game) GroundHalite() int {
 		}
 	}
 	return count
+}
+
+func (self *Game) TotalShips() int {
+	return len(self.ships)
 }
 
 func (self *Game) Neighbours(x, y int) []Point {

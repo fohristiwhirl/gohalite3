@@ -62,10 +62,10 @@ func main() {
 			o.Step(game)
 		}
 
-		if turn < 10 {
-			game.Log(game.Hash())
-		}
-
 		game = game.SimGen()
+
+		for _, ship := range game.AllShips() {
+			game.Flog(ship.X, ship.Y, "", hal.FluorineColour(ship.Owner))
+		}
 	}
 }

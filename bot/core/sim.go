@@ -136,7 +136,7 @@ func (self *Game) SimGen() *Game {
 		mcr := g.Constants.MOVE_COST_RATIO
 		if ship.Inspired { mcr = g.Constants.INSPIRED_MOVE_COST_RATIO }
 
-		if ship.Halite > g.halite[ship.X][ship.Y] / mcr {
+		if ship.Halite >= g.halite[ship.X][ship.Y] / mcr {
 
 			if ship.Command != "" && ship.Command != "o" && ship.Command != "c" {
 

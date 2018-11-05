@@ -19,7 +19,7 @@ type Ship struct {
 }
 
 func (self *Ship) String() string {
-	return fmt.Sprintf("Ship %v (%v,%v, owner %v)", self.Sid, self.X, self.Y, self.Owner)
+	return fmt.Sprintf("Ship %v (%v,%v, owner %v, command \"%v\")", self.Sid, self.X, self.Y, self.Owner, self.Command)
 }
 
 func (self *Ship) ClearMove() {
