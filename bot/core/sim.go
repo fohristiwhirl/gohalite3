@@ -26,7 +26,7 @@ func (self *Game) SimGen() *Game {
 	g.dropoffs = nil
 	g.ship_xy_lookup = make(map[Point]*Ship)
 	g.ship_id_lookup = make(map[int]*Ship)
-	g.box_deltas = make(map[Point]int)			// FIXME - do
+	g.box_deltas = make(map[Point]int)
 	g.generate = make(map[int]bool)
 
 	// Remake some things. No objects are reused.
