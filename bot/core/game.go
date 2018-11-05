@@ -17,7 +17,7 @@ type Game struct {
 	width						int
 	height						int
 
-	true_pid					int				// Never changed; the PID of the player in the real game, regardless of sims
+	__true_pid					int				// The PID of the player in the real game, regardless of sims; should almost never be read
 
 	budgets						[]int
 	boxes						[][]*Box

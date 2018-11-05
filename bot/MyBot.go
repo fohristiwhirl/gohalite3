@@ -45,17 +45,18 @@ func main() {
 	// -------------------------------------------------------------------------------
 
 	game.PrePreParse()				// Reads very early data (including PID, needed for log names)
+	true_pid := game.Pid()
 
 	// Both of these fail harmlessly if the directory isn't there:
-	game.StartLog(fmt.Sprintf("logs/log-%v.txt", game.Pid()))
-	game.StartFlog(fmt.Sprintf("flogs/flog-%v-%v.json", game.Constants.GameSeed, game.Pid()))
+	game.StartLog(fmt.Sprintf("logs/log-%v.txt", true_pid))
+	game.StartFlog(fmt.Sprintf("flogs/flog-%v-%v.json", game.Constants.GameSeed, true_pid))
 
 	game.PreParse()					// Reads the map data.
 
 	game.LogWithoutTurn("--------------------------------------------------------------------------------")
 	game.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02 15:04:05"))
 
-	overmind := ai.NewOvermind(game, config, game.TruePid())
+	overmind := ai.NewOvermind(game, config, true_pid)
 	fmt.Printf("%s %s\n", NAME, VERSION)
 
 	var player_strings []string

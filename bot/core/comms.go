@@ -72,8 +72,8 @@ func (self *Game) PrePreParse() {
 	}
 
 	self.players = self.token_parser.Int()
-	self.true_pid = self.token_parser.Int()
-	self.pid = self.true_pid
+	self.pid = self.token_parser.Int()
+	self.__true_pid = self.pid
 }
 
 func (self *Game) PreParse() {
@@ -269,7 +269,7 @@ func (self *Game) SetGenerate(val bool) {
 
 func (self *Game) Send() {
 
-	self.pid = self.true_pid		// In case any simulating has been going on.
+	self.pid = self.__true_pid		// In case any simulating has been going on.
 
 	var commands []string
 
