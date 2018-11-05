@@ -175,6 +175,10 @@ func (self *Game) Parse() {
 			self.ships = append(self.ships, ship)
 			self.ship_xy_lookup[Point{ship.X, ship.Y}] = ship
 			self.ship_id_lookup[ship.Sid] = ship
+
+			if ship.Sid > self.highest_sid_seen {
+				self.highest_sid_seen = ship.Sid
+			}
 		}
 
 		for i := 0; i < dropoffs; i++ {

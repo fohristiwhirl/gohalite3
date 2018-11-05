@@ -24,6 +24,7 @@ type Game struct {
 
 	turn						int
 	hash						string
+	highest_sid_seen			int				// Mostly for the simulator
 
 	// All of the following are regenerated from scratch each turn...
 
@@ -41,6 +42,7 @@ func NewGame() *Game {
 
 	game := new(Game)
 	game.turn = -1
+	game.highest_sid_seen = -1
 	game.token_parser = NewTokenParser()
 
 	return game
