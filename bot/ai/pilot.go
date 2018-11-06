@@ -20,7 +20,7 @@ func (self *Overmind) NewTurn(ship *hal.Ship) {
 		ship.Returning = false
 	}
 
-	self.SetFinalDash(ship)
+	SetFinalDash(ship)
 }
 
 func (self *Overmind) SetTarget(ship *hal.Ship, target_book [][]bool) {
@@ -45,11 +45,13 @@ func (self *Overmind) SetTarget(ship *hal.Ship, target_book [][]bool) {
 
 func (self *Overmind) TargetBestBox(ship *hal.Ship, target_book [][]bool) {
 
+	frame := ship.Frame
+
 	ship.TargetOK = false
 	ship.Score = -999999
 
-	width := self.Frame.Width()
-	height := self.Frame.Height()
+	width := frame.Width()
+	height := frame.Height()
 
 	for x := 0; x < width; x++ {
 
@@ -59,14 +61,14 @@ func (self *Overmind) TargetBestBox(ship *hal.Ship, target_book [][]bool) {
 				continue
 			}
 
-			halite := self.Frame.HaliteAtFast(x, y)
+			halite := frame.HaliteAtFast(x, y)
 
 			if halite < self.IgnoreThreshold {
 				continue
 			}
 
 			dist := ship.Dist(hal.Point{x, y})
-			score := halite_dist_score(halite, dist)
+			score := HaliteDistScore(halite, dist)
 
 			if score > ship.Score {
 				ship.Target = hal.Point{x, y}
@@ -84,7 +86,7 @@ func (self *Overmind) TargetBestBox(ship *hal.Ship, target_book [][]bool) {
 	if ship.TargetOK == false {
 		ship.Target = ship.Point()											// Default - my own square
 		ship.TargetOK = true
-		ship.Score = halite_dist_score(ship.HaliteAt(), 0)
+		ship.Score = HaliteDistScore(ship.HaliteAt(), 0)
 	}
 }
 
@@ -106,7 +108,7 @@ func (self *Overmind) SetDesires(ship *hal.Ship) {
 
 	// Maybe we're happy where we are...
 
-	if self.ShouldMine(ship.Halite, ship, ship.Target) {
+	if self.ShouldMine(ship.Frame, ship.Halite, ship, ship.Target) {
 		ship.Desires = []string{"o"}
 		return
 	}
@@ -119,6 +121,7 @@ func (self *Overmind) SetDesires(ship *hal.Ship) {
 func (self *Overmind) DesireNav(ship *hal.Ship) {
 
 	ship.Desires = nil
+	frame := ship.Frame
 	dx, dy := ship.DxDy(ship.Target)
 
 	if dx == 0 && dy == 0 {
@@ -163,17 +166,17 @@ func (self *Overmind) DesireNav(ship *hal.Ship) {
 			loc1 := ship.LocationAfterMove(likes[a])
 			loc2 := ship.LocationAfterMove(likes[b])
 
-			would_mine_1 := self.ShouldMine(halite_after_move, loc1, ship.Target)
-			would_mine_2 := self.ShouldMine(halite_after_move, loc2, ship.Target)
+			would_mine_1 := self.ShouldMine(frame, halite_after_move, loc1, ship.Target)
+			would_mine_2 := self.ShouldMine(frame, halite_after_move, loc2, ship.Target)
 
 			if would_mine_1 && would_mine_2 == false {				// Only mines at 1
 				return true
 			} else if would_mine_1 == false && would_mine_2 {		// Only mines at 2
 				return false
 			} else if would_mine_1 && would_mine_2 {				// Mines at both, choose higher
-				return self.Frame.HaliteAtFast(loc1.X, loc1.Y) > self.Frame.HaliteAtFast(loc2.X, loc2.Y)
+				return frame.HaliteAtFast(loc1.X, loc1.Y) > frame.HaliteAtFast(loc2.X, loc2.Y)
 			} else {												// Mines at neither, choose lower
-				return self.Frame.HaliteAtFast(loc1.X, loc1.Y) < self.Frame.HaliteAtFast(loc2.X, loc2.Y)
+				return frame.HaliteAtFast(loc1.X, loc1.Y) < frame.HaliteAtFast(loc2.X, loc2.Y)
 			}
 		})
 
@@ -199,15 +202,15 @@ func (self *Overmind) DesireNav(ship *hal.Ship) {
 	ship.Desires = append(ship.Desires, "o")
 }
 
-func (self *Overmind) SetFinalDash(ship *hal.Ship) {
-	if ship.Dist(ship.NearestDropoff()) > self.Frame.Constants.MAX_TURNS - self.Frame.Turn() - 3 {
+func FlogTarget(ship *hal.Ship) {
+	ship.Frame.Flog(ship.X, ship.Y, fmt.Sprintf("Target: %d %d - Dist: %d", ship.Target.X, ship.Target.Y, ship.Dist(ship.Target)), "")
+	ship.Frame.Flog(ship.Target.X, ship.Target.Y, "", "LemonChiffon")
+}
+
+func SetFinalDash(ship *hal.Ship) {
+	if ship.Dist(ship.NearestDropoff()) > ship.Frame.Constants.MAX_TURNS - ship.Frame.Turn() - 3 {
 		ship.FinalDash = true
 	} else {
 		ship.FinalDash = false
 	}
-}
-
-func (self *Overmind) FlogTarget(ship *hal.Ship) {
-	self.Frame.Flog(ship.X, ship.Y, fmt.Sprintf("Target: %d %d - Dist: %d", ship.Target.X, ship.Target.Y, ship.Dist(ship.Target)), "")
-	self.Frame.Flog(ship.Target.X, ship.Target.Y, "", "LemonChiffon")
 }

@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 
@@ -24,8 +25,6 @@ type Overmind struct {
 	Pid						int
 	Config					*Config
 
-	Frame					*hal.Frame				// Needs to be updated every turn
-
 	// Stategic stats:
 
 	WealthMap				*maps.WealthMap			// Other maps are available in /maps
@@ -40,33 +39,32 @@ func NewOvermind(frame *hal.Frame, config *Config, pid int) *Overmind {
 	// At this point, frame has already been pre-pre-parsed and pre-parsed, so the map data exists.
 
 	o := new(Overmind)
-	o.Pid = pid
-	o.Frame = frame
 
+	o.Pid = pid
 	o.Config = config
-	o.InitialGroundHalite = frame.GroundHalite()
 
 	o.WealthMap = maps.NewWealthMap(frame)
+	o.InitialGroundHalite = frame.GroundHalite()
 
 	return o
 }
 
 func (self *Overmind) Step(frame *hal.Frame) {
 
-	// Various calls rely on these two things happening......
+	// Various calls rely on this happening..................
+	// Always have this first.
 
-	self.Frame = frame
-	self.Frame.SetPid(self.Pid)
+	frame.SetPid(self.Pid)
 
 	// Various other initialisation..........................
 
-	rand.Seed(int64(self.Frame.MyBudget() + self.Pid))
+	rand.Seed(int64(frame.MyBudget() + self.Pid))
 	self.WealthMap.Update(frame)
-	self.SetTurnParameters()
+	self.SetTurnParameters(frame)
 
 	// What each ship wants to do............................
 
-	my_ships := self.Frame.MyShips()
+	my_ships := frame.MyShips()
 
 	for _, ship := range my_ships {
 		self.NewTurn(ship)
@@ -78,7 +76,7 @@ func (self *Overmind) Step(frame *hal.Frame) {
 		self.SetTarget(ship, target_book)
 	}
 
-	self.TargetSwaps(my_ships)
+	TargetSwaps(my_ships)
 
 	for _, ship := range my_ships {
 		self.SetDesires(ship)
@@ -90,34 +88,37 @@ func (self *Overmind) Step(frame *hal.Frame) {
 
 	// Other.................................................
 
-	self.MaybeBuild(my_ships, move_book)
+	self.MaybeBuild(frame, my_ships, move_book)
 
 	for _, ship := range my_ships {
-		self.FlogTarget(ship)
+		FlogTarget(ship)
 	}
 
-	self.SameTargetCheck(my_ships)		// Just logs
+	for _, report := range SameTargetReports(my_ships) {
+		frame.Log(report)
+	}
+
 	return
 }
 
-func (self *Overmind) MaybeBuild(my_ships []*hal.Ship, move_book *MoveBook) {
+func (self *Overmind) MaybeBuild(frame *hal.Frame, my_ships []*hal.Ship, move_book *MoveBook) {
 
-	budget := self.Frame.MyBudget()
+	budget := frame.MyBudget()
 
-	factory := self.Frame.MyFactory()
+	factory := frame.MyFactory()
 	willing := true
 
-	if self.InitialGroundHalite / (self.Frame.GroundHalite() + 1) >= 2 {		// remember int division, also div-by-zero
+	if self.InitialGroundHalite / (frame.GroundHalite() + 1) >= 2 {		// remember int division, also div-by-zero
 		willing = false
 	}
 
-	if self.Frame.Turn() >= self.Frame.Constants.MAX_TURNS / 2 {
+	if frame.Turn() >= frame.Constants.MAX_TURNS / 2 {
 		willing = false
 	}
 
-	if budget >= self.Frame.Constants.NEW_ENTITY_ENERGY_COST && move_book.Booker(factory) == nil && willing {
-		self.Frame.SetGenerate(true)
-		budget -= self.Frame.Constants.NEW_ENTITY_ENERGY_COST
+	if budget >= frame.Constants.NEW_ENTITY_ENERGY_COST && move_book.Booker(factory) == nil && willing {
+		frame.SetGenerate(true)
+		budget -= frame.Constants.NEW_ENTITY_ENERGY_COST
 	}
 
 	// -------------------------------------------
@@ -134,7 +135,7 @@ func (self *Overmind) MaybeBuild(my_ships []*hal.Ship, move_book *MoveBook) {
 			continue
 		}
 
-		if self.Frame.HaliteAtFast(ship.X, ship.Y) == 0 {		// Cheap way to avoid building on enemy dropoff / factory
+		if frame.HaliteAtFast(ship.X, ship.Y) == 0 {		// Cheap way to avoid building on enemy dropoff / factory
 			continue
 		}
 
@@ -148,15 +149,55 @@ func (self *Overmind) MaybeBuild(my_ships []*hal.Ship, move_book *MoveBook) {
 	})
 
 	for _, ship := range possible_constructs {
-		if ship.Halite + self.Frame.HaliteAtFast(ship.X, ship.Y) + budget >= self.Frame.Constants.DROPOFF_COST {
+		if ship.Halite + frame.HaliteAtFast(ship.X, ship.Y) + budget >= frame.Constants.DROPOFF_COST {
 			ship.Command = "c"
-			self.Frame.Log("Ship %d building dropoff (wmap: %d)", ship.Sid, self.WealthMap.Values[ship.X][ship.Y])
+			frame.Log("Ship %d building dropoff (wmap: %d)", ship.Sid, self.WealthMap.Values[ship.X][ship.Y])
 			break
 		}
 	}
 }
 
-func (self *Overmind) TargetSwaps(my_ships []*hal.Ship) {
+func (self *Overmind) SetTurnParameters(frame *hal.Frame) {
+
+	current_ground_halite := 0
+
+	for x := 0; x < frame.Width(); x++ {
+		for y := 0; y < frame.Height(); y++ {
+			current_ground_halite += frame.HaliteAtFast(x, y)
+		}
+	}
+
+	avg_ground_halite := current_ground_halite / (frame.Width() * frame.Height())
+
+	self.HappyThreshold = avg_ground_halite / 2			// Above this, ground is sticky
+	self.IgnoreThreshold = avg_ground_halite * 2 / 3	// Less than this not counted for targeting
+}
+
+func (self *Overmind) ShouldMine(frame *hal.Frame, halite_carried int, pos, tar hal.XYer) bool {
+
+	// Whether a ship -- if it were carrying n halite, at pos, with specified target -- would stop to mine.
+
+	if halite_carried >= 800 {
+		return false
+	}
+
+	pos_halite := frame.HaliteAt(pos)
+	tar_halite := frame.HaliteAt(tar)
+
+	if pos_halite > self.HappyThreshold {
+		if pos_halite > tar_halite / 3 {			// This is a bit odd since the test even happens when target is dropoff.
+			return true
+		}
+	}
+
+	return false
+}
+
+func HaliteDistScore(halite, dist int) float32 {
+	return float32(halite) / float32((dist + 1) * (dist + 1))	// Avoid div-by-zero
+}
+
+func TargetSwaps(my_ships []*hal.Ship) {
 
 	for cycle := 0; cycle < 4; cycle++ {
 
@@ -177,8 +218,8 @@ func (self *Overmind) TargetSwaps(my_ships []*hal.Ship) {
 				a_dist_b := ship_a.Dist(ship_b.Target)
 				b_dist_a := ship_b.Dist(ship_a.Target)
 
-				alt_score_a := halite_dist_score(ship_b.TargetHalite(), a_dist_b)
-				alt_score_b := halite_dist_score(ship_a.TargetHalite(), b_dist_a)
+				alt_score_a := HaliteDistScore(ship_b.TargetHalite(), a_dist_b)
+				alt_score_b := HaliteDistScore(ship_a.TargetHalite(), b_dist_a)
 
 				if alt_score_a + alt_score_b > ship_a.Score + ship_b.Score {
 
@@ -199,56 +240,20 @@ func (self *Overmind) TargetSwaps(my_ships []*hal.Ship) {
 	}
 }
 
-func (self *Overmind) SetTurnParameters() {
+func SameTargetReports(my_ships []*hal.Ship) []string {
 
-	current_ground_halite := 0
-
-	for x := 0; x < self.Frame.Width(); x++ {
-		for y := 0; y < self.Frame.Height(); y++ {
-			current_ground_halite += self.Frame.HaliteAtFast(x, y)
-		}
-	}
-
-	avg_ground_halite := current_ground_halite / (self.Frame.Width() * self.Frame.Height())
-
-	self.HappyThreshold = avg_ground_halite / 2			// Above this, ground is sticky
-	self.IgnoreThreshold = avg_ground_halite * 2 / 3	// Less than this not counted for targeting
-}
-
-func (self *Overmind) SameTargetCheck(my_ships []*hal.Ship) {
+	var ret []string
 
 	targets := make(map[hal.Point]int)
 
 	for _, ship := range my_ships {
 		targetter_sid, ok := targets[ship.Target]
 		if ok && ship.TargetIsDropoff() == false {
-			self.Frame.Log("Ships %d and %d looking at same target: %d %d", ship.Sid, targetter_sid, ship.Target.X, ship.Target.Y)
+			ret = append(ret, fmt.Sprintf("Ships %d and %d looking at same target: %d %d", ship.Sid, targetter_sid, ship.Target.X, ship.Target.Y))
 		} else {
 			targets[ship.Target] = ship.Sid
 		}
 	}
-}
 
-func (self *Overmind) ShouldMine(halite_carried int, pos, tar hal.XYer) bool {
-
-	// Whether a ship -- if it were carrying n halite, at pos, with specified target -- would stop to mine.
-
-	if halite_carried >= 800 {
-		return false
-	}
-
-	pos_halite := self.Frame.HaliteAt(pos)
-	tar_halite := self.Frame.HaliteAt(tar)
-
-	if pos_halite > self.HappyThreshold {
-		if pos_halite > tar_halite / 3 {			// This is a bit odd since the test even happens when target is dropoff.
-			return true
-		}
-	}
-
-	return false
-}
-
-func halite_dist_score(halite, dist int) float32 {
-	return float32(halite) / float32((dist + 1) * (dist + 1))	// Avoid div-by-zero
+	return ret
 }
