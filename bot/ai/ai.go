@@ -22,18 +22,13 @@ type Config struct {
 type Overmind struct {
 
 	Pid						int
-
 	Config					*Config
+
 	Frame					*hal.Frame				// Needs to be updated every turn
-
-	// ATC stuff:
-
-	TargetBook				[][]bool
 
 	// Stategic stats:
 
-	WealthMap				*maps.WealthMap
-	// Other maps are available in /maps
+	WealthMap				*maps.WealthMap			// Other maps are available in /maps
 
 	InitialGroundHalite		int
 	HappyThreshold			int
@@ -58,17 +53,16 @@ func NewOvermind(frame *hal.Frame, config *Config, pid int) *Overmind {
 
 func (self *Overmind) Step(frame *hal.Frame) {
 
-	// Various calls rely on these two things happening...
+	// Various calls rely on these two things happening......
 
 	self.Frame = frame
 	self.Frame.SetPid(self.Pid)
 
+	// Various other initialisation..........................
+
 	rand.Seed(int64(self.Frame.MyBudget() + self.Pid))
-
 	self.WealthMap.Update(frame)
-
 	self.SetTurnParameters()
-	self.ClearBooks()
 
 	// What each ship wants to do............................
 
@@ -78,8 +72,10 @@ func (self *Overmind) Step(frame *hal.Frame) {
 		self.NewTurn(ship)
 	}
 
+	target_book := hal.Make2dBoolArray(frame.Width(), frame.Height())		// What points are targets. Updated for each ship.
+
 	for _, ship := range my_ships {
-		self.SetTarget(ship)
+		self.SetTarget(ship, target_book)
 	}
 
 	self.TargetSwaps(my_ships)
@@ -217,15 +213,6 @@ func (self *Overmind) SetTurnParameters() {
 
 	self.HappyThreshold = avg_ground_halite / 2			// Above this, ground is sticky
 	self.IgnoreThreshold = avg_ground_halite * 2 / 3	// Less than this not counted for targeting
-}
-
-func (self *Overmind) ClearBooks() {
-
-	self.TargetBook = make([][]bool, self.Frame.Width())
-
-	for x := 0; x < self.Frame.Width(); x++ {
-		self.TargetBook[x] = make([]bool, self.Frame.Height())
-	}
 }
 
 func (self *Overmind) SameTargetCheck(my_ships []*hal.Ship) {

@@ -63,3 +63,11 @@ func Make2dIntArray(width, height int) [][]int {
 	}
 	return ret
 }
+
+func Make2dBoolArray(width, height int) [][]bool {
+	ret := make([][]bool, width)
+	for x := 0; x < width; x++ {
+		ret[x] = make([]bool, height)
+	}
+	return ret
+}

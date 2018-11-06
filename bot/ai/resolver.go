@@ -1,5 +1,7 @@
 package ai
 
+// Given ships with desired moves, resolve them without collisions, as far as reasonable...
+
 import (
 	hal "../core"
 )

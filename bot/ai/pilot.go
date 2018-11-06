@@ -23,7 +23,7 @@ func (self *Overmind) NewTurn(ship *hal.Ship) {
 	self.SetFinalDash(ship)
 }
 
-func (self *Overmind) SetTarget(ship *hal.Ship) {
+func (self *Overmind) SetTarget(ship *hal.Ship, target_book [][]bool) {
 
 	// Note that the ship may still not move if it's happy where it is.
 
@@ -39,11 +39,11 @@ func (self *Overmind) SetTarget(ship *hal.Ship) {
 		return
 	}
 
-	self.TargetBestBox(ship)
-	self.TargetBook[ship.Target.X][ship.Target.Y] = true		// Only for normal targets
+	self.TargetBestBox(ship, target_book)
+	target_book[ship.Target.X][ship.Target.Y] = true		// Only for normal targets
 }
 
-func (self *Overmind) TargetBestBox(ship *hal.Ship) {
+func (self *Overmind) TargetBestBox(ship *hal.Ship, target_book [][]bool) {
 
 	ship.TargetOK = false
 	ship.Score = -999999
@@ -55,7 +55,7 @@ func (self *Overmind) TargetBestBox(ship *hal.Ship) {
 
 		for y := 0; y < height; y++ {
 
-			if self.TargetBook[x][y] {
+			if target_book[x][y] {
 				continue
 			}
 
