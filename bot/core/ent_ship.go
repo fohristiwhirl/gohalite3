@@ -8,7 +8,7 @@ type Ship struct {
 
 	// A short lived data structure, valid only for 1 turn.
 
-	Game						*Game
+	Frame						*Frame
 	Owner						int			// Player ID
 	Sid							int			// Ship ID
 	X							int
@@ -36,7 +36,7 @@ func (self *Ship) Move(s string) {		// Note that one cannot send "" - use ClearM
 }
 
 func (self *Ship) OnDropoff() bool {
-	player_dropoffs := self.Game.Dropoffs(self.Owner)
+	player_dropoffs := self.Frame.Dropoffs(self.Owner)
 	for _, dropoff := range player_dropoffs {
 		if dropoff.X == self.X && dropoff.Y == self.Y {
 			return true
@@ -47,15 +47,15 @@ func (self *Ship) OnDropoff() bool {
 
 func (self *Ship) MoveCost() int {
 	if self.Inspired {
-		return self.Game.HaliteAt(self) / self.Game.Constants.INSPIRED_MOVE_COST_RATIO
+		return self.Frame.HaliteAt(self) / self.Frame.Constants.INSPIRED_MOVE_COST_RATIO
 	} else {
-		return self.Game.HaliteAt(self) / self.Game.Constants.MOVE_COST_RATIO
+		return self.Frame.HaliteAt(self) / self.Frame.Constants.MOVE_COST_RATIO
 	}
 }
 
 func (self *Ship) NearestDropoff() *Dropoff {
 
-	possibles := self.Game.Dropoffs(self.Owner)
+	possibles := self.Frame.Dropoffs(self.Owner)
 
 	choice := possibles[0]
 	choice_dist := self.Dist(choice)
@@ -72,11 +72,11 @@ func (self *Ship) NearestDropoff() *Dropoff {
 }
 
 func (self *Ship) CanDropoffAt(pos XYer) bool {
-	return self.Game.ShipCanDropoffAt(self, pos)
+	return self.Frame.ShipCanDropoffAt(self, pos)
 }
 
 func (self *Ship) HaliteAt() int {
-	return self.Game.HaliteAtFast(self.X, self.Y)
+	return self.Frame.HaliteAtFast(self.X, self.Y)
 }
 
 func (self *Ship) LocationAfterMove(s string) Point {
@@ -86,8 +86,8 @@ func (self *Ship) LocationAfterMove(s string) Point {
 	x := self.X + dx
 	y := self.Y + dy
 
-	x = Mod(x, self.Game.Width())
-	y = Mod(y, self.Game.Height())
+	x = Mod(x, self.Frame.Width())
+	y = Mod(y, self.Frame.Height())
 
 	return Point{x, y}
 }
@@ -96,7 +96,7 @@ func (self *Ship) Point() Point {
 	return Point{self.X, self.Y}
 }
 
-func (self *Ship) GetGame() *Game { return self.Game }
+func (self *Ship) GetFrame() *Frame { return self.Frame }
 func (self *Ship) GetX() int { return self.X }
 func (self *Ship) GetY() int { return self.Y }
 func (self *Ship) DxDy(other XYer) (int, int) { return DxDy(self, other) }

@@ -22,7 +22,7 @@ type Overmind struct {
 	Pid						int
 
 	Config					*Config
-	Game					*hal.Game				// Needs to be updated every turn for sims
+	Frame					*hal.Frame				// Needs to be updated every turn
 	Pilots					[]*Pilot
 
 	// ATC stuff:
@@ -43,47 +43,47 @@ type Overmind struct {
 	IgnoreThreshold			int
 }
 
-func NewOvermind(game *hal.Game, config *Config, pid int) *Overmind {
+func NewOvermind(frame *hal.Frame, config *Config, pid int) *Overmind {
 
-	// At this point, game has already been pre-pre-parsed and pre-parsed, so the map data exists.
+	// At this point, frame has already been pre-pre-parsed and pre-parsed, so the map data exists.
 
 	o := new(Overmind)
 	o.Pid = pid
-	o.Game = game
+	o.Frame = frame
 
 	o.Config = config
-	o.InitialGroundHalite = game.GroundHalite()
+	o.InitialGroundHalite = frame.GroundHalite()
 
-	o.WealthMap = NewWealthMap(game)
-	o.DistMap = NewDistMap(game)
-	o.EnemyDistMap = NewEnemyDistMap(game)
-	o.DropoffDistMap = NewDropoffDistMap(game)
-	o.ContestMap = NewContestMap(game)
+	o.WealthMap = NewWealthMap(frame)
+	o.DistMap = NewDistMap(frame)
+	o.EnemyDistMap = NewEnemyDistMap(frame)
+	o.DropoffDistMap = NewDropoffDistMap(frame)
+	o.ContestMap = NewContestMap(frame)
 
 	return o
 }
 
-func (self *Overmind) Step(game *hal.Game) {
+func (self *Overmind) Step(frame *hal.Frame) {
 
-	self.Game = game
-	self.Game.SetPid(self.Pid)
+	self.Frame = frame
+	self.Frame.SetPid(self.Pid)
 
-	rand.Seed(int64(self.Game.MyBudget() + self.Pid))
+	rand.Seed(int64(self.Frame.MyBudget() + self.Pid))
 
-	self.WealthMap.Update(game)
-	self.DistMap.Update(game)
-	self.EnemyDistMap.Update(game)
-	self.DropoffDistMap.Update(game)
-	self.ContestMap.Update(game, self.DistMap, self.EnemyDistMap)
+	self.WealthMap.Update(frame)
+	self.DistMap.Update(frame)
+	self.EnemyDistMap.Update(frame)
+	self.DropoffDistMap.Update(frame)
+	self.ContestMap.Update(frame, self.DistMap, self.EnemyDistMap)
 
 /*
-	if self.Game.Turn() % 100 == 0 {
-		self.Game.Log("Flogging all stats at turn %d", self.Game.Turn())
-		self.WealthMap.Flog(game)
-		self.DistMap.Flog(game)
-		self.EnemyDistMap.Flog(game)
-		self.DropoffDistMap.Flog(game)
-		self.ContestMap.Flog(game)
+	if self.Frame.Turn() % 100 == 0 {
+		self.Frame.Log("Flogging all stats at turn %d", self.Frame.Turn())
+		self.WealthMap.Flog(frame)
+		self.DistMap.Flog(frame)
+		self.EnemyDistMap.Flog(frame)
+		self.DropoffDistMap.Flog(frame)
+		self.ContestMap.Flog(frame)
 	}
 */
 
@@ -156,7 +156,7 @@ func (self *Overmind) Step(game *hal.Game) {
 
 	for _, pilot := range self.Pilots {
 		if pilot.Ship.Command == "" {
-			self.Game.Log("Couldn't find a safe move for ship %d (first desire was %s)", pilot.Sid, pilot.Desires[0])
+			self.Frame.Log("Couldn't find a safe move for ship %d (first desire was %s)", pilot.Sid, pilot.Desires[0])
 		}
 	}
 
@@ -174,22 +174,22 @@ func (self *Overmind) Step(game *hal.Game) {
 
 func (self *Overmind) MaybeBuild() {
 
-	budget := self.Game.MyBudget()
+	budget := self.Frame.MyBudget()
 
-	factory := self.Game.MyFactory()
+	factory := self.Frame.MyFactory()
 	willing := true
 
-	if self.InitialGroundHalite / (self.Game.GroundHalite() + 1) >= 2 {		// remember int division, also div-by-zero
+	if self.InitialGroundHalite / (self.Frame.GroundHalite() + 1) >= 2 {		// remember int division, also div-by-zero
 		willing = false
 	}
 
-	if self.Game.Turn() >= self.Game.Constants.MAX_TURNS / 2 {
+	if self.Frame.Turn() >= self.Frame.Constants.MAX_TURNS / 2 {
 		willing = false
 	}
 
-	if budget >= self.Game.Constants.NEW_ENTITY_ENERGY_COST && self.MoveBooker(factory) == nil && willing {
-		self.Game.SetGenerate(true)
-		budget -= self.Game.Constants.NEW_ENTITY_ENERGY_COST
+	if budget >= self.Frame.Constants.NEW_ENTITY_ENERGY_COST && self.MoveBooker(factory) == nil && willing {
+		self.Frame.SetGenerate(true)
+		budget -= self.Frame.Constants.NEW_ENTITY_ENERGY_COST
 	}
 
 	// -------------------------------------------
@@ -206,7 +206,7 @@ func (self *Overmind) MaybeBuild() {
 			continue
 		}
 
-		if self.Game.HaliteAt(pilot) == 0 {		// Cheap way to avoid building on enemy dropoff / factory
+		if self.Frame.HaliteAt(pilot) == 0 {		// Cheap way to avoid building on enemy dropoff / factory
 			continue
 		}
 
@@ -220,9 +220,9 @@ func (self *Overmind) MaybeBuild() {
 	})
 
 	for _, pilot := range possible_constructs {
-		if pilot.Ship.Halite + self.Game.HaliteAt(pilot) + budget >= self.Game.Constants.DROPOFF_COST {
+		if pilot.Ship.Halite + self.Frame.HaliteAt(pilot) + budget >= self.Frame.Constants.DROPOFF_COST {
 			pilot.Ship.Command = "c"
-			self.Game.Log("Ship %d building dropoff (wmap: %d)", pilot.Sid, self.WealthMap.Values[pilot.Ship.X][pilot.Ship.Y])
+			self.Frame.Log("Ship %d building dropoff (wmap: %d)", pilot.Sid, self.WealthMap.Values[pilot.Ship.X][pilot.Ship.Y])
 			break
 		}
 	}
@@ -259,7 +259,7 @@ func (self *Overmind) TargetSwaps() {
 					pilot_a.Score = alt_score_a
 					pilot_b.Score = alt_score_b
 
-					// self.Game.Log("Swapped targets for pilots %d, %d (cycle %d)", pilot_a.Sid, pilot_b.Sid, cycle)
+					// self.Frame.Log("Swapped targets for pilots %d, %d (cycle %d)", pilot_a.Sid, pilot_b.Sid, cycle)
 					swap_count++
 				}
 			}
@@ -281,7 +281,7 @@ func (self *Overmind) UpdatePilots() {
 		sid_pilot_map[pilot.Sid] = pilot
 	}
 
-	for _, ship := range self.Game.MyShips() {
+	for _, ship := range self.Frame.MyShips() {
 
 		pilot, ok := sid_pilot_map[ship.Sid]
 
@@ -313,13 +313,13 @@ func (self *Overmind) SetTurnParameters() {
 
 	current_ground_halite := 0
 
-	for x := 0; x < self.Game.Width(); x++ {
-		for y := 0; y < self.Game.Height(); y++ {
-			current_ground_halite += self.Game.HaliteAtFast(x, y)
+	for x := 0; x < self.Frame.Width(); x++ {
+		for y := 0; y < self.Frame.Height(); y++ {
+			current_ground_halite += self.Frame.HaliteAtFast(x, y)
 		}
 	}
 
-	avg_ground_halite := current_ground_halite / (self.Game.Width() * self.Game.Height())
+	avg_ground_halite := current_ground_halite / (self.Frame.Width() * self.Frame.Height())
 
 	self.HappyThreshold = avg_ground_halite / 2			// Above this, ground is sticky
 	self.IgnoreThreshold = avg_ground_halite * 2 / 3	// Less than this not counted for targeting
@@ -327,27 +327,27 @@ func (self *Overmind) SetTurnParameters() {
 
 func (self *Overmind) ClearBooks() {
 
-	self.MoveBook = make([][]*Pilot, self.Game.Width())
-	self.TargetBook = make([][]bool, self.Game.Width())
+	self.MoveBook = make([][]*Pilot, self.Frame.Width())
+	self.TargetBook = make([][]bool, self.Frame.Width())
 
-	for x := 0; x < self.Game.Width(); x++ {
-		self.MoveBook[x] = make([]*Pilot, self.Game.Height())
-		self.TargetBook[x] = make([]bool, self.Game.Height())
+	for x := 0; x < self.Frame.Width(); x++ {
+		self.MoveBook[x] = make([]*Pilot, self.Frame.Height())
+		self.TargetBook[x] = make([]bool, self.Frame.Height())
 	}
 }
 
 func (self *Overmind) MoveBooker(pos hal.XYer) *Pilot {
 
-	x := hal.Mod(pos.GetX(), self.Game.Width())
-	y := hal.Mod(pos.GetY(), self.Game.Height())
+	x := hal.Mod(pos.GetX(), self.Frame.Width())
+	y := hal.Mod(pos.GetY(), self.Frame.Height())
 
 	return self.MoveBook[x][y]
 }
 
 func (self *Overmind) SetMoveBook(pilot *Pilot, pos hal.XYer) {
 
-	x := hal.Mod(pos.GetX(), self.Game.Width())
-	y := hal.Mod(pos.GetY(), self.Game.Height())
+	x := hal.Mod(pos.GetX(), self.Frame.Width())
+	y := hal.Mod(pos.GetY(), self.Frame.Height())
 
 	self.MoveBook[x][y] = pilot
 }
@@ -359,7 +359,7 @@ func (self *Overmind) SameTargetCheck() {
 	for _, pilot := range self.Pilots {
 		targetter_sid, ok := targets[pilot.Target]
 		if ok && pilot.TargetIsDropoff() == false {
-			self.Game.Log("Ships %d and %d looking at same target: %d %d", pilot.Sid, targetter_sid, pilot.Target.X, pilot.Target.Y)
+			self.Frame.Log("Ships %d and %d looking at same target: %d %d", pilot.Sid, targetter_sid, pilot.Target.X, pilot.Target.Y)
 		} else {
 			targets[pilot.Target] = pilot.Sid
 		}
@@ -374,8 +374,8 @@ func (self *Overmind) ShouldMine(halite_carried int, pos, tar hal.XYer) bool {
 		return false
 	}
 
-	pos_halite := self.Game.HaliteAt(pos)
-	tar_halite := self.Game.HaliteAt(tar)
+	pos_halite := self.Frame.HaliteAt(pos)
+	tar_halite := self.Frame.HaliteAt(tar)
 
 	if pos_halite > self.HappyThreshold {
 		if pos_halite > tar_halite / 3 {			// This is a bit odd since the test even happens when target is dropoff.

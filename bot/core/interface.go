@@ -1,7 +1,7 @@
 package core
 
-type GameXYer interface {
-	GetGame()	*Game
+type FrameXYer interface {
+	GetFrame()	*Frame
 	GetX()		int
 	GetY()		int
 }
@@ -11,13 +11,13 @@ type XYer interface {
 	GetY()		int
 }
 
-func DxDy(self GameXYer, other XYer) (int, int) {
+func DxDy(self FrameXYer, other XYer) (int, int) {
 
 	// How to get from (x1, y1) to (x2, y2)
 
-	game := self.GetGame()
-	width := game.Width()
-	height := game.Height()
+	frame := self.GetFrame()
+	width := frame.Width()
+	height := frame.Height()
 
 	x1 := Mod(self.GetX(), width)
 	y1 := Mod(self.GetY(), height)
@@ -60,16 +60,16 @@ func DxDy(self GameXYer, other XYer) (int, int) {
 	return dx, dy
 }
 
-func Dist(self GameXYer, other XYer) int {
+func Dist(self FrameXYer, other XYer) int {
 	dx, dy := DxDy(self, other)
 	return Abs(dx) + Abs(dy)
 }
 
-func SamePlace(self GameXYer, other XYer) bool {
+func SamePlace(self FrameXYer, other XYer) bool {
 
-	game := self.GetGame()
-	width := game.Width()
-	height := game.Height()
+	frame := self.GetFrame()
+	width := frame.Width()
+	height := frame.Height()
 
 	x1 := Mod(self.GetX(), width)
 	y1 := Mod(self.GetY(), height)

@@ -59,7 +59,7 @@ func (self *TokenParser) Str() string {
 
 // ---------------------------------------
 
-func (self *Game) PrePreParse() {
+func (self *Frame) PrePreParse() {
 
 	// Very early parsing that has to be done before log is opened
 	// so that we can open the right log name.
@@ -76,7 +76,7 @@ func (self *Game) PrePreParse() {
 	self.__true_pid = self.pid
 }
 
-func (self *Game) PreParse() {
+func (self *Frame) PreParse() {
 
 	for n := 0; n < self.players; n++ {
 		self.dropoffs = append(self.dropoffs, nil)
@@ -89,7 +89,7 @@ func (self *Game) PreParse() {
 		y := self.token_parser.Int()
 
 		self.dropoffs[pid] = &Dropoff{
-			Game:		self,
+			Frame:		self,
 			Factory:	true,
 			Owner:		pid,
 			X:			x,
@@ -117,7 +117,7 @@ func (self *Game) PreParse() {
 	}
 }
 
-func (self *Game) Parse() {
+func (self *Frame) Parse() {
 
 	// Note: creates brand new objects for literally everything;
 	// No holding onto the old ones.
@@ -162,7 +162,7 @@ func (self *Game) Parse() {
 		for i := 0; i < ships; i++ {
 
 			ship := new(Ship)
-			ship.Game = self
+			ship.Frame = self
 
 			ship.Sid = self.token_parser.Int()
 			ship.X = self.token_parser.Int()
@@ -186,7 +186,7 @@ func (self *Game) Parse() {
 			_ = self.token_parser.Int()				// sid (not needed)
 
 			dropoff := new(Dropoff)
-			dropoff.Game = self
+			dropoff.Frame = self
 
 			dropoff.X = self.token_parser.Int()
 			dropoff.Y = self.token_parser.Int()
@@ -237,11 +237,11 @@ func (self *Game) Parse() {
 
 // ---------------------------------------
 
-func (self *Game) SetGenerate(val bool) {
+func (self *Frame) SetGenerate(val bool) {
 	self.generate[self.pid] = val
 }
 
-func (self *Game) Send() {
+func (self *Frame) Send() {
 
 	self.pid = self.__true_pid		// In case any simulating has been going on.
 

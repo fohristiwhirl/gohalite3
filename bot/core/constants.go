@@ -39,7 +39,7 @@ type Constants struct {			// This could conceivably change in the engine in futu
 	GameSeed					int64		`json:"game_seed"`
 }
 
-func (self *Game) LogConstants() {
+func (self *Frame) LogConstants() {
 	s, err := json.MarshalIndent(self.Constants, "", "    ")
 	if err != nil {
 		self.LogWithoutTurn("%v", err)

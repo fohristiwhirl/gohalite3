@@ -9,16 +9,16 @@ type EnemyDistMap struct {
 	Values			[][]int
 }
 
-func NewEnemyDistMap(game *hal.Game) *EnemyDistMap {
+func NewEnemyDistMap(frame *hal.Frame) *EnemyDistMap {
 	o := new(EnemyDistMap)
-	o.Values = hal.Make2dIntArray(game.Width(), game.Height())
+	o.Values = hal.Make2dIntArray(frame.Width(), frame.Height())
 	return o
 }
 
-func (self *EnemyDistMap) Update(game *hal.Game) {
+func (self *EnemyDistMap) Update(frame *hal.Frame) {
 
-	width := game.Width()
-	height := game.Height()
+	width := frame.Width()
+	height := frame.Height()
 
 	var hotpoints []hal.Point
 
@@ -28,12 +28,12 @@ func (self *EnemyDistMap) Update(game *hal.Game) {
 		}
 	}
 
-	for _, ship := range game.EnemyShips() {
+	for _, ship := range frame.EnemyShips() {
 		self.Values[ship.X][ship.Y] = 0
 		hotpoints = append(hotpoints, hal.Point{ship.X, ship.Y})
 	}
 
-	for _, factory := range game.EnemyFactories() {
+	for _, factory := range frame.EnemyFactories() {
 		self.Values[factory.X][factory.Y] = 0
 		hotpoints = append(hotpoints, hal.Point{factory.X, factory.Y})
 	}
@@ -44,7 +44,7 @@ func (self *EnemyDistMap) Update(game *hal.Game) {
 
 		for _, hotpoint := range hotpoints {
 
-			neighbours := game.Neighbours(hotpoint.X, hotpoint.Y)
+			neighbours := frame.Neighbours(hotpoint.X, hotpoint.Y)
 
 			for _, box := range neighbours {
 
@@ -64,11 +64,11 @@ func (self *EnemyDistMap) Update(game *hal.Game) {
 	}
 }
 
-func (self *EnemyDistMap) Flog(game *hal.Game) {
-	for x := 0; x < game.Width(); x++ {
-		for y := 0; y < game.Height(); y++ {
+func (self *EnemyDistMap) Flog(frame *hal.Frame) {
+	for x := 0; x < frame.Width(); x++ {
+		for y := 0; y < frame.Height(); y++ {
 			s := fmt.Sprintf("Enemy dist: %v", self.Values[x][y])
-			game.Flog(x, y, s, "")
+			frame.Flog(x, y, s, "")
 		}
 	}
 }

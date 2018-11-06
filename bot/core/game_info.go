@@ -4,33 +4,33 @@ import (
 	"fmt"
 )
 
-func (self *Game) Pid() int { return self.pid }					// Note that simulated bots will be changing this
-func (self *Game) Turn() int { return self.turn }
-func (self *Game) Width() int { return self.width }
-func (self *Game) Height() int { return self.height }
-func (self *Game) Players() int { return self.players }
+func (self *Frame) Pid() int { return self.pid }					// Note that simulated bots will be changing this
+func (self *Frame) Turn() int { return self.turn }
+func (self *Frame) Width() int { return self.width }
+func (self *Frame) Height() int { return self.height }
+func (self *Frame) Players() int { return self.players }
 
-func (self *Game) HaliteAt(pos XYer) int {
+func (self *Frame) HaliteAt(pos XYer) int {
 	x := Mod(pos.GetX(), self.width)
 	y := Mod(pos.GetY(), self.height)
 	return self.halite[x][y]
 }
 
-func (self *Game) HaliteAtFast(x, y int) int {
+func (self *Frame) HaliteAtFast(x, y int) int {
 	return self.halite[x][y]
 }
 
-func (self *Game) ShipAt(pos XYer) *Ship {			// Maybe nil
+func (self *Frame) ShipAt(pos XYer) *Ship {			// Maybe nil
 	x := Mod(pos.GetX(), self.width)
 	y := Mod(pos.GetY(), self.height)
 	return self.ship_xy_lookup[Point{x, y}]
 }
 
-func (self *Game) Sid(sid int) *Ship {				// Maybe nil
+func (self *Frame) Sid(sid int) *Ship {				// Maybe nil
 	return self.ship_id_lookup[sid]
 }
 
-func (self *Game) Dropoffs(pid int) []*Dropoff {	// Includes factory
+func (self *Frame) Dropoffs(pid int) []*Dropoff {	// Includes factory
 
 	var ret []*Dropoff
 
@@ -43,15 +43,15 @@ func (self *Game) Dropoffs(pid int) []*Dropoff {	// Includes factory
 	return ret
 }
 
-func (self *Game) MyDropoffs() []*Dropoff {			// Includes factory
+func (self *Frame) MyDropoffs() []*Dropoff {			// Includes factory
 	return self.Dropoffs(self.pid)
 }
 
-func (self *Game) AllDropoffs() []*Dropoff {
+func (self *Frame) AllDropoffs() []*Dropoff {
 	return self.dropoffs
 }
 
-func (self *Game) EnemyDropoffs() []*Dropoff {		// Includes factory
+func (self *Frame) EnemyDropoffs() []*Dropoff {		// Includes factory
 
 	var ret []*Dropoff
 
@@ -64,7 +64,7 @@ func (self *Game) EnemyDropoffs() []*Dropoff {		// Includes factory
 	return ret
 }
 
-func (self *Game) Ships(pid int) []*Ship {
+func (self *Frame) Ships(pid int) []*Ship {
 
 	var ret []*Ship
 
@@ -77,15 +77,15 @@ func (self *Game) Ships(pid int) []*Ship {
 	return ret
 }
 
-func (self *Game) MyShips() []*Ship {
+func (self *Frame) MyShips() []*Ship {
 	return self.Ships(self.pid)
 }
 
-func (self *Game) AllShips() []*Ship {
+func (self *Frame) AllShips() []*Ship {
 	return self.ships
 }
 
-func (self *Game) EnemyShips() []*Ship {
+func (self *Frame) EnemyShips() []*Ship {
 
 	var ret []*Ship
 
@@ -98,15 +98,15 @@ func (self *Game) EnemyShips() []*Ship {
 	return ret
 }
 
-func (self *Game) Budget(pid int) int {
+func (self *Frame) Budget(pid int) int {
 	return self.budgets[pid]
 }
 
-func (self *Game) MyBudget() int {
+func (self *Frame) MyBudget() int {
 	return self.Budget(self.pid)
 }
 
-func (self *Game) Factory(pid int) *Dropoff {
+func (self *Frame) Factory(pid int) *Dropoff {
 
 	factory := self.dropoffs[pid]
 
@@ -119,11 +119,11 @@ func (self *Game) Factory(pid int) *Dropoff {
 	return factory
 }
 
-func (self *Game) MyFactory() *Dropoff {
+func (self *Frame) MyFactory() *Dropoff {
 	return self.Factory(self.pid)
 }
 
-func (self *Game) EnemyFactories() []*Dropoff {
+func (self *Frame) EnemyFactories() []*Dropoff {
 
 	var ret []*Dropoff
 
@@ -138,7 +138,7 @@ func (self *Game) EnemyFactories() []*Dropoff {
 	return ret
 }
 
-func (self *Game) PlayerCanDropoffAt(pid int, pos XYer) bool {
+func (self *Frame) PlayerCanDropoffAt(pid int, pos XYer) bool {
 
 	dropoffs := self.Dropoffs(pid)
 
@@ -150,15 +150,15 @@ func (self *Game) PlayerCanDropoffAt(pid int, pos XYer) bool {
 	return false
 }
 
-func (self *Game) ShipCanDropoffAt(ship *Ship, pos XYer) bool {
+func (self *Frame) ShipCanDropoffAt(ship *Ship, pos XYer) bool {
 	return self.PlayerCanDropoffAt(ship.Owner, pos)
 }
 
-func (self *Game) Hash() string {
+func (self *Frame) Hash() string {
 	return self.hash
 }
 
-func (self *Game) GroundHalite() int {
+func (self *Frame) GroundHalite() int {
 	var count int
 	for x := 0; x < self.width; x++ {
 		for y := 0; y < self.height; y++ {
@@ -168,11 +168,11 @@ func (self *Game) GroundHalite() int {
 	return count
 }
 
-func (self *Game) TotalShips() int {
+func (self *Frame) TotalShips() int {
 	return len(self.ships)
 }
 
-func (self *Game) Neighbours(x, y int) []Point {
+func (self *Frame) Neighbours(x, y int) []Point {
 
 	ret := make([]Point, 0, 4)
 
@@ -205,7 +205,7 @@ type Change struct {
 	Delta	int
 }
 
-func (self *Game) Changes() []Change {
+func (self *Frame) Changes() []Change {
 
 	var ret []Change
 

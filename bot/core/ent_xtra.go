@@ -8,7 +8,7 @@ type Dropoff struct {
 
 	// A short lived data structure, valid only for 1 turn. (Well, it's not like they move, but...)
 
-	Game						*Game
+	Frame						*Frame
 	Factory						bool
 	Owner						int
 	X							int
@@ -23,7 +23,7 @@ func (self *Dropoff) Point() Point {
 	return Point{self.X, self.Y}
 }
 
-func (self *Dropoff) GetGame() *Game { return self.Game }
+func (self *Dropoff) GetFrame() *Frame { return self.Frame }
 func (self *Dropoff) GetX() int { return self.X }
 func (self *Dropoff) GetY() int { return self.Y }
 func (self *Dropoff) DxDy(other XYer) (int, int) { return DxDy(self, other) }

@@ -67,18 +67,18 @@ func (self *Logfile) Close() {
 }
 
 // ---------------------------------------------------------------
-// Methods on the Game object...
+// Methods on the Frame object...
 
-func (self *Game) StartLog(logfilename string) {
+func (self *Frame) StartLog(logfilename string) {
 	self.logfile = NewLog(logfilename)
 }
 
-func (self *Game) Log(format_string string, args ...interface{}) {
+func (self *Frame) Log(format_string string, args ...interface{}) {
 	format_string = fmt.Sprintf("t %3d: ", self.Turn()) + format_string + "\r\n"
 	self.logfile.Log(format_string, args...)
 }
 
-func (self *Game) LogOnce(format_string string, args ...interface{}) bool {
+func (self *Frame) LogOnce(format_string string, args ...interface{}) bool {
 	format_string = "t %3d: " + format_string + "\r\n"
 	var newargs []interface{}
 	newargs = append(newargs, self.Turn())
@@ -86,11 +86,11 @@ func (self *Game) LogOnce(format_string string, args ...interface{}) bool {
 	return self.logfile.LogOnce(format_string, newargs...)
 }
 
-func (self *Game) LogWithoutTurn(format_string string, args ...interface{}) {
+func (self *Frame) LogWithoutTurn(format_string string, args ...interface{}) {
 	self.logfile.Log(format_string + "\r\n", args...)
 }
 
-func (self *Game) StopLog() {
+func (self *Frame) StopLog() {
 	self.logfile.Close()
 }
 
@@ -165,16 +165,16 @@ func (self *Flogfile) Close() {
 }
 
 // ---------------------------------------------------------------
-// Methods on the Game object...
+// Methods on the Frame object...
 
-func (self *Game) StartFlog(flogfilename string) {
+func (self *Frame) StartFlog(flogfilename string) {
 	self.flogfile = NewFlog(flogfilename)
 }
 
-func (self *Game) Flog(x, y int, msg, colour string) {
+func (self *Frame) Flog(x, y int, msg, colour string) {
 	self.flogfile.Flog(self.Turn(), x, y, msg, colour)
 }
 
-func (self *Game) StopFlog() {
+func (self *Frame) StopFlog() {
 	self.flogfile.Close()
 }

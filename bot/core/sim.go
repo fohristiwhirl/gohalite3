@@ -1,6 +1,6 @@
 package core
 
-func (self *Game) SetPid(pid int) {
+func (self *Frame) SetPid(pid int) {
 
 	// For simulation purposes, it's simplest just to have
 	// each AI set its PID at the start of its turn...
@@ -8,10 +8,10 @@ func (self *Game) SetPid(pid int) {
 	self.pid = pid
 }
 
-func (self *Game) Init() {
+func (self *Frame) Init() {
 
 	if self.turn != -1 {
-		panic("Game.Init() called on live game.")
+		panic("Frame.Init() called on a live frame.")
 	}
 
 	// For making a valid turn 0 without calling Parse()
@@ -31,7 +31,7 @@ func (self *Game) Init() {
 	self.generate = make(map[int]bool)
 }
 
-func (self *Game) SimGen() *Game {
+func (self *Frame) SimGen() *Frame {
 
 	duplicate := *self
 	g := &duplicate
@@ -69,13 +69,13 @@ func (self *Game) SimGen() *Game {
 
 	for _, ship := range self.ships {
 		remade := *ship
-		remade.Game = g
+		remade.Frame = g
 		g.ships = append(g.ships, &remade)
 	}
 
 	for _, dropoff := range self.dropoffs {
 		remade := *dropoff
-		remade.Game = g
+		remade.Frame = g
 		g.dropoffs = append(g.dropoffs, &remade)
 	}
 
@@ -116,7 +116,7 @@ func (self *Game) SimGen() *Game {
 		}
 
 		dropoff := &Dropoff{
-			Game:		g,
+			Frame:		g,
 			Factory:	false,
 			Owner: 		ship.Owner,
 			X:			ship.X,
@@ -248,7 +248,7 @@ func (self *Game) SimGen() *Game {
 			g.highest_sid_seen = sid
 
 			ship := &Ship{
-				Game:			g,
+				Frame:			g,
 				Owner:			pid,
 				Sid:			sid,
 				X:				x,

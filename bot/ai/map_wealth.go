@@ -13,29 +13,29 @@ type WealthMap struct {
 	Values			[][]int
 }
 
-func NewWealthMap(game *hal.Game) *WealthMap {
+func NewWealthMap(frame *hal.Frame) *WealthMap {
 
 	o := new(WealthMap)
-	o.Values = hal.Make2dIntArray(game.Width(), game.Height())
+	o.Values = hal.Make2dIntArray(frame.Width(), frame.Height())
 
-	o.Init(game)		// Unlike some other maps, this one needs inited.
+	o.Init(frame)		// Unlike some other maps, this one needs inited.
 	return o
 }
 
-func (self *WealthMap) Init(game *hal.Game) {
+func (self *WealthMap) Init(frame *hal.Frame) {
 
 	// Assumes the map is zeroed.
 	// Can't be used as a way to update.
 
 	for x := 0; x < len(self.Values); x++ {
 		for y := 0; y < len(self.Values[0]); y++ {
-			self.Propagate(x, y, game.HaliteAtFast(x, y), WEALTH_MAP_RADIUS)
+			self.Propagate(x, y, frame.HaliteAtFast(x, y), WEALTH_MAP_RADIUS)
 		}
 	}
 }
 
-func (self *WealthMap) Update(game *hal.Game) {
-	all_changed := game.Changes()
+func (self *WealthMap) Update(frame *hal.Frame) {
+	all_changed := frame.Changes()
 	for _, c := range all_changed {
 		self.Propagate(c.X, c.Y, c.Delta, WEALTH_MAP_RADIUS)
 	}
@@ -68,11 +68,11 @@ func (self *WealthMap) Propagate(ox, oy, value int, radius int) {
 	}
 }
 
-func (self *WealthMap) Flog(game *hal.Game) {
-	for x := 0; x < game.Width(); x++ {
-		for y := 0; y < game.Height(); y++ {
+func (self *WealthMap) Flog(frame *hal.Frame) {
+	for x := 0; x < frame.Width(); x++ {
+		for y := 0; y < frame.Height(); y++ {
 			s := fmt.Sprintf("Wealth: %v", self.Values[x][y])
-			game.Flog(x, y, s, "")
+			frame.Flog(x, y, s, "")
 		}
 	}
 }

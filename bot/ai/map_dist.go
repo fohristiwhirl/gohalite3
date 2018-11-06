@@ -9,16 +9,16 @@ type DistMap struct {
 	Values			[][]int
 }
 
-func NewDistMap(game *hal.Game) *DistMap {
+func NewDistMap(frame *hal.Frame) *DistMap {
 	o := new(DistMap)
-	o.Values = hal.Make2dIntArray(game.Width(), game.Height())
+	o.Values = hal.Make2dIntArray(frame.Width(), frame.Height())
 	return o
 }
 
-func (self *DistMap) Update(game *hal.Game) {
+func (self *DistMap) Update(frame *hal.Frame) {
 
-	width := game.Width()
-	height := game.Height()
+	width := frame.Width()
+	height := frame.Height()
 
 	var hotpoints []hal.Point
 
@@ -28,12 +28,12 @@ func (self *DistMap) Update(game *hal.Game) {
 		}
 	}
 
-	for _, ship := range game.MyShips() {
+	for _, ship := range frame.MyShips() {
 		self.Values[ship.X][ship.Y] = 0
 		hotpoints = append(hotpoints, hal.Point{ship.X, ship.Y})
 	}
 
-	factory := game.MyFactory()
+	factory := frame.MyFactory()
 	self.Values[factory.X][factory.Y] = 0
 	hotpoints = append(hotpoints, hal.Point{factory.X, factory.Y})
 
@@ -43,7 +43,7 @@ func (self *DistMap) Update(game *hal.Game) {
 
 		for _, hotpoint := range hotpoints {
 
-			neighbours := game.Neighbours(hotpoint.X, hotpoint.Y)
+			neighbours := frame.Neighbours(hotpoint.X, hotpoint.Y)
 
 			for _, box := range neighbours {
 
@@ -63,11 +63,11 @@ func (self *DistMap) Update(game *hal.Game) {
 	}
 }
 
-func (self *DistMap) Flog(game *hal.Game) {
-	for x := 0; x < game.Width(); x++ {
-		for y := 0; y < game.Height(); y++ {
+func (self *DistMap) Flog(frame *hal.Frame) {
+	for x := 0; x < frame.Width(); x++ {
+		for y := 0; y < frame.Height(); y++ {
 			s := fmt.Sprintf("Friendly dist: %v", self.Values[x][y])
-			game.Flog(x, y, s, "")
+			frame.Flog(x, y, s, "")
 		}
 	}
 }

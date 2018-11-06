@@ -5,28 +5,28 @@ import (
 	hal "./core"
 )
 
-func sim_check(game *hal.Game, config *ai.Config) string {
+func sim_check(frame *hal.Frame, config *ai.Config) string {
 
 	// Returns the final hash that the real bot will see,
 	// if the real bot is matched only against itself...
 
-	game.Init()		// This should be harmless for the caller.
+	frame.Init()		// This should be harmless for the caller.
 
 	var overminds []*ai.Overmind
 
-	for pid := 0; pid < game.Players(); pid++ {
-		overminds = append(overminds, ai.NewOvermind(game, config, pid))
+	for pid := 0; pid < frame.Players(); pid++ {
+		overminds = append(overminds, ai.NewOvermind(frame, config, pid))
 	}
 
 	for {
-		if game.Turn() == game.Constants.MAX_TURNS - 1 {
-			return game.Hash()
+		if frame.Turn() == frame.Constants.MAX_TURNS - 1 {
+			return frame.Hash()
 		}
 
 		for _, o := range overminds {
-			o.Step(game)
+			o.Step(frame)
 		}
 
-		game = game.SimGen()
+		frame = frame.SimGen()
 	}
 }

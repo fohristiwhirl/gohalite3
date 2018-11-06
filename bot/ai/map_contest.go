@@ -12,16 +12,16 @@ type ContestMap struct {
 // Strongly negative numbers are heavily in our area of influence.
 // Strongly positive numbers are heavily in enemy area of influence.
 
-func NewContestMap(game *hal.Game) *ContestMap {
+func NewContestMap(frame *hal.Frame) *ContestMap {
 	o := new(ContestMap)
-	o.Values = hal.Make2dIntArray(game.Width(), game.Height())
+	o.Values = hal.Make2dIntArray(frame.Width(), frame.Height())
 	return o
 }
 
-func (self *ContestMap) Update(game *hal.Game, a *DistMap, b *EnemyDistMap) {
+func (self *ContestMap) Update(frame *hal.Frame, a *DistMap, b *EnemyDistMap) {
 
-	width := game.Width()
-	height := game.Height()
+	width := frame.Width()
+	height := frame.Height()
 
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
@@ -30,11 +30,11 @@ func (self *ContestMap) Update(game *hal.Game, a *DistMap, b *EnemyDistMap) {
 	}
 }
 
-func (self *ContestMap) Flog(game *hal.Game) {
-	for x := 0; x < game.Width(); x++ {
-		for y := 0; y < game.Height(); y++ {
+func (self *ContestMap) Flog(frame *hal.Frame) {
+	for x := 0; x < frame.Width(); x++ {
+		for y := 0; y < frame.Height(); y++ {
 			s := fmt.Sprintf("Contest: %v", self.Values[x][y])
-			game.Flog(x, y, s, "")
+			frame.Flog(x, y, s, "")
 		}
 	}
 }

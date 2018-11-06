@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type Game struct {
+type Frame struct {
 
 	Constants
 	ParseTime					time.Time
@@ -38,17 +38,17 @@ type Game struct {
 	generate					map[int]bool	// Whether the AI wants to send a "g" command
 }
 
-func NewGame() *Game {
+func NewGame() *Frame {
 
-	game := new(Game)
-	game.turn = -1
-	game.highest_sid_seen = -1
-	game.token_parser = NewTokenParser()
+	frame := new(Frame)
+	frame.turn = -1
+	frame.highest_sid_seen = -1
+	frame.token_parser = NewTokenParser()
 
-	return game
+	return frame
 }
 
-func (self *Game) set_hash() {
+func (self *Frame) set_hash() {
 
 	var s []string
 
@@ -89,7 +89,7 @@ func (self *Game) set_hash() {
 	self.hash = HashFromString(strings.Join(s, "-"))
 }
 
-func (self *Game) fix_inspiration() {
+func (self *Frame) fix_inspiration() {
 
 	for _, ship := range self.ships {
 
