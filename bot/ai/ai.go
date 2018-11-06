@@ -5,10 +5,10 @@ import (
 	"sort"
 
 	hal "../core"
+	maps "../maps"
 )
 
 const (
-	WEALTH_MAP_RADIUS = 4
 	DROPOFF_SPACING = 12
 	NICE_THRESHOLD = 8000
 )
@@ -33,11 +33,8 @@ type Overmind struct {
 
 	// Stategic stats:
 
-	WealthMap				*WealthMap
-	DistMap					*DistMap
-	EnemyDistMap			*EnemyDistMap
-	DropoffDistMap			*DropoffDistMap
-	ContestMap				*ContestMap
+	WealthMap				*maps.WealthMap
+	// Other maps are available in /maps
 
 	InitialGroundHalite		int
 	HappyThreshold			int
@@ -55,11 +52,7 @@ func NewOvermind(frame *hal.Frame, config *Config, pid int) *Overmind {
 	o.Config = config
 	o.InitialGroundHalite = frame.GroundHalite()
 
-	o.WealthMap = NewWealthMap(o, frame)
-	o.DistMap = NewDistMap(o, frame)
-	o.EnemyDistMap = NewEnemyDistMap(o, frame)
-	o.DropoffDistMap = NewDropoffDistMap(o, frame)
-	o.ContestMap = NewContestMap(o, frame)
+	o.WealthMap = maps.NewWealthMap(frame)
 
 	return o
 }
@@ -73,22 +66,7 @@ func (self *Overmind) Step(frame *hal.Frame) {
 
 	rand.Seed(int64(self.Frame.MyBudget() + self.Pid))
 
-	self.WealthMap.Update()
-	self.DistMap.Update()
-	self.EnemyDistMap.Update()
-	self.DropoffDistMap.Update()
-	self.ContestMap.Update(self.DistMap, self.EnemyDistMap)
-
-/*
-	if self.Frame.Turn() % 100 == 0 {
-		self.Frame.Log("Flogging all stats at turn %d", self.Frame.Turn())
-		self.WealthMap.Flog()
-		self.DistMap.Flog()
-		self.EnemyDistMap.Flog()
-		self.DropoffDistMap.Flog()
-		self.ContestMap.Flog()
-	}
-*/
+	self.WealthMap.Update(frame)
 
 	self.SetTurnParameters()
 	self.ClearBooks()

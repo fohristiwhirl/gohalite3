@@ -1,18 +1,20 @@
-package ai
+package maps
 
 import (
 	"fmt"
 	hal "../core"
 )
 
+const (
+	WEALTH_MAP_RADIUS = 4
+)
+
 type WealthMap struct {
-	Overmind		*Overmind
 	Values			[][]int
 }
 
-func NewWealthMap(overmind *Overmind, frame *hal.Frame) *WealthMap {
+func NewWealthMap(frame *hal.Frame) *WealthMap {
 	o := new(WealthMap)
-	o.Overmind = overmind
 	o.Values = hal.Make2dIntArray(frame.Width(), frame.Height())
 	o.Init(frame)		// Unlike some other maps, this one needs inited.
 	return o
@@ -30,8 +32,8 @@ func (self *WealthMap) Init(frame *hal.Frame) {
 	}
 }
 
-func (self *WealthMap) Update() {
-	all_changed := self.Overmind.Frame.Changes()
+func (self *WealthMap) Update(frame *hal.Frame) {
+	all_changed := frame.Changes()
 	for _, c := range all_changed {
 		self.Propagate(c.X, c.Y, c.Delta, WEALTH_MAP_RADIUS)
 	}
@@ -64,10 +66,7 @@ func (self *WealthMap) Propagate(ox, oy, value int, radius int) {
 	}
 }
 
-func (self *WealthMap) Flog() {
-
-	frame := self.Overmind.Frame
-
+func (self *WealthMap) Flog(frame *hal.Frame) {
 	for x := 0; x < frame.Width(); x++ {
 		for y := 0; y < frame.Height(); y++ {
 			s := fmt.Sprintf("Wealth: %v", self.Values[x][y])

@@ -1,4 +1,4 @@
-package ai
+package maps
 
 import (
 	"fmt"
@@ -6,20 +6,16 @@ import (
 )
 
 type EnemyDistMap struct {
-	Overmind		*Overmind
 	Values			[][]int
 }
 
-func NewEnemyDistMap(overmind *Overmind, frame *hal.Frame) *EnemyDistMap {
+func NewEnemyDistMap(frame *hal.Frame) *EnemyDistMap {
 	o := new(EnemyDistMap)
-	o.Overmind = overmind
 	o.Values = hal.Make2dIntArray(frame.Width(), frame.Height())
 	return o
 }
 
-func (self *EnemyDistMap) Update() {
-
-	frame := self.Overmind.Frame
+func (self *EnemyDistMap) Update(frame *hal.Frame) {
 
 	width := frame.Width()
 	height := frame.Height()
@@ -68,10 +64,7 @@ func (self *EnemyDistMap) Update() {
 	}
 }
 
-func (self *EnemyDistMap) Flog() {
-
-	frame := self.Overmind.Frame
-
+func (self *EnemyDistMap) Flog(frame *hal.Frame) {
 	for x := 0; x < frame.Width(); x++ {
 		for y := 0; y < frame.Height(); y++ {
 			s := fmt.Sprintf("Enemy dist: %v", self.Values[x][y])

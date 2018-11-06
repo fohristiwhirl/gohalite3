@@ -1,25 +1,21 @@
-package ai
+package maps
 
 import (
 	"fmt"
 	hal "../core"
 )
 
-type DropoffDistMap struct {
-	Overmind		*Overmind
+type DistMap struct {
 	Values			[][]int
 }
 
-func NewDropoffDistMap(overmind *Overmind, frame *hal.Frame) *DropoffDistMap {
-	o := new(DropoffDistMap)
-	o.Overmind = overmind
+func NewDistMap(frame *hal.Frame) *DistMap {
+	o := new(DistMap)
 	o.Values = hal.Make2dIntArray(frame.Width(), frame.Height())
 	return o
 }
 
-func (self *DropoffDistMap) Update() {
-
-	frame := self.Overmind.Frame
+func (self *DistMap) Update(frame *hal.Frame) {
 
 	width := frame.Width()
 	height := frame.Height()
@@ -32,10 +28,14 @@ func (self *DropoffDistMap) Update() {
 		}
 	}
 
-	for _, dropoff := range frame.MyDropoffs() {
-		self.Values[dropoff.X][dropoff.Y] = 0
-		hotpoints = append(hotpoints, hal.Point{dropoff.X, dropoff.Y})
+	for _, ship := range frame.MyShips() {
+		self.Values[ship.X][ship.Y] = 0
+		hotpoints = append(hotpoints, hal.Point{ship.X, ship.Y})
 	}
+
+	factory := frame.MyFactory()
+	self.Values[factory.X][factory.Y] = 0
+	hotpoints = append(hotpoints, hal.Point{factory.X, factory.Y})
 
 	for {
 
@@ -63,13 +63,10 @@ func (self *DropoffDistMap) Update() {
 	}
 }
 
-func (self *DropoffDistMap) Flog() {
-
-	frame := self.Overmind.Frame
-
+func (self *DistMap) Flog(frame *hal.Frame) {
 	for x := 0; x < frame.Width(); x++ {
 		for y := 0; y < frame.Height(); y++ {
-			s := fmt.Sprintf("Dropoff dist: %v", self.Values[x][y])
+			s := fmt.Sprintf("Friendly dist: %v", self.Values[x][y])
 			frame.Flog(x, y, s, "")
 		}
 	}
