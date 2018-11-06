@@ -6,16 +6,20 @@ import (
 )
 
 type DropoffDistMap struct {
+	Overmind		*Overmind
 	Values			[][]int
 }
 
-func NewDropoffDistMap(frame *hal.Frame) *DropoffDistMap {
+func NewDropoffDistMap(overmind *Overmind, frame *hal.Frame) *DropoffDistMap {
 	o := new(DropoffDistMap)
+	o.Overmind = overmind
 	o.Values = hal.Make2dIntArray(frame.Width(), frame.Height())
 	return o
 }
 
-func (self *DropoffDistMap) Update(frame *hal.Frame) {
+func (self *DropoffDistMap) Update() {
+
+	frame := self.Overmind.Frame
 
 	width := frame.Width()
 	height := frame.Height()
@@ -59,7 +63,10 @@ func (self *DropoffDistMap) Update(frame *hal.Frame) {
 	}
 }
 
-func (self *DropoffDistMap) Flog(frame *hal.Frame) {
+func (self *DropoffDistMap) Flog() {
+
+	frame := self.Overmind.Frame
+
 	for x := 0; x < frame.Width(); x++ {
 		for y := 0; y < frame.Height(); y++ {
 			s := fmt.Sprintf("Dropoff dist: %v", self.Values[x][y])

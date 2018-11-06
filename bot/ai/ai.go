@@ -54,36 +54,38 @@ func NewOvermind(frame *hal.Frame, config *Config, pid int) *Overmind {
 	o.Config = config
 	o.InitialGroundHalite = frame.GroundHalite()
 
-	o.WealthMap = NewWealthMap(frame)
-	o.DistMap = NewDistMap(frame)
-	o.EnemyDistMap = NewEnemyDistMap(frame)
-	o.DropoffDistMap = NewDropoffDistMap(frame)
-	o.ContestMap = NewContestMap(frame)
+	o.WealthMap = NewWealthMap(o, frame)
+	o.DistMap = NewDistMap(o, frame)
+	o.EnemyDistMap = NewEnemyDistMap(o, frame)
+	o.DropoffDistMap = NewDropoffDistMap(o, frame)
+	o.ContestMap = NewContestMap(o, frame)
 
 	return o
 }
 
 func (self *Overmind) Step(frame *hal.Frame) {
 
+	// Various calls rely on these two things happening...
+
 	self.Frame = frame
 	self.Frame.SetPid(self.Pid)
 
 	rand.Seed(int64(self.Frame.MyBudget() + self.Pid))
 
-	self.WealthMap.Update(frame)
-	self.DistMap.Update(frame)
-	self.EnemyDistMap.Update(frame)
-	self.DropoffDistMap.Update(frame)
-	self.ContestMap.Update(frame, self.DistMap, self.EnemyDistMap)
+	self.WealthMap.Update()
+	self.DistMap.Update()
+	self.EnemyDistMap.Update()
+	self.DropoffDistMap.Update()
+	self.ContestMap.Update(self.DistMap, self.EnemyDistMap)
 
 /*
 	if self.Frame.Turn() % 100 == 0 {
 		self.Frame.Log("Flogging all stats at turn %d", self.Frame.Turn())
-		self.WealthMap.Flog(frame)
-		self.DistMap.Flog(frame)
-		self.EnemyDistMap.Flog(frame)
-		self.DropoffDistMap.Flog(frame)
-		self.ContestMap.Flog(frame)
+		self.WealthMap.Flog()
+		self.DistMap.Flog()
+		self.EnemyDistMap.Flog()
+		self.DropoffDistMap.Flog()
+		self.ContestMap.Flog()
 	}
 */
 

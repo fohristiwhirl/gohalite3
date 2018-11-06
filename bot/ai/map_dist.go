@@ -6,16 +6,20 @@ import (
 )
 
 type DistMap struct {
+	Overmind		*Overmind
 	Values			[][]int
 }
 
-func NewDistMap(frame *hal.Frame) *DistMap {
+func NewDistMap(overmind *Overmind, frame *hal.Frame) *DistMap {
 	o := new(DistMap)
+	o.Overmind = overmind
 	o.Values = hal.Make2dIntArray(frame.Width(), frame.Height())
 	return o
 }
 
-func (self *DistMap) Update(frame *hal.Frame) {
+func (self *DistMap) Update() {
+
+	frame := self.Overmind.Frame
 
 	width := frame.Width()
 	height := frame.Height()
@@ -63,7 +67,10 @@ func (self *DistMap) Update(frame *hal.Frame) {
 	}
 }
 
-func (self *DistMap) Flog(frame *hal.Frame) {
+func (self *DistMap) Flog() {
+
+	frame := self.Overmind.Frame
+
 	for x := 0; x < frame.Width(); x++ {
 		for y := 0; y < frame.Height(); y++ {
 			s := fmt.Sprintf("Friendly dist: %v", self.Values[x][y])
