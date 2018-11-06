@@ -9,6 +9,7 @@ import (
 )
 
 func (self *Overmind) NewTurn(ship *hal.Ship) {
+	ship.Command = ""
 	ship.Desires = nil
 	ship.Target = ship.Point()
 	ship.TargetOK = true
