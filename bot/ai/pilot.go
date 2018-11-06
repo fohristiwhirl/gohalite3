@@ -8,7 +8,7 @@ import (
 	hal "../core"
 )
 
-func (self *Overmind) NewTurn(ship *hal.Ship) {
+func NewTurn(ship *hal.Ship) {
 
 	ship.Command = ""
 	ship.Desires = nil

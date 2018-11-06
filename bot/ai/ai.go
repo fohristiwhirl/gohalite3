@@ -67,7 +67,7 @@ func (self *Overmind) Step(frame *hal.Frame) {
 	my_ships := frame.MyShips()
 
 	for _, ship := range my_ships {
-		self.NewTurn(ship)
+		NewTurn(ship)
 	}
 
 	target_book := hal.Make2dBoolArray(frame.Width(), frame.Height())		// What points are targets. Updated for each ship.
