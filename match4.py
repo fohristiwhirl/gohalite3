@@ -2,6 +2,8 @@ import json, random, subprocess
 
 REPLAY_FOLDER = "replays_local"
 
+SHUFFLE = False
+
 bots = [
 	"bot.exe --simtest",
 	"bot.exe",
@@ -18,7 +20,8 @@ print("{} --- {} --- {} --- {}".format(bots[0], bots[1], bots[2], bots[3]))
 
 while 1:
 
-	random.shuffle(positions)
+	if SHUFFLE:
+		random.shuffle(positions)
 
 	tmp_positions = [bots[positions[0]], bots[positions[1]], bots[positions[2]], bots[positions[3]]]
 
