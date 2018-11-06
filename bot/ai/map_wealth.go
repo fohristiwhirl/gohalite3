@@ -5,21 +5,15 @@ import (
 	hal "../core"
 )
 
-const (
-	WEALTH_MAP_RADIUS = 4
-)
-
 type WealthMap struct {
 	Overmind		*Overmind
 	Values			[][]int
 }
 
 func NewWealthMap(overmind *Overmind, frame *hal.Frame) *WealthMap {
-
 	o := new(WealthMap)
 	o.Overmind = overmind
 	o.Values = hal.Make2dIntArray(frame.Width(), frame.Height())
-
 	o.Init(frame)		// Unlike some other maps, this one needs inited.
 	return o
 }

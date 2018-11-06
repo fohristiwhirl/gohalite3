@@ -12,29 +12,6 @@ func (self *Frame) SetPid(pid int) {
 	self.pid = pid
 }
 
-func (self *Frame) Init() {
-
-	if self.turn != -1 {
-		panic("Frame.Init() called on a live frame.")
-	}
-
-	// For making a valid turn 0 without calling Parse()
-
-	self.turn = 0
-	self.set_hash()
-
-	self.budgets = make([]int, self.players)
-
-	for pid := 0; pid < self.players; pid++ {
-		self.budgets[pid] = self.Constants.INITIAL_ENERGY
-	}
-
-	self.ship_xy_lookup = make(map[Point]*Ship)
-	self.ship_id_lookup = make(map[int]*Ship)
-	self.box_deltas = make(map[Point]int)
-	self.generate = make(map[int]bool)
-}
-
 func (self *Frame) SimGen() *Frame {
 
 	g := new(Frame)

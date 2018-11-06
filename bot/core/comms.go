@@ -115,6 +115,22 @@ func (self *Frame) PreParse() {
 			self.halite[x][y] = val
 		}
 	}
+
+	// Now put the frame into a valid Turn 0 state, mostly for sim purposes...
+
+	self.turn = 0
+	self.set_hash()
+
+	self.budgets = make([]int, self.players)
+
+	for pid := 0; pid < self.players; pid++ {
+		self.budgets[pid] = self.Constants.INITIAL_ENERGY
+	}
+
+	self.ship_xy_lookup = make(map[Point]*Ship)
+	self.ship_id_lookup = make(map[int]*Ship)
+	self.box_deltas = make(map[Point]int)
+	self.generate = make(map[int]bool)
 }
 
 func (self *Frame) Parse() {

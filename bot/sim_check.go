@@ -5,12 +5,12 @@ import (
 	hal "./core"
 )
 
-func sim_check(frame *hal.Frame, config *ai.Config) (string, int) {
+func sim_check(real_frame *hal.Frame, config *ai.Config) (string, int) {
 
 	// Returns the final hash that the real bot will see,
 	// if the real bot is matched only against itself...
 
-	frame.Init()		// This should be harmless for the caller.
+	frame := real_frame.Remake(false)
 
 	var overminds []*ai.Overmind
 

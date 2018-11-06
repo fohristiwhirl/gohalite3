@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	WEALTH_MAP_RADIUS = 4
 	DROPOFF_SPACING = 12
 	NICE_THRESHOLD = 8000
 )
