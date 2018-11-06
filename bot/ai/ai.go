@@ -14,6 +14,7 @@ const (
 
 type Config struct {
 	Crash					bool
+	RemakeTest				bool
 	SimTest					bool
 }
 

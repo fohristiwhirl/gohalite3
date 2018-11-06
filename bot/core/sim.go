@@ -1,5 +1,9 @@
 package core
 
+import (
+	"time"
+)
+
 func (self *Frame) SetPid(pid int) {
 
 	// For simulation purposes, it's simplest just to have
@@ -33,14 +37,15 @@ func (self *Frame) Init() {
 
 func (self *Frame) SimGen() *Frame {
 
-	duplicate := *self
-	g := &duplicate
+	g := new(Frame)
+	*g = *self
+
+	g.ParseTime = time.Now()
 
 	// Can comment the next 2 lines out if wanting logs from tests...
 
 	g.logfile = nil
 	g.flogfile = nil
-	g.token_parser = nil
 
 	g.turn += 1
 	g.hash = ""
@@ -79,6 +84,9 @@ func (self *Frame) SimGen() *Frame {
 		g.dropoffs = append(g.dropoffs, &remade)
 	}
 
+	// We do not copy the lookups or box_deltas, which are made after movement and mining.
+	// We leave the new generate dict as empty, and only read the old one.
+
 	// Adjust budgets...
 
 	for pid := 0; pid < g.players; pid++ {
@@ -90,8 +98,6 @@ func (self *Frame) SimGen() *Frame {
 	for _, ship := range g.ships {
 
 		if ship.Command == "c" {
-
-			g.Log("Dropoff")
 
 			pid := ship.Owner
 
@@ -335,8 +341,6 @@ func (self *Frame) SimGen() *Frame {
 
 	g.fix_inspiration()
 	g.set_hash()			// How slow is this?
-
-	g.Log("Total halite: %d", g.GroundHalite())
 
 	return g
 }

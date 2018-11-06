@@ -48,6 +48,65 @@ func NewGame() *Frame {
 	return frame
 }
 
+func (self *Frame) Remake(allow_logs bool) *Frame {		// This is a deep copy
+
+	g := new(Frame)
+	*g = *self			// Everything not explicitly changed will be the same
+
+	g.ParseTime = time.Now()
+
+	if allow_logs == false {
+		g.logfile = nil
+		g.flogfile = nil
+	}
+
+	g.budgets = make([]int, g.players)
+	g.halite = Make2dIntArray(g.width, g.height)
+	g.ships	= make([]*Ship, len(self.ships))				// Care - these lines fill the new array with nils (for speed)
+	g.dropoffs = make([]*Dropoff, len(self.dropoffs))		// so we must replace them, rather than append. (Worth it??)
+	g.ship_xy_lookup = make(map[Point]*Ship)
+	g.ship_id_lookup = make(map[int]*Ship)
+	g.box_deltas = make(map[Point]int)
+	g.generate = make(map[int]bool)
+
+	for pid, val := range self.budgets {
+		g.budgets[pid] = val
+	}
+
+	for x := 0; x < g.width; x++ {
+		for y := 0; y < g.height; y++ {
+			g.halite[x][y] = self.halite[x][y]
+		}
+	}
+
+	for n, ship := range self.ships {
+		remade := *ship
+		remade.Frame = g
+		g.ships[n] = &remade
+	}
+
+	for n, dropoff := range self.dropoffs {
+		remade := *dropoff
+		remade.Frame = g
+		g.dropoffs[n] = &remade
+	}
+
+	for _, ship := range g.ships {
+		g.ship_xy_lookup[Point{ship.X, ship.Y}] = ship
+		g.ship_id_lookup[ship.Sid] = ship
+	}
+
+	for key, val := range self.box_deltas {
+		g.box_deltas[key] = val
+	}
+
+	for key, val := range self.generate {
+		g.generate[key] = val
+	}
+
+	return g
+}
+
 func (self *Frame) set_hash() {
 
 	var s []string

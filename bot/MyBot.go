@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"math/rand"
+	"os"
 	"strings"
 	"time"
 
@@ -21,6 +22,7 @@ func main() {
 	config := new(ai.Config)
 
 	flag.BoolVar(&config.Crash, "crash", false, "randomly crash")
+	flag.BoolVar(&config.RemakeTest, "remaketest", false, "test the frame remaker")
 	flag.BoolVar(&config.SimTest, "simtest", false, "test the simulator")
 	flag.Parse()
 
@@ -52,10 +54,11 @@ func main() {
 	frame.StartLog(fmt.Sprintf("logs/log-%v.txt", true_pid))
 	frame.StartFlog(fmt.Sprintf("flogs/flog-%v-%v.json", frame.Constants.GameSeed, true_pid))
 
-	frame.PreParse()					// Reads the map data.
+	frame.PreParse()				// Reads the map data.
 
 	frame.LogWithoutTurn("--------------------------------------------------------------------------------")
 	frame.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02 15:04:05"))
+	frame.LogWithoutTurn("Invoked as %s", strings.Join(os.Args, " "))
 
 	overmind := ai.NewOvermind(frame, config, true_pid)
 
@@ -78,6 +81,10 @@ func main() {
 
 	for {
 		frame.Parse()
+
+		if config.RemakeTest {
+			frame = frame.Remake(true)
+		}
 
 		if config.Crash {
 			if rand.Intn(100) == 40 {
