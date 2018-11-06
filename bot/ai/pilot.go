@@ -9,6 +9,7 @@ import (
 )
 
 func (self *Overmind) NewTurn(ship *hal.Ship) {
+
 	ship.Command = ""
 	ship.Desires = nil
 	ship.Target = ship.Point()
@@ -18,13 +19,15 @@ func (self *Overmind) NewTurn(ship *hal.Ship) {
 	if ship.OnDropoff() {
 		ship.Returning = false
 	}
+
+	self.SetFinalDash(ship)
 }
 
 func (self *Overmind) SetTarget(ship *hal.Ship) {
 
 	// Note that the ship may still not move if it's happy where it is.
 
-	if self.FinalDash(ship) {
+	if ship.FinalDash {
 		ship.Target = ship.NearestDropoff().Point()
 		ship.Returning = true
 		return
@@ -96,7 +99,7 @@ func (self *Overmind) SetDesires(ship *hal.Ship) {
 
 	// Maybe we're on a mad dash to deliver stuff before end...
 
-	if self.FinalDash(ship) {
+	if ship.FinalDash {
 		self.DesireNav(ship)
 		return
 	}
@@ -196,8 +199,12 @@ func (self *Overmind) DesireNav(ship *hal.Ship) {
 	ship.Desires = append(ship.Desires, "o")
 }
 
-func (self *Overmind) FinalDash(ship *hal.Ship) bool {
-	return ship.Dist(ship.NearestDropoff()) > self.Frame.Constants.MAX_TURNS - self.Frame.Turn() - 3
+func (self *Overmind) SetFinalDash(ship *hal.Ship) {
+	if ship.Dist(ship.NearestDropoff()) > self.Frame.Constants.MAX_TURNS - self.Frame.Turn() - 3 {
+		ship.FinalDash = true
+	} else {
+		ship.FinalDash = false
+	}
 }
 
 func (self *Overmind) FlogTarget(ship *hal.Ship) {

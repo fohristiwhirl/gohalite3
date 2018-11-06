@@ -25,6 +25,7 @@ type Ship struct {
 	Score						float32		// Score if our target is a mineable box.
 	Desires						[]string
 	Returning					bool
+	FinalDash					bool
 }
 
 func (self *Ship) String() string {

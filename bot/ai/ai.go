@@ -29,7 +29,6 @@ type Overmind struct {
 	// ATC stuff:
 
 	TargetBook				[][]bool
-	MoveBook				[][]*hal.Ship
 
 	// Stategic stats:
 
@@ -91,64 +90,11 @@ func (self *Overmind) Step(frame *hal.Frame) {
 
 	// Resolve the desired moves.............................
 
-	for _, ship := range my_ships {
-		if ship.Desires[0] == "o" {
-			ship.Move("o")
-			self.SetMoveBook(ship, ship)
-		}
-	}
-
-	for cycle := 0; cycle < 5; cycle++ {
-
-		for _, ship := range my_ships {
-
-			if ship.Command != "" {
-				continue
-			}
-
-			// Special case: if ship is next to a dropoff and is in its mad dash, always move.
-			// And don't set the book, it can only confuse matters...
-
-			if ship.TargetIsDropoff() && ship.Dist(ship.Target) == 1 && self.FinalDash(ship) {
-				ship.Move(ship.Desires[0])
-				continue
-			}
-
-			// Normal case...
-
-			for _, desire := range ship.Desires {
-
-				new_loc := ship.LocationAfterMove(desire)
-				booker := self.MoveBooker(new_loc)
-
-				if booker == nil {
-					ship.Move(desire)
-					self.SetMoveBook(ship, new_loc)
-					break
-				} else {
-					if booker.Command == "o" {		// Never clear a booking made by a stationary ship
-						continue
-					}
-					if booker.Halite < ship.Halite {
-						ship.Move(desire)
-						self.SetMoveBook(ship, new_loc)
-						booker.ClearMove()
-						break
-					}
-				}
-			}
-		}
-	}
-
-	for _, ship := range my_ships {
-		if ship.Command == "" {
-			self.Frame.Log("Couldn't find a safe move for ship %d (first desire was %s)", ship.Sid, ship.Desires[0])
-		}
-	}
+	move_book := Resolve(frame, my_ships)
 
 	// Other.................................................
 
-	self.MaybeBuild(my_ships)
+	self.MaybeBuild(my_ships, move_book)
 
 	for _, ship := range my_ships {
 		self.FlogTarget(ship)
@@ -158,7 +104,7 @@ func (self *Overmind) Step(frame *hal.Frame) {
 	return
 }
 
-func (self *Overmind) MaybeBuild(my_ships []*hal.Ship) {
+func (self *Overmind) MaybeBuild(my_ships []*hal.Ship, move_book *MoveBook) {
 
 	budget := self.Frame.MyBudget()
 
@@ -173,7 +119,7 @@ func (self *Overmind) MaybeBuild(my_ships []*hal.Ship) {
 		willing = false
 	}
 
-	if budget >= self.Frame.Constants.NEW_ENTITY_ENERGY_COST && self.MoveBooker(factory) == nil && willing {
+	if budget >= self.Frame.Constants.NEW_ENTITY_ENERGY_COST && move_book.Booker(factory) == nil && willing {
 		self.Frame.SetGenerate(true)
 		budget -= self.Frame.Constants.NEW_ENTITY_ENERGY_COST
 	}
@@ -275,29 +221,11 @@ func (self *Overmind) SetTurnParameters() {
 
 func (self *Overmind) ClearBooks() {
 
-	self.MoveBook = make([][]*hal.Ship, self.Frame.Width())
 	self.TargetBook = make([][]bool, self.Frame.Width())
 
 	for x := 0; x < self.Frame.Width(); x++ {
-		self.MoveBook[x] = make([]*hal.Ship, self.Frame.Height())
 		self.TargetBook[x] = make([]bool, self.Frame.Height())
 	}
-}
-
-func (self *Overmind) MoveBooker(pos hal.XYer) *hal.Ship {
-
-	x := hal.Mod(pos.GetX(), self.Frame.Width())
-	y := hal.Mod(pos.GetY(), self.Frame.Height())
-
-	return self.MoveBook[x][y]
-}
-
-func (self *Overmind) SetMoveBook(ship *hal.Ship, pos hal.XYer) {
-
-	x := hal.Mod(pos.GetX(), self.Frame.Width())
-	y := hal.Mod(pos.GetY(), self.Frame.Height())
-
-	self.MoveBook[x][y] = ship
 }
 
 func (self *Overmind) SameTargetCheck(my_ships []*hal.Ship) {
