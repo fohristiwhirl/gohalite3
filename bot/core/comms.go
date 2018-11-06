@@ -126,6 +126,7 @@ func (self *Frame) Parse() {
 
 	old_dropoffs := self.dropoffs
 	old_halite := self.halite
+	old_ship_id_lookup := self.ship_id_lookup
 
 	// Clear all the things...
 
@@ -162,15 +163,23 @@ func (self *Frame) Parse() {
 		for i := 0; i < ships; i++ {
 
 			ship := new(Ship)
-			ship.Frame = self
 
-			ship.Sid = self.token_parser.Int()
+			sid := self.token_parser.Int()
+
+			old_ship, ok := old_ship_id_lookup[sid]
+			if ok {
+				*ship = *old_ship					// (Shallow) copy all the AI stuff, if available. Everything else is replaced below.
+			}										// If the AI stuff is not available, the zeroed vars must work.
+
 			ship.X = self.token_parser.Int()
 			ship.Y = self.token_parser.Int()
 			ship.Halite = self.token_parser.Int()
 
-			ship.Inspired = false					// Will detect later
+			ship.Frame = self
+			ship.Sid = sid
+			ship.Inspired = false					// Will set this correctly later
 			ship.Owner = pid
+			ship.Command = ""
 
 			self.ships = append(self.ships, ship)
 			self.ship_xy_lookup[Point{ship.X, ship.Y}] = ship

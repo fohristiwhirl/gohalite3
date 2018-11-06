@@ -24,12 +24,11 @@ type Overmind struct {
 
 	Config					*Config
 	Frame					*hal.Frame				// Needs to be updated every turn
-	Pilots					[]*Pilot
 
 	// ATC stuff:
 
 	TargetBook				[][]bool
-	MoveBook				[][]*Pilot
+	MoveBook				[][]*hal.Ship
 
 	// Stategic stats:
 
@@ -92,64 +91,69 @@ func (self *Overmind) Step(frame *hal.Frame) {
 
 	self.SetTurnParameters()
 	self.ClearBooks()
-	self.UpdatePilots()
 
 	// What each ship wants to do............................
 
-	for _, pilot := range self.Pilots {
-		pilot.SetTarget()
+	my_ships := self.Frame.MyShips()
+
+	for _, ship := range my_ships {
+		self.NewTurn(ship)
 	}
 
-	self.TargetSwaps()
+	for _, ship := range my_ships {
+		self.SetTarget(ship)
+	}
 
-	for _, pilot := range self.Pilots {
-		pilot.SetDesires()
+	self.TargetSwaps(my_ships)
+
+	for _, ship := range my_ships {
+		self.SetDesires(ship)
 	}
 
 	// Resolve the desired moves.............................
 
-	for _, pilot := range self.Pilots {
-		if pilot.Desires[0] == "o" {
-			pilot.Ship.Move("o")
-			self.SetMoveBook(pilot, pilot)
+	for _, ship := range my_ships {
+		if ship.Desires[0] == "o" {
+			ship.Move("o")
+			self.SetMoveBook(ship, ship)
 		}
 	}
 
 	for cycle := 0; cycle < 5; cycle++ {
 
-		for _, pilot := range self.Pilots {
+		for _, ship := range my_ships {
 
-			if pilot.Ship.Command != "" {
+			if ship.Command != "" {
 				continue
 			}
 
 			// Special case: if ship is next to a dropoff and is in its mad dash, always move.
 			// And don't set the book, it can only confuse matters...
 
-			if pilot.TargetIsDropoff() && pilot.Dist(pilot.Target) == 1 && pilot.FinalDash() {
-				pilot.Ship.Move(pilot.Desires[0])
+			if ship.TargetIsDropoff() && ship.Dist(ship.Target) == 1 && self.FinalDash(ship) {
+				ship.Move(ship.Desires[0])
 				continue
 			}
 
 			// Normal case...
 
-			for _, desire := range pilot.Desires {
+			for _, desire := range ship.Desires {
 
-				new_loc := pilot.LocationAfterMove(desire)
+				new_loc := ship.LocationAfterMove(desire)
 				booker := self.MoveBooker(new_loc)
 
 				if booker == nil {
-					pilot.Ship.Move(desire)
-					self.SetMoveBook(pilot, new_loc)
+					ship.Move(desire)
+					self.SetMoveBook(ship, new_loc)
 					break
 				} else {
-					if booker.Ship.Command == "o" {		// Never clear a booking made by a stationary ship
+					if booker.Command == "o" {		// Never clear a booking made by a stationary ship
 						continue
 					}
-					if booker.Ship.Halite < pilot.Ship.Halite {
-						pilot.Ship.Move(desire)
-						self.SetMoveBook(pilot, new_loc)
-						booker.Ship.ClearMove()
+					if booker.Halite < ship.Halite {
+						ship.Move(desire)
+						self.SetMoveBook(ship, new_loc)
+						booker.ClearMove()
 						break
 					}
 				}
@@ -157,25 +161,25 @@ func (self *Overmind) Step(frame *hal.Frame) {
 		}
 	}
 
-	for _, pilot := range self.Pilots {
-		if pilot.Ship.Command == "" {
-			self.Frame.Log("Couldn't find a safe move for ship %d (first desire was %s)", pilot.Sid, pilot.Desires[0])
+	for _, ship := range my_ships {
+		if ship.Command == "" {
+			self.Frame.Log("Couldn't find a safe move for ship %d (first desire was %s)", ship.Sid, ship.Desires[0])
 		}
 	}
 
 	// Other.................................................
 
-	self.MaybeBuild()
+	self.MaybeBuild(my_ships)
 
-	for _, pilot := range self.Pilots {
-		pilot.FlogTarget()
+	for _, ship := range my_ships {
+		self.FlogTarget(ship)
 	}
 
-	self.SameTargetCheck()		// Just logs
+	self.SameTargetCheck(my_ships)		// Just logs
 	return
 }
 
-func (self *Overmind) MaybeBuild() {
+func (self *Overmind) MaybeBuild(my_ships []*hal.Ship) {
 
 	budget := self.Frame.MyBudget()
 
@@ -197,72 +201,72 @@ func (self *Overmind) MaybeBuild() {
 
 	// -------------------------------------------
 
-	var possible_constructs []*Pilot
+	var possible_constructs []*hal.Ship
 
-	for _, pilot := range self.Pilots {
+	for _, ship := range my_ships {
 
-		if pilot.Dist(pilot.NearestDropoff()) < DROPOFF_SPACING {
+		if ship.Dist(ship.NearestDropoff()) < DROPOFF_SPACING {
 			continue
 		}
 
-		if self.WealthMap.Values[pilot.GetX()][pilot.GetY()] < NICE_THRESHOLD {
+		if self.WealthMap.Values[ship.X][ship.Y] < NICE_THRESHOLD {
 			continue
 		}
 
-		if self.Frame.HaliteAt(pilot) == 0 {		// Cheap way to avoid building on enemy dropoff / factory
+		if self.Frame.HaliteAtFast(ship.X, ship.Y) == 0 {		// Cheap way to avoid building on enemy dropoff / factory
 			continue
 		}
 
-		possible_constructs = append(possible_constructs, pilot)
+		possible_constructs = append(possible_constructs, ship)
 	}
 
 	sort.Slice(possible_constructs, func (a, b int) bool {
 
-		return	self.WealthMap.Values[possible_constructs[a].GetX()][possible_constructs[a].GetY()] <
-				self.WealthMap.Values[possible_constructs[b].GetX()][possible_constructs[b].GetY()]
+		return	self.WealthMap.Values[possible_constructs[a].X][possible_constructs[a].Y] <
+				self.WealthMap.Values[possible_constructs[b].X][possible_constructs[b].Y]
 	})
 
-	for _, pilot := range possible_constructs {
-		if pilot.Ship.Halite + self.Frame.HaliteAt(pilot) + budget >= self.Frame.Constants.DROPOFF_COST {
-			pilot.Ship.Command = "c"
-			self.Frame.Log("Ship %d building dropoff (wmap: %d)", pilot.Sid, self.WealthMap.Values[pilot.Ship.X][pilot.Ship.Y])
+	for _, ship := range possible_constructs {
+		if ship.Halite + self.Frame.HaliteAtFast(ship.X, ship.Y) + budget >= self.Frame.Constants.DROPOFF_COST {
+			ship.Command = "c"
+			self.Frame.Log("Ship %d building dropoff (wmap: %d)", ship.Sid, self.WealthMap.Values[ship.X][ship.Y])
 			break
 		}
 	}
 }
 
-func (self *Overmind) TargetSwaps() {
+func (self *Overmind) TargetSwaps(my_ships []*hal.Ship) {
 
 	for cycle := 0; cycle < 4; cycle++ {
 
 		swap_count := 0
 
-		for i, pilot_a := range self.Pilots {
+		for i, ship_a := range my_ships {
 
-			if pilot_a.TargetIsDropoff() {
+			if ship_a.TargetIsDropoff() {
 				continue
 			}
 
-			for _, pilot_b := range self.Pilots[i + 1:] {
+			for _, ship_b := range my_ships[i + 1:] {
 
-				if pilot_b.TargetIsDropoff() {
+				if ship_b.TargetIsDropoff() {
 					continue
 				}
 
-				a_dist_b := pilot_a.Dist(pilot_b.Target)
-				b_dist_a := pilot_b.Dist(pilot_a.Target)
+				a_dist_b := ship_a.Dist(ship_b.Target)
+				b_dist_a := ship_b.Dist(ship_a.Target)
 
-				alt_score_a := halite_dist_score(pilot_b.TargetHalite(), a_dist_b)
-				alt_score_b := halite_dist_score(pilot_a.TargetHalite(), b_dist_a)
+				alt_score_a := halite_dist_score(ship_b.TargetHalite(), a_dist_b)
+				alt_score_b := halite_dist_score(ship_a.TargetHalite(), b_dist_a)
 
-				if alt_score_a + alt_score_b > pilot_a.Score + pilot_b.Score {
+				if alt_score_a + alt_score_b > ship_a.Score + ship_b.Score {
 
-					pilot_a.Target, pilot_b.Target = pilot_b.Target, pilot_a.Target
+					ship_a.Target, ship_b.Target = ship_b.Target, ship_a.Target
 
-					pilot_a.Score = alt_score_a
-					pilot_b.Score = alt_score_b
+					ship_a.Score = alt_score_a
+					ship_b.Score = alt_score_b
 
-					// self.Frame.Log("Swapped targets for pilots %d, %d (cycle %d)", pilot_a.Sid, pilot_b.Sid, cycle)
+					// self.Frame.Log("Swapped targets for pilots %d, %d (cycle %d)", ship_a.Sid, ship_b.Sid, cycle)
 					swap_count++
 				}
 			}
@@ -272,44 +276,6 @@ func (self *Overmind) TargetSwaps() {
 			return
 		}
 	}
-}
-
-func (self *Overmind) UpdatePilots() {
-
-	var live_pilots []*Pilot		// Pilots with valid ships this turn
-
-	sid_pilot_map := make(map[int]*Pilot)
-
-	for _, pilot := range self.Pilots {
-		sid_pilot_map[pilot.Sid] = pilot
-	}
-
-	for _, ship := range self.Frame.MyShips() {
-
-		pilot, ok := sid_pilot_map[ship.Sid]
-
-		if ok {
-
-			pilot.Ship = ship
-
-			live_pilots = append(live_pilots, pilot)
-
-		} else {
-
-			pilot = new(Pilot)
-			pilot.Overmind = self
-			pilot.Ship = ship
-			pilot.Sid = ship.Sid
-
-			live_pilots = append(live_pilots, pilot)
-		}
-	}
-
-	for _, pilot := range live_pilots {
-		pilot.NewTurn()
-	}
-
-	self.Pilots = live_pilots
 }
 
 func (self *Overmind) SetTurnParameters() {
@@ -330,16 +296,16 @@ func (self *Overmind) SetTurnParameters() {
 
 func (self *Overmind) ClearBooks() {
 
-	self.MoveBook = make([][]*Pilot, self.Frame.Width())
+	self.MoveBook = make([][]*hal.Ship, self.Frame.Width())
 	self.TargetBook = make([][]bool, self.Frame.Width())
 
 	for x := 0; x < self.Frame.Width(); x++ {
-		self.MoveBook[x] = make([]*Pilot, self.Frame.Height())
+		self.MoveBook[x] = make([]*hal.Ship, self.Frame.Height())
 		self.TargetBook[x] = make([]bool, self.Frame.Height())
 	}
 }
 
-func (self *Overmind) MoveBooker(pos hal.XYer) *Pilot {
+func (self *Overmind) MoveBooker(pos hal.XYer) *hal.Ship {
 
 	x := hal.Mod(pos.GetX(), self.Frame.Width())
 	y := hal.Mod(pos.GetY(), self.Frame.Height())
@@ -347,24 +313,24 @@ func (self *Overmind) MoveBooker(pos hal.XYer) *Pilot {
 	return self.MoveBook[x][y]
 }
 
-func (self *Overmind) SetMoveBook(pilot *Pilot, pos hal.XYer) {
+func (self *Overmind) SetMoveBook(ship *hal.Ship, pos hal.XYer) {
 
 	x := hal.Mod(pos.GetX(), self.Frame.Width())
 	y := hal.Mod(pos.GetY(), self.Frame.Height())
 
-	self.MoveBook[x][y] = pilot
+	self.MoveBook[x][y] = ship
 }
 
-func (self *Overmind) SameTargetCheck() {
+func (self *Overmind) SameTargetCheck(my_ships []*hal.Ship) {
 
 	targets := make(map[hal.Point]int)
 
-	for _, pilot := range self.Pilots {
-		targetter_sid, ok := targets[pilot.Target]
-		if ok && pilot.TargetIsDropoff() == false {
-			self.Frame.Log("Ships %d and %d looking at same target: %d %d", pilot.Sid, targetter_sid, pilot.Target.X, pilot.Target.Y)
+	for _, ship := range my_ships {
+		targetter_sid, ok := targets[ship.Target]
+		if ok && ship.TargetIsDropoff() == false {
+			self.Frame.Log("Ships %d and %d looking at same target: %d %d", ship.Sid, targetter_sid, ship.Target.X, ship.Target.Y)
 		} else {
-			targets[pilot.Target] = pilot.Sid
+			targets[ship.Target] = ship.Sid
 		}
 	}
 }

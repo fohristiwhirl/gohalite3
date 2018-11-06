@@ -6,7 +6,7 @@ import (
 
 type Ship struct {
 
-	// A short lived data structure, valid only for 1 turn.
+	// A short lived data structure, valid only for 1 (possibly simulated) turn.
 
 	Frame						*Frame
 	Owner						int			// Player ID
@@ -16,6 +16,15 @@ type Ship struct {
 	Halite						int
 	Inspired					bool
 	Command						string		// Note that "o" means chosen-no-move while "" means no-choice-yet
+
+	// Some stuff used by the AI...
+	// The comms parser or simulated frame maker will have to save all of this from the previous turn's ship...
+
+	Target						Point
+	TargetOK					bool		// Has the target been validly set?
+	Score						float32		// Score if our target is a mineable box.
+	Desires						[]string
+	Returning					bool
 }
 
 func (self *Ship) String() string {
@@ -73,6 +82,14 @@ func (self *Ship) NearestDropoff() *Dropoff {
 
 func (self *Ship) CanDropoffAt(pos XYer) bool {
 	return self.Frame.ShipCanDropoffAt(self, pos)
+}
+
+func (self *Ship) TargetIsDropoff() bool {
+	return self.CanDropoffAt(self.Target)
+}
+
+func (self *Ship) TargetHalite() int {
+	return self.Frame.HaliteAt(self.Target)
 }
 
 func (self *Ship) HaliteAt() int {

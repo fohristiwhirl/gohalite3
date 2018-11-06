@@ -73,8 +73,9 @@ func main() {
 	// -------------------------------------------------------------------------------
 
 	if config.SimTest {
-		prediction := sim_check(frame, config)
-		frame.Log("Simulator predicts final hash %s", prediction)
+		prediction_hash, prediction_ground := sim_check(frame, config)
+		frame.Log("Simulator predicts final hash %v", prediction_hash)
+		frame.Log("Simulator predicts ground halite %v on turn N-1", prediction_ground)
 	}
 
 	fmt.Printf("%s %s\n", NAME, VERSION)
