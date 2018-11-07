@@ -8,7 +8,7 @@ import (
 	hal "../core"
 )
 
-func NewTurn(ship *hal.Ship) {
+func NewTurn(ship *hal.Ship, move_on_threshold int) {
 
 	ship.Command = ""
 	ship.Desires = nil
@@ -21,15 +21,18 @@ func NewTurn(ship *hal.Ship) {
 		ship.Returning = true
 	} else {
 		ship.Returning = false
-		if ship.OnDropoff() {
-			ship.ClearTarget()
-		}
 	}
 
-	// -------------------------------
+	// ------------------------------------------------------------
 
 	if ship.Returning {
 		ship.SetTarget(ship.NearestDropoff())
+	}
+
+	// If we're at our target and it has little halite, find a new one. Works if the target is dropoff too.
+
+	if ship.TargetOK() && ship.Dist(ship.Target()) == 0 && ship.HaliteAt() < move_on_threshold {
+		ship.ClearTarget()
 	}
 }
 

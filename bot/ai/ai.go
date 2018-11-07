@@ -23,13 +23,14 @@ func Step(frame *hal.Frame, pid int, allow_build bool) {
 
 	rand.Seed(int64(frame.MyBudget() + pid))
 	happy_threshold := HappyThreshold(frame)
+	move_on_threshold := MoveOnThreshold(frame)
 
 	// Ship cleanup and target choice........................
 
 	my_ships := frame.MyShips()
 
 	for _, ship := range my_ships {
-		NewTurn(ship)						// May clear the ship's target.
+		NewTurn(ship, move_on_threshold)	// May clear the ship's target.
 	}
 
 	ChooseTargets(frame, my_ships, pid)		// Only sets targets for ships that need a new one.
@@ -135,4 +136,8 @@ func ShouldMine(frame *hal.Frame, halite_carried int, pos, tar hal.XYer, happy_t
 
 func HappyThreshold(frame *hal.Frame) int {			// Probably bad to call this a lot when simming, will be slow. So cache it.
 	return frame.AverageGroundHalite() / 2
+}
+
+func MoveOnThreshold(frame *hal.Frame) int {
+	return 10
 }

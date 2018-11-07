@@ -44,10 +44,10 @@ func ChooseTargets(frame *hal.Frame, my_ships []*hal.Ship, pid int) {
 		}
 	}
 }
+*/
 
 
-
-
+/*
 func StupidStep(frame *hal.Frame, pid int) {
 
 	frame.SetPid(pid)
