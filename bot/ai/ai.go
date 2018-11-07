@@ -134,6 +134,10 @@ func ShouldMine(frame *hal.Frame, halite_carried int, pos, tar hal.XYer, happy_t
 	return false
 }
 
+func ShouldReturn(ship *hal.Ship) bool {			// Could consider dist to dropoff, etc
+	return ship.Halite > 500
+}
+
 func HappyThreshold(frame *hal.Frame) int {			// Probably bad to call this a lot when simming, will be slow. So cache it.
 	return frame.AverageGroundHalite() / 2
 }
