@@ -27,7 +27,6 @@ func (self *Frame) SimGen() *Frame {
 	g.flogfile = nil
 
 	g.turn += 1
-	g.hash = ""
 
 	g.budgets = make([]int, g.players)
 	g.halite = Make2dIntArray(g.width, g.height)
@@ -35,8 +34,8 @@ func (self *Frame) SimGen() *Frame {
 	g.dropoffs = nil
 	g.ship_xy_lookup = make(map[Point]*Ship)
 	g.ship_id_lookup = make(map[int]*Ship)
-	g.box_deltas = make(map[Point]int)
 	g.wealth_map = nil
+	g.ground_halite = 0
 	g.generate = make(map[int]bool)
 
 	// Remake some things. No objects are reused.
@@ -64,7 +63,7 @@ func (self *Frame) SimGen() *Frame {
 		g.dropoffs = append(g.dropoffs, &remade)
 	}
 
-	// We do not copy the lookups or box_deltas, which are made after movement and mining.
+	// We do not copy the lookups, which are made after movement and mining.
 	// We leave the new generate dict as empty, and only read the old one.
 
 	// Adjust budgets...
@@ -311,16 +310,26 @@ func (self *Frame) SimGen() *Frame {
 		g.ship_id_lookup[ship.Sid] = ship
 	}
 
-	for x := 0; x < g.width; x++ {
-		for y := 0; y < g.height; y++ {
-			if g.halite[x][y] != self.halite[x][y] {
-				g.box_deltas[Point{x, y}] = g.halite[x][y] - self.halite[x][y]
-			}
+	g.FixInspiration()
+
+	return g
+}
+
+func (self *Frame) DeleteEnemies() {
+
+	var new_ships_slice []*Ship
+	var new_ship_xy_lookup = make(map[Point]*Ship)
+	var new_ship_id_lookup = make(map[int]*Ship)
+
+	for _, ship := range self.ships {
+		if ship.Owner == self.pid {
+			new_ships_slice = append(new_ships_slice, ship)
+			new_ship_xy_lookup[Point{ship.X, ship.Y}] = ship
+			new_ship_id_lookup[ship.Sid] = ship
 		}
 	}
 
-	g.fix_inspiration()
-	g.set_hash()			// How slow is this?
-
-	return g
+	self.ships = new_ships_slice
+	self.ship_xy_lookup = new_ship_xy_lookup
+	self.ship_id_lookup = new_ship_id_lookup
 }

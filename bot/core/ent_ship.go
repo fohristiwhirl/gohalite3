@@ -20,13 +20,40 @@ type Ship struct {
 	// Some stuff used by the AI...
 	// The comms parser or simulated frame maker will have to save all of this from the previous turn's ship...
 
-	Target						Point
-	TargetOK					bool		// Has the target been validly set?
+	target						Point
+	target_ok					bool
+
 	Score						float32		// Score if our target is a mineable box.
 	Desires						[]string	// Might get polluted with sims etc but OK as long as we clear it each turn.
 	Returning					bool
 	FinalDash					bool
 }
+
+// For the AI, ships either have a target or not. Attempting to read
+// the target when it's not available is a panic.
+
+func (self *Ship) Target() Point {
+	if self.target_ok == false {
+		panic("Bad target")
+	}
+	return self.target
+}
+
+func (self *Ship) TargetOK() bool {
+	return self.target_ok
+}
+
+func (self *Ship) SetTarget(pos XYer) {		// Always gets converted to Point - we never target e.g. a ship
+	self.target = Point{pos.GetX(), pos.GetY()}
+	self.target_ok = true
+}
+
+func (self *Ship) ClearTarget() {
+	self.target = Point{0, 0}
+	self.target_ok = false
+}
+
+// ---------------------------------------
 
 func (self *Ship) String() string {
 	return fmt.Sprintf("Ship %v (%v,%v, owner %v, command \"%v\")", self.Sid, self.X, self.Y, self.Owner, self.Command)
@@ -86,11 +113,11 @@ func (self *Ship) CanDropoffAt(pos XYer) bool {
 }
 
 func (self *Ship) TargetIsDropoff() bool {
-	return self.CanDropoffAt(self.Target)
+	return self.CanDropoffAt(self.Target())
 }
 
 func (self *Ship) TargetHalite() int {
-	return self.Frame.HaliteAt(self.Target)
+	return self.Frame.HaliteAt(self.Target())
 }
 
 func (self *Ship) HaliteAt() int {

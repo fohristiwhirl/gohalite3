@@ -18,13 +18,14 @@ type Frame struct {
 	pid							int				// When simulating, if all sides are being played, this can be set by each bot
 	__true_pid					int				// The PID of the player in the real game, regardless of sims; should almost never be read
 
+	initial_ground_halite		int
+
 	logfile						*Logfile
 	flogfile					*Flogfile
 	token_parser				*TokenParser
 
 	turn						int
-	hash						string
-	highest_sid_seen			int				// Mostly for the simulator
+	highest_sid_seen			int				// Mostly for the simulator, which needs to generate unique new sids
 
 	// All of the following are regenerated from scratch each turn...
 
@@ -34,8 +35,8 @@ type Frame struct {
 	dropoffs					[]*Dropoff		// The first <player_count> items are always the factories
 	ship_xy_lookup				map[Point]*Ship
 	ship_id_lookup				map[int]*Ship
-	box_deltas					map[Point]int
-	wealth_map					*WealthMap		// Made each turn the first time its asked for
+	wealth_map					*WealthMap		// Made each turn the first time its asked for, then cached
+	ground_halite				int				// Likewise
 
 	generate					map[int]bool	// Whether the AI wants to send a "g" command
 
@@ -71,8 +72,8 @@ func (self *Frame) Remake(allow_logs bool) *Frame {			// This is a deep copy
 	g.dropoffs = make([]*Dropoff, 0, len(self.dropoffs))	// so that no memory alloc needed
 	g.ship_xy_lookup = make(map[Point]*Ship)
 	g.ship_id_lookup = make(map[int]*Ship)
-	g.box_deltas = make(map[Point]int)
-	g.wealth_map = nil										// Is this the right thing to do?
+	g.wealth_map = nil										// Gets regenerated when asked for. Should we just link the old one?
+	g.ground_halite = 0										// Also gets regenerated when asked for.
 	g.generate = make(map[int]bool)
 
 	for pid, val := range self.budgets {
@@ -102,10 +103,6 @@ func (self *Frame) Remake(allow_logs bool) *Frame {			// This is a deep copy
 		g.ship_id_lookup[ship.Sid] = ship
 	}
 
-	for key, val := range self.box_deltas {
-		g.box_deltas[key] = val
-	}
-
 	for key, val := range self.generate {
 		g.generate[key] = val
 	}
@@ -113,7 +110,7 @@ func (self *Frame) Remake(allow_logs bool) *Frame {			// This is a deep copy
 	return g
 }
 
-func (self *Frame) set_hash() {
+func (self *Frame) Hash() string {
 
 	var s []string
 
@@ -151,10 +148,10 @@ func (self *Frame) set_hash() {
 		}
 	}
 
-	self.hash = HashFromString(strings.Join(s, "-"))
+	return HashFromString(strings.Join(s, "-"))
 }
 
-func (self *Frame) fix_inspiration() {
+func (self *Frame) FixInspiration() {
 
 	for _, ship := range self.ships {
 

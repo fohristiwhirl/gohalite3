@@ -60,7 +60,7 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 			// Special case: if ship is next to a dropoff and is in its mad dash, always move.
 			// And don't set the book, it can only confuse matters...
 
-			if ship.TargetIsDropoff() && ship.Dist(ship.Target) == 1 && ship.FinalDash {
+			if ship.TargetIsDropoff() && ship.Dist(ship.Target()) == 1 && ship.FinalDash {
 				ship.Move(ship.Desires[0])
 				continue
 			}

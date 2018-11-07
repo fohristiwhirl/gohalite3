@@ -1,7 +1,6 @@
 package ai
 
 import (
-	"fmt"
 	"math/rand"
 	"sort"
 
@@ -13,68 +12,32 @@ const (
 	NICE_THRESHOLD = 8000
 )
 
-type Config struct {
-	Crash					bool
-	RemakeTest				bool
-	SimTest					bool
-}
-
-type Overmind struct {
-
-	Pid						int
-	Config					Config
-
-	// Stategic stats:
-
-	InitialGroundHalite		int
-	HappyThreshold			int			// Needs set each turn
-	IgnoreThreshold			int			// Needs set each turn
-}
-
-func NewOvermind(frame *hal.Frame, config Config, pid int) *Overmind {
-
-	// At this point, frame has already been pre-pre-parsed and pre-parsed, so the map data exists.
-
-	o := new(Overmind)
-
-	o.Pid = pid
-	o.Config = config
-
-	o.InitialGroundHalite = frame.GroundHalite()
-
-	return o
-}
-
-func (self *Overmind) Step(frame *hal.Frame) {
+func Step(frame *hal.Frame, pid int, allow_build bool) {
 
 	// Various calls rely on this happening..................
 	// Always have this first.
 
-	frame.SetPid(self.Pid)
+	frame.SetPid(pid)
 
 	// Various other initialisation..........................
 
-	rand.Seed(int64(frame.MyBudget() + self.Pid))
-	self.SetTurnParameters(frame)
+	rand.Seed(int64(frame.MyBudget() + pid))
+	happy_threshold := HappyThreshold(frame)
 
-	// What each ship wants to do............................
+	// Ship cleanup and target choice........................
 
 	my_ships := frame.MyShips()
 
 	for _, ship := range my_ships {
-		NewTurn(ship)
+		NewTurn(ship)						// May clear the ship's target.
 	}
 
-	target_book := hal.Make2dBoolArray(frame.Width(), frame.Height())		// What points are targets. Updated for each ship.
+	ChooseTargets(frame, my_ships, pid)		// Only sets targets for ships that need a new one.
+
+	// What each ship wants to do right now..................
 
 	for _, ship := range my_ships {
-		self.SetTarget(ship, target_book)
-	}
-
-	TargetSwaps(my_ships)
-
-	for _, ship := range my_ships {
-		self.SetDesires(ship)
+		SetDesires(ship, happy_threshold)
 	}
 
 	// Resolve the desired moves.............................
@@ -83,27 +46,25 @@ func (self *Overmind) Step(frame *hal.Frame) {
 
 	// Other.................................................
 
-	self.MaybeBuild(frame, my_ships, move_book)
+	if allow_build {
+		MaybeBuild(frame, my_ships, move_book)
+	}
 
 	for _, ship := range my_ships {
 		FlogTarget(ship)
 	}
 
-	for _, report := range SameTargetReports(my_ships) {
-		frame.Log(report)
-	}
-
 	return
 }
 
-func (self *Overmind) MaybeBuild(frame *hal.Frame, my_ships []*hal.Ship, move_book *MoveBook) {
+func MaybeBuild(frame *hal.Frame, my_ships []*hal.Ship, move_book *MoveBook) {
 
 	budget := frame.MyBudget()
 
 	factory := frame.MyFactory()
 	willing := true
 
-	if self.InitialGroundHalite / (frame.GroundHalite() + 1) >= 2 {		// remember int division, also div-by-zero
+	if frame.InitialGroundHalite() / (frame.GroundHalite() + 1) >= 2 {		// remember int division, also div-by-zero
 		willing = false
 	}
 
@@ -152,23 +113,7 @@ func (self *Overmind) MaybeBuild(frame *hal.Frame, my_ships []*hal.Ship, move_bo
 	}
 }
 
-func (self *Overmind) SetTurnParameters(frame *hal.Frame) {
-
-	current_ground_halite := 0
-
-	for x := 0; x < frame.Width(); x++ {
-		for y := 0; y < frame.Height(); y++ {
-			current_ground_halite += frame.HaliteAtFast(x, y)
-		}
-	}
-
-	avg_ground_halite := current_ground_halite / (frame.Width() * frame.Height())
-
-	self.HappyThreshold = avg_ground_halite / 2			// Above this, ground is sticky
-	self.IgnoreThreshold = avg_ground_halite * 2 / 3	// Less than this not counted for targeting
-}
-
-func (self *Overmind) ShouldMine(frame *hal.Frame, halite_carried int, pos, tar hal.XYer) bool {
+func ShouldMine(frame *hal.Frame, halite_carried int, pos, tar hal.XYer, happy_threshold int) bool {
 
 	// Whether a ship -- if it were carrying n halite, at pos, with specified target -- would stop to mine.
 
@@ -179,7 +124,7 @@ func (self *Overmind) ShouldMine(frame *hal.Frame, halite_carried int, pos, tar 
 	pos_halite := frame.HaliteAt(pos)
 	tar_halite := frame.HaliteAt(tar)
 
-	if pos_halite > self.HappyThreshold {
+	if pos_halite > happy_threshold {
 		if pos_halite > tar_halite / 3 {			// This is a bit odd since the test even happens when target is dropoff.
 			return true
 		}
@@ -188,67 +133,6 @@ func (self *Overmind) ShouldMine(frame *hal.Frame, halite_carried int, pos, tar 
 	return false
 }
 
-func HaliteDistScore(halite, dist int) float32 {
-	return float32(halite) / float32((dist + 1) * (dist + 1))	// Avoid div-by-zero
-}
-
-func TargetSwaps(my_ships []*hal.Ship) {
-
-	for cycle := 0; cycle < 4; cycle++ {
-
-		swap_count := 0
-
-		for i, ship_a := range my_ships {
-
-			if ship_a.TargetIsDropoff() {
-				continue
-			}
-
-			for _, ship_b := range my_ships[i + 1:] {
-
-				if ship_b.TargetIsDropoff() {
-					continue
-				}
-
-				a_dist_b := ship_a.Dist(ship_b.Target)
-				b_dist_a := ship_b.Dist(ship_a.Target)
-
-				alt_score_a := HaliteDistScore(ship_b.TargetHalite(), a_dist_b)
-				alt_score_b := HaliteDistScore(ship_a.TargetHalite(), b_dist_a)
-
-				if alt_score_a + alt_score_b > ship_a.Score + ship_b.Score {
-
-					ship_a.Target, ship_b.Target = ship_b.Target, ship_a.Target
-
-					ship_a.Score = alt_score_a
-					ship_b.Score = alt_score_b
-
-					// self.Frame.Log("Swapped targets for pilots %d, %d (cycle %d)", ship_a.Sid, ship_b.Sid, cycle)
-					swap_count++
-				}
-			}
-		}
-
-		if swap_count == 0 {
-			return
-		}
-	}
-}
-
-func SameTargetReports(my_ships []*hal.Ship) []string {
-
-	var ret []string
-
-	targets := make(map[hal.Point]int)
-
-	for _, ship := range my_ships {
-		targetter_sid, ok := targets[ship.Target]
-		if ok && ship.TargetIsDropoff() == false {
-			ret = append(ret, fmt.Sprintf("Ships %d and %d looking at same target: %d %d", ship.Sid, targetter_sid, ship.Target.X, ship.Target.Y))
-		} else {
-			targets[ship.Target] = ship.Sid
-		}
-	}
-
-	return ret
+func HappyThreshold(frame *hal.Frame) int {			// Probably bad to call this a lot when simming, will be slow. So cache it.
+	return frame.AverageGroundHalite() / 2
 }

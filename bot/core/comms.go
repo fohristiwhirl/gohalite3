@@ -119,7 +119,7 @@ func (self *Frame) PreParse() {
 	// Now put the frame into a valid Turn 0 state, mostly for sim purposes...
 
 	self.turn = 0
-	self.set_hash()
+	self.initial_ground_halite = self.GroundHalite()
 
 	self.budgets = make([]int, self.players)
 
@@ -129,13 +129,18 @@ func (self *Frame) PreParse() {
 
 	self.ship_xy_lookup = make(map[Point]*Ship)
 	self.ship_id_lookup = make(map[int]*Ship)
-	self.box_deltas = make(map[Point]int)
 	self.generate = make(map[int]bool)
 }
 
 func (self *Frame) Parse() {
 
 	// WARNING! Keep this function in sync with Remake() and SimGen()
+
+	// Note: we do our first read very early since this is the point where it will panic
+	// on EOF. If it does, the old values will still be correct for e.g. final logging.
+
+	self.turn = self.token_parser.Int() - 1			// Out by 1 correction
+	self.ParseTime = time.Now()						// Must come after the first read
 
 	// Note: creates brand new objects for literally everything;
 	// No holding onto the old ones.
@@ -154,8 +159,8 @@ func (self *Frame) Parse() {
 	self.dropoffs = nil
 	self.ship_xy_lookup = make(map[Point]*Ship)
 	self.ship_id_lookup = make(map[int]*Ship)
-	self.box_deltas = make(map[Point]int)
-	self.wealth_map = nil
+	self.wealth_map = nil							// Not set in this function. Created when asked for.
+	self.ground_halite = 0							// Not set in this function. Created when asked for.
 	self.generate = make(map[int]bool)
 
 	// Remake the factories...
@@ -166,10 +171,6 @@ func (self *Frame) Parse() {
 	}
 
 	// ------------------------------------------------
-
-	self.turn = self.token_parser.Int() - 1			// Out by 1 correction
-
-	self.ParseTime = time.Now()						// Must come after the first read
 
 	for n := 0; n < self.players; n++ {
 
@@ -235,17 +236,9 @@ func (self *Frame) Parse() {
 	cell_update_count := self.token_parser.Int()
 
 	for n := 0; n < cell_update_count; n++ {
-
 		x := self.token_parser.Int()
 		y := self.token_parser.Int()
-
-		val := self.token_parser.Int()
-		old_val := old_halite[x][y]
-
-		if val != old_val {
-			self.halite[x][y] = val
-			self.box_deltas[Point{x, y}] = val - old_val
-		}
+		self.halite[x][y] = self.token_parser.Int()
 	}
 
 	// ------------------------------------------------
@@ -255,8 +248,7 @@ func (self *Frame) Parse() {
 		return self.ships[a].Sid < self.ships[b].Sid
 	})
 
-	self.fix_inspiration()
-	self.set_hash()
+	self.FixInspiration()
 
 	// self.Log("Parsing took %v", time.Now().Sub(self.ParseTime))
 

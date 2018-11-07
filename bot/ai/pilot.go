@@ -12,85 +12,28 @@ func NewTurn(ship *hal.Ship) {
 
 	ship.Command = ""
 	ship.Desires = nil
-	ship.Target = ship.Point()
-	ship.TargetOK = true
-	ship.Score = 0
 
-	if ship.OnDropoff() {
+	if ship.Dist(ship.NearestDropoff()) > ship.Frame.Constants.MAX_TURNS - ship.Frame.Turn() - 3 {
+		ship.FinalDash = true
+	}
+
+	if ship.FinalDash || ShouldReturn(ship) {
+		ship.Returning = true
+	} else {
 		ship.Returning = false
-	}
-
-	SetFinalDash(ship)
-}
-
-func (self *Overmind) SetTarget(ship *hal.Ship, target_book [][]bool) {
-
-	// Note that the ship may still not move if it's happy where it is.
-
-	if ship.FinalDash {
-		ship.Target = ship.NearestDropoff().Point()
-		ship.Returning = true
-		return
-	}
-
-	if ship.Halite > 500 || ship.Returning {
-		ship.Target = ship.NearestDropoff().Point()
-		ship.Returning = true
-		return
-	}
-
-	self.TargetBestBox(ship, target_book)
-	target_book[ship.Target.X][ship.Target.Y] = true		// Only for normal targets
-}
-
-func (self *Overmind) TargetBestBox(ship *hal.Ship, target_book [][]bool) {
-
-	frame := ship.Frame
-
-	ship.TargetOK = false
-	ship.Score = -999999
-
-	width := frame.Width()
-	height := frame.Height()
-
-	for x := 0; x < width; x++ {
-
-		for y := 0; y < height; y++ {
-
-			if target_book[x][y] {
-				continue
-			}
-
-			halite := frame.HaliteAtFast(x, y)
-
-			if halite < self.IgnoreThreshold {
-				continue
-			}
-
-			dist := ship.Dist(hal.Point{x, y})
-			score := HaliteDistScore(halite, dist)
-
-			if score > ship.Score {
-				ship.Target = hal.Point{x, y}
-				ship.TargetOK = true
-				ship.Score = score
-			}
+		if ship.OnDropoff() {
+			ship.ClearTarget()
 		}
 	}
 
-	// It's best not to set a default at top because it can confuse the logic.
-	// i.e. we want to ignore boxes below a certain halite threshold, even if
-	// they have a good score. Our default might be such a square, so comparing
-	// against its score might lead us to reject a box we should pick.
+	// -------------------------------
 
-	if ship.TargetOK == false {
-		ship.Target = ship.Point()											// Default - my own square
-		ship.TargetOK = true
-		ship.Score = HaliteDistScore(ship.HaliteAt(), 0)
+	if ship.Returning {
+		ship.SetTarget(ship.NearestDropoff())
 	}
 }
 
-func (self *Overmind) SetDesires(ship *hal.Ship) {
+func SetDesires(ship *hal.Ship, happy_threshold int) {
 
 	// Maybe we can't move...
 
@@ -102,27 +45,27 @@ func (self *Overmind) SetDesires(ship *hal.Ship) {
 	// Maybe we're on a mad dash to deliver stuff before end...
 
 	if ship.FinalDash {
-		self.DesireNav(ship)
+		DesireNav(ship, happy_threshold)
 		return
 	}
 
 	// Maybe we're happy where we are...
 
-	if self.ShouldMine(ship.Frame, ship.Halite, ship, ship.Target) {
+	if ShouldMine(ship.Frame, ship.Halite, ship, ship.Target(), happy_threshold) {
 		ship.Desires = []string{"o"}
 		return
 	}
 
 	// Normal case...
 
-	self.DesireNav(ship)
+	DesireNav(ship, happy_threshold)
 }
 
-func (self *Overmind) DesireNav(ship *hal.Ship) {
+func DesireNav(ship *hal.Ship, happy_threshold int) {
 
 	ship.Desires = nil
 	frame := ship.Frame
-	dx, dy := ship.DxDy(ship.Target)
+	dx, dy := ship.DxDy(ship.Target())
 
 	if dx == 0 && dy == 0 {
 		ship.Desires = []string{"o"}
@@ -166,8 +109,8 @@ func (self *Overmind) DesireNav(ship *hal.Ship) {
 			loc1 := ship.LocationAfterMove(likes[a])
 			loc2 := ship.LocationAfterMove(likes[b])
 
-			would_mine_1 := self.ShouldMine(frame, halite_after_move, loc1, ship.Target)
-			would_mine_2 := self.ShouldMine(frame, halite_after_move, loc2, ship.Target)
+			would_mine_1 := ShouldMine(frame, halite_after_move, loc1, ship.Target(), happy_threshold)
+			would_mine_2 := ShouldMine(frame, halite_after_move, loc2, ship.Target(), happy_threshold)
 
 			if would_mine_1 && would_mine_2 == false {				// Only mines at 1
 				return true
@@ -203,14 +146,11 @@ func (self *Overmind) DesireNav(ship *hal.Ship) {
 }
 
 func FlogTarget(ship *hal.Ship) {
-	ship.Frame.Flog(ship.X, ship.Y, fmt.Sprintf("Target: %d %d - Dist: %d", ship.Target.X, ship.Target.Y, ship.Dist(ship.Target)), "")
-	ship.Frame.Flog(ship.Target.X, ship.Target.Y, "", "LemonChiffon")
+	ship.Frame.Flog(ship.X, ship.Y, fmt.Sprintf("Target: %d %d - Dist: %d", ship.Target().X, ship.Target().Y, ship.Dist(ship.Target())), "")
+	ship.Frame.Flog(ship.Target().X, ship.Target().Y, "", "LemonChiffon")
 }
 
-func SetFinalDash(ship *hal.Ship) {
-	if ship.Dist(ship.NearestDropoff()) > ship.Frame.Constants.MAX_TURNS - ship.Frame.Turn() - 3 {
-		ship.FinalDash = true
-	} else {
-		ship.FinalDash = false
-	}
+func ShouldReturn(ship *hal.Ship) bool {		// Could consider dist to dropoff, etc
+	return ship.Halite > 500
 }
+

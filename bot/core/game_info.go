@@ -154,18 +154,33 @@ func (self *Frame) ShipCanDropoffAt(ship *Ship, pos XYer) bool {
 	return self.PlayerCanDropoffAt(ship.Owner, pos)
 }
 
-func (self *Frame) Hash() string {
-	return self.hash
+func (self *Frame) WealthMap() *WealthMap {		// Return cached value if available.
+	if self.wealth_map == nil {
+		self.wealth_map = NewWealthMap(self)
+	}
+	return self.wealth_map
 }
 
-func (self *Frame) GroundHalite() int {
-	var count int
+func (self *Frame) InitialGroundHalite() int {
+	return self.initial_ground_halite
+}
+
+func (self *Frame) GroundHalite() int {		// Return cached value if available. PreParse() relies on it also working without a valid value.
+
+	if self.ground_halite > 0 {
+		return self.ground_halite
+	}
+
 	for x := 0; x < self.width; x++ {
 		for y := 0; y < self.height; y++ {
-			count += self.halite[x][y]
+			self.ground_halite += self.halite[x][y]
 		}
 	}
-	return count
+	return self.ground_halite
+}
+
+func (self *Frame) AverageGroundHalite() int {
+	return self.GroundHalite() / (self.width * self.height)
 }
 
 func (self *Frame) TotalShips() int {
@@ -197,28 +212,4 @@ func (self *Frame) Neighbours(x, y int) []Point {
 	ret = append(ret, Point{x4, y4})
 
 	return ret
-}
-
-type Change struct {
-	X		int
-	Y		int
-	Delta	int
-}
-
-func (self *Frame) Changes() []Change {
-
-	var ret []Change
-
-	for key, val := range self.box_deltas {				// Iterating over a map, order not deterministic
-		ret = append(ret, Change{key.X, key.Y, val})
-	}
-
-	return ret
-}
-
-func (self *Frame) WealthMap() *WealthMap {
-	if self.wealth_map == nil {
-		self.wealth_map = NewWealthMap(self)
-	}
-	return self.wealth_map
 }

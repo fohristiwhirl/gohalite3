@@ -8,7 +8,8 @@ import (
 	"strings"
 	"time"
 
-	ai "./ai"
+	"./ai"
+	"./config"
 	hal "./core"
 )
 
@@ -18,8 +19,6 @@ func main() {
 		NAME = "Fohristiwhirl"
 		VERSION = "16.b"				// hash is ??
 	)
-
-	var config ai.Config
 
 	flag.BoolVar(&config.Crash, "crash", false, "randomly crash")
 	flag.BoolVar(&config.RemakeTest, "remaketest", false, "test the frame remaker")
@@ -60,8 +59,6 @@ func main() {
 	frame.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02 15:04:05"))
 	frame.LogWithoutTurn("Invoked as %s", strings.Join(os.Args, " "))
 
-	overmind := ai.NewOvermind(frame, config, true_pid)
-
 	var player_strings []string
 	for n := 0; n < frame.Players(); n++ {
 		player_strings = append(player_strings, "bot.exe")
@@ -73,7 +70,7 @@ func main() {
 	// -------------------------------------------------------------------------------
 
 	if config.SimTest {
-		prediction_hash, prediction_ground := sim_check(frame, config)
+		prediction_hash, prediction_ground := sim_check(frame)
 		frame.Log("Simulator predicts final hash %v", prediction_hash)
 		frame.Log("Simulator predicts ground halite %v on turn N-1", prediction_ground)
 	}
@@ -95,7 +92,7 @@ func main() {
 			}
 		}
 
-		overmind.Step(frame)
+		ai.Step(frame, true_pid, true)
 		frame.Send()
 
 		if time.Now().Sub(frame.ParseTime) > longest_turn {
