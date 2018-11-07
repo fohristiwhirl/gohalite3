@@ -19,7 +19,7 @@ func main() {
 		VERSION = "16.b"				// hash is ??
 	)
 
-	config := new(ai.Config)
+	var config ai.Config
 
 	flag.BoolVar(&config.Crash, "crash", false, "randomly crash")
 	flag.BoolVar(&config.RemakeTest, "remaketest", false, "test the frame remaker")

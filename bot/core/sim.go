@@ -14,6 +14,8 @@ func (self *Frame) SetPid(pid int) {
 
 func (self *Frame) SimGen() *Frame {
 
+	// WARNING! Keep this function in sync with Parse() and Remake()
+
 	g := new(Frame)
 	*g = *self
 
@@ -34,6 +36,7 @@ func (self *Frame) SimGen() *Frame {
 	g.ship_xy_lookup = make(map[Point]*Ship)
 	g.ship_id_lookup = make(map[int]*Ship)
 	g.box_deltas = make(map[Point]int)
+	g.wealth_map = nil
 	g.generate = make(map[int]bool)
 
 	// Remake some things. No objects are reused.

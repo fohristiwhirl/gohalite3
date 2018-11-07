@@ -5,7 +5,7 @@ import (
 	hal "./core"
 )
 
-func sim_check(real_frame *hal.Frame, config *ai.Config) (string, int) {
+func sim_check(real_frame *hal.Frame, config ai.Config) (string, int) {
 
 	// Returns the final hash that the real bot will see,
 	// if the real bot is matched only against itself...

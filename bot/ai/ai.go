@@ -6,7 +6,6 @@ import (
 	"sort"
 
 	hal "../core"
-	maps "../maps"
 )
 
 const (
@@ -23,18 +22,16 @@ type Config struct {
 type Overmind struct {
 
 	Pid						int
-	Config					*Config
+	Config					Config
 
 	// Stategic stats:
 
-	WealthMap				*maps.WealthMap			// Other maps are available in /maps
-
 	InitialGroundHalite		int
-	HappyThreshold			int
-	IgnoreThreshold			int
+	HappyThreshold			int			// Needs set each turn
+	IgnoreThreshold			int			// Needs set each turn
 }
 
-func NewOvermind(frame *hal.Frame, config *Config, pid int) *Overmind {
+func NewOvermind(frame *hal.Frame, config Config, pid int) *Overmind {
 
 	// At this point, frame has already been pre-pre-parsed and pre-parsed, so the map data exists.
 
@@ -43,7 +40,6 @@ func NewOvermind(frame *hal.Frame, config *Config, pid int) *Overmind {
 	o.Pid = pid
 	o.Config = config
 
-	o.WealthMap = maps.NewWealthMap(frame)
 	o.InitialGroundHalite = frame.GroundHalite()
 
 	return o
@@ -59,7 +55,6 @@ func (self *Overmind) Step(frame *hal.Frame) {
 	// Various other initialisation..........................
 
 	rand.Seed(int64(frame.MyBudget() + self.Pid))
-	self.WealthMap.Update(frame)
 	self.SetTurnParameters(frame)
 
 	// What each ship wants to do............................
@@ -131,7 +126,7 @@ func (self *Overmind) MaybeBuild(frame *hal.Frame, my_ships []*hal.Ship, move_bo
 			continue
 		}
 
-		if self.WealthMap.Values[ship.X][ship.Y] < NICE_THRESHOLD {
+		if frame.WealthMap().Values[ship.X][ship.Y] < NICE_THRESHOLD {
 			continue
 		}
 
@@ -144,14 +139,14 @@ func (self *Overmind) MaybeBuild(frame *hal.Frame, my_ships []*hal.Ship, move_bo
 
 	sort.Slice(possible_constructs, func (a, b int) bool {
 
-		return	self.WealthMap.Values[possible_constructs[a].X][possible_constructs[a].Y] <
-				self.WealthMap.Values[possible_constructs[b].X][possible_constructs[b].Y]
+		return	frame.WealthMap().Values[possible_constructs[a].X][possible_constructs[a].Y] <
+				frame.WealthMap().Values[possible_constructs[b].X][possible_constructs[b].Y]
 	})
 
 	for _, ship := range possible_constructs {
 		if ship.Halite + frame.HaliteAtFast(ship.X, ship.Y) + budget >= frame.Constants.DROPOFF_COST {
 			ship.Command = "c"
-			frame.Log("Ship %d building dropoff (wmap: %d)", ship.Sid, self.WealthMap.Values[ship.X][ship.Y])
+			frame.Log("Ship %d building dropoff (wmap: %d)", ship.Sid, frame.WealthMap().Values[ship.X][ship.Y])
 			break
 		}
 	}

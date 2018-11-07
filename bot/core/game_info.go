@@ -215,3 +215,10 @@ func (self *Frame) Changes() []Change {
 
 	return ret
 }
+
+func (self *Frame) WealthMap() *WealthMap {
+	if self.wealth_map == nil {
+		self.wealth_map = NewWealthMap(self)
+	}
+	return self.wealth_map
+}

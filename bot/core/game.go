@@ -35,7 +35,10 @@ type Frame struct {
 	ship_xy_lookup				map[Point]*Ship
 	ship_id_lookup				map[int]*Ship
 	box_deltas					map[Point]int
+	wealth_map					*WealthMap		// Made each turn the first time its asked for
+
 	generate					map[int]bool	// Whether the AI wants to send a "g" command
+
 }
 
 func NewGame() *Frame {
@@ -48,7 +51,9 @@ func NewGame() *Frame {
 	return frame
 }
 
-func (self *Frame) Remake(allow_logs bool) *Frame {		// This is a deep copy
+func (self *Frame) Remake(allow_logs bool) *Frame {			// This is a deep copy
+
+	// WARNING! Keep this function in sync with Parse() and SimGen()
 
 	g := new(Frame)
 	*g = *self			// Everything not explicitly changed will be the same
@@ -62,11 +67,12 @@ func (self *Frame) Remake(allow_logs bool) *Frame {		// This is a deep copy
 
 	g.budgets = make([]int, g.players)
 	g.halite = Make2dIntArray(g.width, g.height)
-	g.ships	= make([]*Ship, len(self.ships))				// Care - these lines fill the new array with nils (for speed)
-	g.dropoffs = make([]*Dropoff, len(self.dropoffs))		// so we must replace them, rather than append. (Worth it??)
+	g.ships	= make([]*Ship, 0, len(self.ships))				// 0 length but correct capacity
+	g.dropoffs = make([]*Dropoff, 0, len(self.dropoffs))	// so that no memory alloc needed
 	g.ship_xy_lookup = make(map[Point]*Ship)
 	g.ship_id_lookup = make(map[int]*Ship)
 	g.box_deltas = make(map[Point]int)
+	g.wealth_map = nil										// Is this the right thing to do?
 	g.generate = make(map[int]bool)
 
 	for pid, val := range self.budgets {
@@ -79,16 +85,16 @@ func (self *Frame) Remake(allow_logs bool) *Frame {		// This is a deep copy
 		}
 	}
 
-	for n, ship := range self.ships {
+	for _, ship := range self.ships {
 		remade := *ship
 		remade.Frame = g
-		g.ships[n] = &remade
+		g.ships = append(g.ships, &remade)
 	}
 
-	for n, dropoff := range self.dropoffs {
+	for _, dropoff := range self.dropoffs {
 		remade := *dropoff
 		remade.Frame = g
-		g.dropoffs[n] = &remade
+		g.dropoffs = append(g.dropoffs, &remade)
 	}
 
 	for _, ship := range g.ships {

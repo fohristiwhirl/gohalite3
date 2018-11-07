@@ -23,7 +23,7 @@ type Ship struct {
 	Target						Point
 	TargetOK					bool		// Has the target been validly set?
 	Score						float32		// Score if our target is a mineable box.
-	Desires						[]string
+	Desires						[]string	// Might get polluted with sims etc but OK as long as we clear it each turn.
 	Returning					bool
 	FinalDash					bool
 }

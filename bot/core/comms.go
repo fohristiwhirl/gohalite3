@@ -135,6 +135,8 @@ func (self *Frame) PreParse() {
 
 func (self *Frame) Parse() {
 
+	// WARNING! Keep this function in sync with Remake() and SimGen()
+
 	// Note: creates brand new objects for literally everything;
 	// No holding onto the old ones.
 
@@ -153,6 +155,7 @@ func (self *Frame) Parse() {
 	self.ship_xy_lookup = make(map[Point]*Ship)
 	self.ship_id_lookup = make(map[int]*Ship)
 	self.box_deltas = make(map[Point]int)
+	self.wealth_map = nil
 	self.generate = make(map[int]bool)
 
 	// Remake the factories...
