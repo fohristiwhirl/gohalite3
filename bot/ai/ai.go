@@ -28,7 +28,7 @@ func Step(frame *hal.Frame, pid int, allow_build bool) {
 	my_ships := frame.MyShips()
 
 	for _, ship := range my_ships {
-		NewTurn(ship)	// May clear the ship's target.
+		NewTurn(ship)
 	}
 
 	target_book := hal.Make2dBoolArray(frame.Width(), frame.Height())
