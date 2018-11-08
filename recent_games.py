@@ -5,6 +5,8 @@ INITIAL_LIMIT = 100
 RELOAD_LIMIT = 50
 FLUORINE_DIR = "C:\\Users\\Owner\\github\\fluorine"
 
+SHOW_CHALLENGES = False
+
 class RecentGames:
 
 	def __init__(self, my_id):
@@ -18,36 +20,40 @@ class RecentGames:
 
 		for game in recent:
 
-			if game["game_id"] not in self.game_ids:
+			if game["challenge_id"] != None:
+				continue
 
-				self.game_ids.append(game["game_id"])
+			if game["game_id"] in self.game_ids:
+				continue
 
-				player_objects = game["players"]		# dict of player id --> object
+			self.game_ids.append(game["game_id"])
 
-				player_ranks = dict()
+			player_objects = game["players"]		# dict of player id --> object
 
-				player_names = []
+			player_ranks = dict()
 
-				for pid, ob in player_objects.items():
-					name = ob["username"]
-					player_names.append(name)
-					player_ranks[name] = ob["rank"]
+			player_names = []
 
-				player_names.sort(key = lambda name : player_ranks[name])
+			for pid, ob in player_objects.items():
+				name = ob["username"]
+				player_names.append(name)
+				player_ranks[name] = ob["rank"]
 
-				for i, name in enumerate(player_names):
-					if len(name) < 16:
-						player_names[i] = name + ((16 - len(name)) * " ")
-					elif len(name) > 16:
-						player_names[i] = name[:16]
+			player_names.sort(key = lambda name : player_ranks[name])
 
-				print("{0:>3}: {1}   ({2}x{3})   {4}".format(
-					len(self.game_ids) - 1,
-					game["game_id"],
-					game["map_width"],
-					game["map_height"],
-					" ".join(player_names),
-				))
+			for i, name in enumerate(player_names):
+				if len(name) < 16:
+					player_names[i] = name + ((16 - len(name)) * " ")
+				elif len(name) > 16:
+					player_names[i] = name[:16]
+
+			print("{0:>3}: {1}   ({2}x{3})   {4}".format(
+				len(self.game_ids) - 1,
+				game["game_id"],
+				game["map_width"],
+				game["map_height"],
+				" ".join(player_names),
+			))
 
 	def get_game_id(self, n):
 		return self.game_ids[n]

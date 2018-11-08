@@ -20,8 +20,6 @@ type Frame struct {
 
 	initial_ground_halite		int
 
-	logfile						*Logfile
-	flogfile					*Flogfile
 	token_parser				*TokenParser
 
 	turn						int
@@ -52,7 +50,7 @@ func NewGame() *Frame {
 	return frame
 }
 
-func (self *Frame) Remake(allow_logs bool) *Frame {			// This is a deep copy
+func (self *Frame) Remake() *Frame {			// This is a deep copy
 
 	// WARNING! Keep this function in sync with Parse() and SimGen()
 
@@ -60,11 +58,6 @@ func (self *Frame) Remake(allow_logs bool) *Frame {			// This is a deep copy
 	*g = *self			// Everything not explicitly changed will be the same
 
 	g.ParseTime = time.Now()
-
-	if allow_logs == false {
-		g.logfile = nil
-		g.flogfile = nil
-	}
 
 	g.budgets = make([]int, g.players)
 	g.halite = Make2dIntArray(g.width, g.height)

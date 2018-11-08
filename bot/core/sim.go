@@ -21,11 +21,6 @@ func (self *Frame) SimGen() *Frame {
 
 	g.ParseTime = time.Now()
 
-	// Can comment the next 2 lines out if wanting logs from tests...
-
-	g.logfile = nil
-	g.flogfile = nil
-
 	g.turn += 1
 
 	g.budgets = make([]int, g.players)

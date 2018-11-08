@@ -10,6 +10,7 @@ import (
 
 	"./ai"
 	"./config"
+	"./logging"
 	hal "./core"
 )
 
@@ -39,8 +40,8 @@ func main() {
 			frame.Log("Last known hash: %s", frame.Hash())
 			frame.Log("Longest turn (%d) took %v", longest_turn_number, longest_turn)
 			frame.Log("Real-world time elapsed: %v", time.Now().Sub(start_time))
-			frame.StopLog()
-			frame.StopFlog()
+			logging.StopLog()
+			logging.StopFlog()
 		}
 	}()
 
@@ -50,29 +51,31 @@ func main() {
 	true_pid := frame.Pid()
 
 	// Both of these fail harmlessly if the directory isn't there:
-	frame.StartLog(fmt.Sprintf("logs/log-%v.txt", true_pid))
-	frame.StartFlog(fmt.Sprintf("flogs/flog-%v-%v.json", frame.Constants.GameSeed, true_pid))
+	logging.StartLog(fmt.Sprintf("logs/log-%v.txt", true_pid))
+	logging.StartFlog(fmt.Sprintf("flogs/flog-%v-%v.json", frame.Constants.GameSeed, true_pid))
 
 	frame.PreParse()				// Reads the map data.
 
-	frame.LogWithoutTurn("--------------------------------------------------------------------------------")
-	frame.LogWithoutTurn("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02 15:04:05"))
-	frame.LogWithoutTurn("Invoked as %s", strings.Join(os.Args, " "))
+	logging.Log("--------------------------------------------------------------------------------")
+	logging.Log("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02 15:04:05"))
+	logging.Log("Invoked as %s", strings.Join(os.Args, " "))
 
 	var player_strings []string
 	for n := 0; n < frame.Players(); n++ {
 		player_strings = append(player_strings, "bot.exe")
 	}
 
-	frame.LogWithoutTurn("./halite.exe --width %d --height %d -s %v %s",
+	logging.Log("./halite.py --width %d --height %d -s %v %s",
 		frame.Width(), frame.Height(), frame.Constants.GameSeed, strings.Join(player_strings, " "))
 
 	// -------------------------------------------------------------------------------
 
 	if config.SimTest {
+		logging.Suppress()
 		prediction_hash, prediction_ground := sim_check(frame)
-		frame.Log("Simulator predicts final hash %v", prediction_hash)
-		frame.Log("Simulator predicts ground halite %v on turn N-1", prediction_ground)
+		logging.Allow()
+		logging.Log("Simulator predicts final hash %v", prediction_hash)
+		logging.Log("Simulator predicts ground halite %v on turn N-1", prediction_ground)
 	}
 
 	fmt.Printf("%s %s\n", NAME, VERSION)
@@ -81,7 +84,7 @@ func main() {
 		frame.Parse()
 
 		if config.RemakeTest {
-			frame = frame.Remake(true)
+			frame = frame.Remake()
 		}
 
 		if config.Crash {

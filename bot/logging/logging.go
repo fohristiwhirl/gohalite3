@@ -1,10 +1,55 @@
-package core
+package logging
 
 import (
 	"encoding/json"
 	"fmt"
 	"os"
 )
+
+var globally_suppressed bool
+
+func Allow() { globally_suppressed = false }
+func Suppress() { globally_suppressed = true }
+
+// --------------------------------------------------------------------
+// We support having a log and a flog that don't require the caller
+// to keep track of a Logfile / Flogfile object, though they can
+// also do that if they like.
+
+var log *Logfile
+var flog *Flogfile
+
+func StartLog(outfilename string) {
+	log.Close()
+	log = NewLog(outfilename)
+}
+
+func StopLog() {
+	log.Close()
+}
+
+func Log(format_string string, args ...interface{}) {
+	log.Log(format_string, args...)
+}
+
+func LogOnce(format_string string, args ...interface{}) bool {
+	return log.LogOnce(format_string, args...)
+}
+
+func StartFlog(outfilename string) {
+	flog.Close()
+	flog = NewFlog(outfilename)
+}
+
+func StopFlog() {
+	flog.Close()
+}
+
+func Flog(t, x, y int, msg, colour string) {
+	flog.Flog(t, x, y, msg, colour)
+}
+
+// --------------------------------------------------------------------
 
 type Logfile struct {
 	outfile			*os.File
@@ -24,7 +69,7 @@ func NewLog(outfilename string) *Logfile {
 
 func (self *Logfile) Log(format_string string, args ...interface{}) {
 
-	if self == nil || self.closed {
+	if self == nil || self.closed || globally_suppressed {
 		return
 	}
 
@@ -46,15 +91,21 @@ func (self *Logfile) Log(format_string string, args ...interface{}) {
 		}
 	}
 
-	fmt.Fprintf(self.outfile, format_string, args...)
+	fmt.Fprintf(self.outfile, format_string + "\r\n", args...)
 }
 
 func (self *Logfile) LogOnce(format_string string, args ...interface{}) bool {
+
+	if self == nil || self.closed || globally_suppressed {
+		return false
+	}
+
 	if self.logged_once[format_string] == false {
 		self.logged_once[format_string] = true         // Note that it's format_string that is checked / saved
 		self.Log(format_string, args...)
 		return true
 	}
+
 	return false
 }
 
@@ -65,36 +116,6 @@ func (self *Logfile) Close() {
 	self.closed = true
 	self.outfile.Close()
 }
-
-// ---------------------------------------------------------------
-// Methods on the Frame object...
-
-func (self *Frame) StartLog(logfilename string) {
-	self.logfile = NewLog(logfilename)
-}
-
-func (self *Frame) Log(format_string string, args ...interface{}) {
-	format_string = fmt.Sprintf("t %3d: ", self.Turn()) + format_string + "\r\n"
-	self.logfile.Log(format_string, args...)
-}
-
-func (self *Frame) LogOnce(format_string string, args ...interface{}) bool {
-	format_string = "t %3d: " + format_string + "\r\n"
-	var newargs []interface{}
-	newargs = append(newargs, self.Turn())
-	newargs = append(newargs, args...)
-	return self.logfile.LogOnce(format_string, newargs...)
-}
-
-func (self *Frame) LogWithoutTurn(format_string string, args ...interface{}) {
-	self.logfile.Log(format_string + "\r\n", args...)
-}
-
-func (self *Frame) StopLog() {
-	self.logfile.Close()
-}
-
-
 
 // ---------------------------------------------------------------
 // This is a simple logger that I use for saving a JSON array of
@@ -128,7 +149,7 @@ func (self *Flogfile) Flog(t, x, y int, msg, colour string) {
 
 	// msg or colour can be ""
 
-	if self == nil || self.closed {
+	if self == nil || self.closed || globally_suppressed {
 		return
 	}
 
@@ -162,19 +183,4 @@ func (self *Flogfile) Close() {
 	fmt.Fprintf(self.outfile, "\n]")
 	self.closed = true
 	self.outfile.Close()
-}
-
-// ---------------------------------------------------------------
-// Methods on the Frame object...
-
-func (self *Frame) StartFlog(flogfilename string) {
-	self.flogfile = NewFlog(flogfilename)
-}
-
-func (self *Frame) Flog(x, y int, msg, colour string) {
-	self.flogfile.Flog(self.Turn(), x, y, msg, colour)
-}
-
-func (self *Frame) StopFlog() {
-	self.flogfile.Close()
 }

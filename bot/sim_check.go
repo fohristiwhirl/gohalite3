@@ -1,7 +1,7 @@
 package main
 
 import (
-	ai "./ai"
+	"./ai"
 	hal "./core"
 )
 
@@ -10,7 +10,7 @@ func sim_check(real_frame *hal.Frame) (string, int) {
 	// Returns the final hash that the real bot will see,
 	// if the real bot is matched only against itself...
 
-	frame := real_frame.Remake(false)
+	frame := real_frame.Remake()
 
 	for {
 		if frame.Turn() == frame.Constants.MAX_TURNS - 1 {
