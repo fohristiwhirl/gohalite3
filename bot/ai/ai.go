@@ -59,8 +59,6 @@ func Step(frame *hal.Frame, pid int, allow_build bool) {
 		FlogTarget(ship)
 	}
 
-	frame.InspirationMap().Flog(frame.Turn())
-
 	return
 }
 
