@@ -33,12 +33,13 @@ type Frame struct {
 	dropoffs					[]*Dropoff					// The first <player_count> items are always the factories
 	ship_xy_lookup				map[Point]*Ship
 	ship_id_lookup				map[int]*Ship
-	wealth_map					*WealthMap					// Made each turn the first time its asked for, then cached
-	inspiration_map				map[int]*InspirationMap		// Likewise
-	ground_halite				int							// Likewise
-
 	generate					map[int]bool				// Whether the AI wants to send a "g" command
 
+	// The following are cleared each parse / simgen / remake, then made when asked for, and cached...
+
+	wealth_map					*WealthMap
+	inspiration_map				map[int]*InspirationMap		// Likewise
+	ground_halite				int							// Likewise
 }
 
 func NewGame() *Frame {
