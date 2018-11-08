@@ -8,7 +8,7 @@ import (
 	hal "../core"
 )
 
-func SetDesires(ship *hal.Ship, happy_threshold int) {
+func SetDesires(ship *hal.Ship) {
 
 	// Maybe we can't move...
 
@@ -20,23 +20,23 @@ func SetDesires(ship *hal.Ship, happy_threshold int) {
 	// Maybe we're on a mad dash to deliver stuff before end...
 
 	if ship.FinalDash {
-		DesireNav(ship, happy_threshold)
+		DesireNav(ship)
 		return
 	}
 
 	// Maybe we're happy where we are...
 
-	if ShouldMine(ship.Frame, ship.Halite, ship, ship.Target(), happy_threshold) {
+	if ShouldMine(ship.Frame, ship.Halite, ship, ship.Target(), HappyThreshold(ship.Frame)) {
 		ship.Desires = []string{"o"}
 		return
 	}
 
 	// Normal case...
 
-	DesireNav(ship, happy_threshold)
+	DesireNav(ship)
 }
 
-func DesireNav(ship *hal.Ship, happy_threshold int) {
+func DesireNav(ship *hal.Ship) {
 
 	ship.Desires = nil
 	frame := ship.Frame
@@ -84,8 +84,8 @@ func DesireNav(ship *hal.Ship, happy_threshold int) {
 			loc1 := ship.LocationAfterMove(likes[a])
 			loc2 := ship.LocationAfterMove(likes[b])
 
-			would_mine_1 := ShouldMine(frame, halite_after_move, loc1, ship.Target(), happy_threshold)
-			would_mine_2 := ShouldMine(frame, halite_after_move, loc2, ship.Target(), happy_threshold)
+			would_mine_1 := ShouldMine(frame, halite_after_move, loc1, ship.Target(), HappyThreshold(ship.Frame))
+			would_mine_2 := ShouldMine(frame, halite_after_move, loc2, ship.Target(), HappyThreshold(ship.Frame))
 
 			if would_mine_1 && would_mine_2 == false {				// Only mines at 1
 				return true

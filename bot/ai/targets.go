@@ -1,92 +1,76 @@
 package ai
 
 import (
-	"math/rand"
 	hal "../core"
 )
 
-func NewTurn(ship *hal.Ship, move_on_threshold int) {
+func NewTurn(ship *hal.Ship) {
 
 	ship.Command = ""
 	ship.Desires = nil
+
+	ship.ClearTarget()
 
 	if ship.Dist(ship.NearestDropoff()) > ship.Frame.Constants.MAX_TURNS - ship.Frame.Turn() - 3 {
 		ship.FinalDash = true
 	}
 
-	if ship.FinalDash || ShouldReturn(ship) {
+	if ship.FinalDash || ShouldReturn(ship) || (ship.Returning && ship.OnDropoff() == false) {
 		ship.Returning = true
 	} else {
 		ship.Returning = false
 	}
+}
 
-	// ------------------------------------------------------------
+func SetTarget(ship *hal.Ship, target_book [][]bool) {
 
 	if ship.Returning {
 		ship.SetTarget(ship.NearestDropoff())
+		return
 	}
 
-	// If we're at our target and it has little halite, find a new one. Works if the target is dropoff too.
+	ship.ClearTarget()
 
-	if ship.TargetOK() && ship.Dist(ship.Target()) == 0 && ship.HaliteAt() < move_on_threshold {
-		ship.ClearTarget()
-	}
-}
+	frame := ship.Frame
+	width := frame.Width()
+	height := frame.Height()
 
-func ChooseTargets(frame *hal.Frame, my_ships []*hal.Ship, pid int) {
+	for x := 0; x < width; x++ {
 
-	for _, ship := range my_ships {
+		for y := 0; y < height; y++ {
 
-		if ship.TargetOK() {
-			continue
-		}
+			if target_book[x][y] {
+				continue
+			}
 
-		x := rand.Intn(frame.Width())
-		y := rand.Intn(frame.Height())
+			halite := frame.HaliteAtFast(x, y)
 
-		ship.SetTarget(hal.Point{x, y})
-	}
-}
+			if halite < IgnoreThreshold(frame) {
+				continue
+			}
 
+			dist := ship.Dist(hal.Point{x, y})
+			score := HaliteDistScore(halite, dist)
 
-
-
-/*
-
-		for n := 0; n < 10; n++ {
-
-			x := rand.Intn(frame.Width())
-			y := rand.Intn(frame.Height())
-
-			ship.Target = hal.Point{x, y}
-
-			sim_frame := frame.Remake()
-
-			sim_frame.DeleteEnemies()
-
-			// TBC
-
-
-
-
+			if ship.TargetOK() == false || score > ship.Score {
+				ship.SetTarget(hal.Point{x, y})
+				ship.Score = score
+			}
 		}
 	}
-}
-*/
 
+	// It's best not to set a default at top because it can confuse the logic.
+	// i.e. we want to ignore boxes below a certain halite threshold, even if
+	// they have a good score. Our default might be such a square, so comparing
+	// against its score might lead us to reject a box we should pick.
 
-/*
-func StupidStep(frame *hal.Frame, pid int) {
-
-	frame.SetPid(pid)
-
-	happy_threshold := HappyThreshold(frame)
-
-	my_ships := frame.MyShips()
-
-	for _, ship := range my_ships {
-		NewTurn(ship)
+	if ship.TargetOK() == false {
+		ship.SetTarget(ship)										// Default - my own square
+		ship.Score = HaliteDistScore(ship.HaliteAt(), 0)
 	}
 
-	// TBC
-*/
+	// Set the book for this ship. Note that for dropoff targets,
+	// we already returned and so they aren't included here.
+
+	target_book[ship.Target().X][ship.Target().Y] = true
+}

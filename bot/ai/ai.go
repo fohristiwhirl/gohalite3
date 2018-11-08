@@ -19,26 +19,30 @@ func Step(frame *hal.Frame, pid int, allow_build bool) {
 
 	frame.SetPid(pid)
 
-	// Various other initialisation..........................
+	// Other initialisation..................................
 
 	rand.Seed(int64(frame.MyBudget() + pid))
-	happy_threshold := HappyThreshold(frame)
-	move_on_threshold := MoveOnThreshold(frame)
 
 	// Ship cleanup and target choice........................
 
 	my_ships := frame.MyShips()
 
 	for _, ship := range my_ships {
-		NewTurn(ship, move_on_threshold)	// May clear the ship's target.
+		NewTurn(ship)	// May clear the ship's target.
 	}
 
-	ChooseTargets(frame, my_ships, pid)		// Only sets targets for ships that need a new one.
+	target_book := hal.Make2dBoolArray(frame.Width(), frame.Height())
+
+	for _, ship := range my_ships {
+		SetTarget(ship, target_book)
+	}
+
+	TargetSwaps(my_ships)
 
 	// What each ship wants to do right now..................
 
 	for _, ship := range my_ships {
-		SetDesires(ship, happy_threshold)
+		SetDesires(ship)
 	}
 
 	// Resolve the desired moves.............................
@@ -138,10 +142,65 @@ func ShouldReturn(ship *hal.Ship) bool {			// Could consider dist to dropoff, et
 	return ship.Halite > 500
 }
 
-func HappyThreshold(frame *hal.Frame) int {			// Probably bad to call this a lot when simming, will be slow. So cache it.
+func HappyThreshold(frame *hal.Frame) int {
 	return frame.AverageGroundHalite() / 2
 }
 
+func IgnoreThreshold(frame *hal.Frame) int {
+	return frame.AverageGroundHalite() * 2 / 3
+}
+
+/*
 func MoveOnThreshold(frame *hal.Frame) int {
 	return 10
+}
+*/
+
+func HaliteDistScore(halite, dist int) float32 {
+	return float32(halite) / float32((dist + 1) * (dist + 1))	// Avoid div-by-zero
+}
+
+func TargetSwaps(my_ships []*hal.Ship) {
+
+	for cycle := 0; cycle < 4; cycle++ {
+
+		swap_count := 0
+
+		for i, ship_a := range my_ships {
+
+			if ship_a.TargetIsDropoff() {
+				continue
+			}
+
+			for _, ship_b := range my_ships[i + 1:] {
+
+				if ship_b.TargetIsDropoff() {
+					continue
+				}
+
+				a_dist_b := ship_a.Dist(ship_b.Target())
+				b_dist_a := ship_b.Dist(ship_a.Target())
+
+				alt_score_a := HaliteDistScore(ship_b.TargetHalite(), a_dist_b)
+				alt_score_b := HaliteDistScore(ship_a.TargetHalite(), b_dist_a)
+
+				if alt_score_a + alt_score_b > ship_a.Score + ship_b.Score {
+
+					tmp := ship_a.Target()
+					ship_a.SetTarget(ship_b.Target())
+					ship_b.SetTarget(tmp)
+
+					ship_a.Score = alt_score_a
+					ship_b.Score = alt_score_b
+
+					// ship_a.Frame.Log("Swapped targets for pilots %d, %d (cycle %d)", ship_a.Sid, ship_b.Sid, cycle)
+					swap_count++
+				}
+			}
+		}
+
+		if swap_count == 0 {
+			return
+		}
+	}
 }
