@@ -14,8 +14,6 @@ func (self *Frame) SetPid(pid int) {
 
 func (self *Frame) SimGen() *Frame {
 
-	// WARNING! Keep this function in sync with Parse() and Remake()
-
 	g := new(Frame)
 	*g = *self
 
@@ -23,16 +21,9 @@ func (self *Frame) SimGen() *Frame {
 
 	g.turn += 1
 
-	g.budgets = make([]int, g.players)
-	g.halite = Make2dIntArray(g.width, g.height)
-	g.ships	= nil
-	g.dropoffs = nil
-	g.ship_xy_lookup = make(map[Point]*Ship)
-	g.ship_id_lookup = make(map[int]*Ship)
-	g.wealth_map = nil
-	g.inspiration_map = nil
-	g.ground_halite = 0
-	g.generate = make(map[int]bool)
+	// Clear all the data!
+
+	g.Zerofy()
 
 	// Remake some things. No objects are reused.
 	// Every pointer is to a new object...

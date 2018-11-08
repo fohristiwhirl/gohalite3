@@ -44,11 +44,11 @@ func SetTarget(ship *hal.Ship, target_book [][]bool) {
 			}
 
 			halite := frame.HaliteAtFast(x, y)
-
+/*
 			if frame.InspirationCheck(hal.Point{x, y}) {
 				halite *= 3
 			}
-
+*/
 			if halite < IgnoreThreshold(frame) {
 				continue
 			}

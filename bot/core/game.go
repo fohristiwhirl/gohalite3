@@ -51,25 +51,34 @@ func NewGame() *Frame {
 	return frame
 }
 
-func (self *Frame) Remake() *Frame {			// This is a deep copy
+func (self *Frame) Zerofy() {
 
-	// WARNING! Keep this function in sync with Parse() and SimGen()
+	// Put all the real content into a zeroed state.
+	// The caller can then update it.
+
+	self.budgets = make([]int, self.players)
+	self.halite = Make2dIntArray(self.width, self.height)
+	self.ships = nil
+	self.dropoffs = nil
+	self.ship_xy_lookup = make(map[Point]*Ship)
+	self.ship_id_lookup = make(map[int]*Ship)
+	self.generate = make(map[int]bool)
+
+	// Cached stuff that gets remade when asked for...
+
+	self.wealth_map = nil
+	self.inspiration_map = nil
+	self.ground_halite = 0
+}
+
+func (self *Frame) Remake() *Frame {			// This is a deep copy
 
 	g := new(Frame)
 	*g = *self			// Everything not explicitly changed will be the same
 
 	g.ParseTime = time.Now()
 
-	g.budgets = make([]int, g.players)
-	g.halite = Make2dIntArray(g.width, g.height)
-	g.ships	= make([]*Ship, 0, len(self.ships))				// 0 length but correct capacity
-	g.dropoffs = make([]*Dropoff, 0, len(self.dropoffs))	// so that no memory alloc needed
-	g.ship_xy_lookup = make(map[Point]*Ship)
-	g.ship_id_lookup = make(map[int]*Ship)
-	g.wealth_map = nil										// Gets regenerated when asked for. Should we just link the old one?
-	g.inspiration_map = nil
-	g.ground_halite = 0										// Also gets regenerated when asked for.
-	g.generate = make(map[int]bool)
+	g.Zerofy()			// Clear all the data!
 
 	for pid, val := range self.budgets {
 		g.budgets[pid] = val

@@ -122,7 +122,6 @@ func (self *Frame) PreParse() {
 	self.initial_ground_halite = self.GroundHalite()
 
 	self.budgets = make([]int, self.players)
-
 	for pid := 0; pid < self.players; pid++ {
 		self.budgets[pid] = self.Constants.INITIAL_ENERGY
 	}
@@ -134,15 +133,13 @@ func (self *Frame) PreParse() {
 
 func (self *Frame) Parse() {
 
-	// WARNING! Keep this function in sync with Remake() and SimGen()
-
 	// Note: we do our first read very early since this is the point where it will panic
 	// on EOF. If it does, the old values will still be correct for e.g. final logging.
 
 	self.turn = self.token_parser.Int() - 1			// Out by 1 correction
 	self.ParseTime = time.Now()						// Must come after the first read
 
-	// Note: creates brand new objects for literally everything;
+	// Note: we create brand new objects for literally everything;
 	// No holding onto the old ones.
 
 	// Save some things we will need later...
@@ -151,18 +148,9 @@ func (self *Frame) Parse() {
 	old_halite := self.halite
 	old_ship_id_lookup := self.ship_id_lookup
 
-	// Clear all the things...
+	// Clear all the data...
 
-	self.budgets = make([]int, self.players)
-	self.halite = Make2dIntArray(self.width, self.height)
-	self.ships = nil
-	self.dropoffs = nil
-	self.ship_xy_lookup = make(map[Point]*Ship)
-	self.ship_id_lookup = make(map[int]*Ship)
-	self.wealth_map = nil									// Not set in this function. Created when asked for.
-	self.inspiration_map = nil								// Not set in this function. Created when asked for.
-	self.ground_halite = 0									// Not set in this function. Created when asked for.
-	self.generate = make(map[int]bool)
+	self.Zerofy()
 
 	// Remake the factories...
 

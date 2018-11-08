@@ -131,8 +131,8 @@ func ShouldMine(frame *hal.Frame, halite_carried int, pos, tar hal.XYer) bool {
 	pos_halite := frame.HaliteAt(pos)
 	tar_halite := frame.HaliteAt(tar)
 
-	if frame.InspirationCheck(pos) { pos_halite *= 3 }
-	if frame.InspirationCheck(tar) { tar_halite *= 3 }
+	// if frame.InspirationCheck(pos) { pos_halite *= 3 }
+	// if frame.InspirationCheck(tar) { tar_halite *= 3 }
 
 	if pos_halite > HappyThreshold(frame) {
 		if pos_halite > tar_halite / 3 {			// This is a bit odd since the test even happens when target is dropoff.
