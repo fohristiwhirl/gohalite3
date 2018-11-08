@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"../logging"
 )
 
 const (
@@ -28,15 +29,6 @@ func (self *WealthMap) Init(frame *Frame) {
 		}
 	}
 }
-
-/*
-func (self *WealthMap) Update(frame *Frame) {
-	all_changed := frame.Changes()
-	for _, c := range all_changed {
-		self.Propagate(c.X, c.Y, c.Delta, WEALTH_MAP_RADIUS)
-	}
-}
-*/
 
 func (self *WealthMap) Propagate(ox, oy, value int, radius int) {
 
@@ -65,11 +57,11 @@ func (self *WealthMap) Propagate(ox, oy, value int, radius int) {
 	}
 }
 
-func (self *WealthMap) Flog(frame *Frame) {
-	for x := 0; x < frame.Width(); x++ {
-		for y := 0; y < frame.Height(); y++ {
+func (self *WealthMap) Flog(turn int) {
+	for x := 0; x < len(self.Values); x++ {
+		for y := 0; y < len(self.Values[0]); y++ {
 			s := fmt.Sprintf("Wealth: %v", self.Values[x][y])
-			frame.Flog(x, y, s, "")
+			logging.Flog(turn, x, y, s, "")
 		}
 	}
 }

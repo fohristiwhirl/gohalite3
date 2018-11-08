@@ -37,7 +37,7 @@ func Step(frame *hal.Frame, pid int, allow_build bool) {
 		SetTarget(ship, target_book)
 	}
 
-	TargetSwaps(my_ships)
+	TargetSwaps(my_ships, 4)
 
 	// What each ship wants to do right now..................
 
@@ -58,6 +58,8 @@ func Step(frame *hal.Frame, pid int, allow_build bool) {
 	for _, ship := range my_ships {
 		FlogTarget(ship)
 	}
+
+	frame.InspirationMap().Flog(frame.Turn())
 
 	return
 }
@@ -118,7 +120,7 @@ func MaybeBuild(frame *hal.Frame, my_ships []*hal.Ship, move_book *MoveBook) {
 	}
 }
 
-func ShouldMine(frame *hal.Frame, halite_carried int, pos, tar hal.XYer, happy_threshold int) bool {
+func ShouldMine(frame *hal.Frame, halite_carried int, pos, tar hal.XYer) bool {
 
 	// Whether a ship -- if it were carrying n halite, at pos, with specified target -- would stop to mine.
 
@@ -129,7 +131,10 @@ func ShouldMine(frame *hal.Frame, halite_carried int, pos, tar hal.XYer, happy_t
 	pos_halite := frame.HaliteAt(pos)
 	tar_halite := frame.HaliteAt(tar)
 
-	if pos_halite > happy_threshold {
+	if frame.InspirationCheck(pos) { pos_halite *= 3 }
+	if frame.InspirationCheck(tar) { tar_halite *= 3 }
+
+	if pos_halite > HappyThreshold(frame) {
 		if pos_halite > tar_halite / 3 {			// This is a bit odd since the test even happens when target is dropoff.
 			return true
 		}
@@ -150,19 +155,13 @@ func IgnoreThreshold(frame *hal.Frame) int {
 	return frame.AverageGroundHalite() * 2 / 3
 }
 
-/*
-func MoveOnThreshold(frame *hal.Frame) int {
-	return 10
-}
-*/
-
 func HaliteDistScore(halite, dist int) float32 {
 	return float32(halite) / float32((dist + 1) * (dist + 1))	// Avoid div-by-zero
 }
 
-func TargetSwaps(my_ships []*hal.Ship) {
+func TargetSwaps(my_ships []*hal.Ship, cycles int) {
 
-	for cycle := 0; cycle < 4; cycle++ {
+	for cycle := 0; cycle < cycles; cycle++ {
 
 		swap_count := 0
 

@@ -26,7 +26,7 @@ func SetDesires(ship *hal.Ship) {
 
 	// Maybe we're happy where we are...
 
-	if ShouldMine(ship.Frame, ship.Halite, ship, ship.Target(), HappyThreshold(ship.Frame)) {
+	if ShouldMine(ship.Frame, ship.Halite, ship, ship.Target()) {
 		ship.Desires = []string{"o"}
 		return
 	}
@@ -84,8 +84,8 @@ func DesireNav(ship *hal.Ship) {
 			loc1 := ship.LocationAfterMove(likes[a])
 			loc2 := ship.LocationAfterMove(likes[b])
 
-			would_mine_1 := ShouldMine(frame, halite_after_move, loc1, ship.Target(), HappyThreshold(ship.Frame))
-			would_mine_2 := ShouldMine(frame, halite_after_move, loc2, ship.Target(), HappyThreshold(ship.Frame))
+			would_mine_1 := ShouldMine(frame, halite_after_move, loc1, ship.Target())
+			would_mine_2 := ShouldMine(frame, halite_after_move, loc2, ship.Target())
 
 			if would_mine_1 && would_mine_2 == false {				// Only mines at 1
 				return true

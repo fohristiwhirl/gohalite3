@@ -2,13 +2,13 @@ import json, random, subprocess
 
 REPLAY_FOLDER = "replays_local"
 
-SHUFFLE = False
+SHUFFLE = True
 
 bots = [
-	"bot.exe --simtest",
 	"bot.exe",
-	"bot.exe",
-	"bot.exe",
+	"other\\v15.exe",
+	"other\\v15.exe",
+	"other\\v15.exe",
 ]
 
 # ------------------------------------------------------------------------

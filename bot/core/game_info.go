@@ -161,6 +161,20 @@ func (self *Frame) WealthMap() *WealthMap {		// Return cached value if available
 	return self.wealth_map
 }
 
+func (self *Frame) InspirationMap() *InspirationMap {
+	if self.inspiration_map == nil {
+		self.inspiration_map = make(map[int]*InspirationMap)
+	}
+	if self.inspiration_map[self.pid] == nil {
+		self.inspiration_map[self.pid] = NewInspirationMap(self)
+	}
+	return self.inspiration_map[self.pid]
+}
+
+func (self *Frame) InspirationCheck(pos XYer) bool {
+	return self.InspirationMap().Check(pos)
+}
+
 func (self *Frame) InitialGroundHalite() int {
 	return self.initial_ground_halite
 }

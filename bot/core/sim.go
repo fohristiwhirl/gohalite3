@@ -30,6 +30,7 @@ func (self *Frame) SimGen() *Frame {
 	g.ship_xy_lookup = make(map[Point]*Ship)
 	g.ship_id_lookup = make(map[int]*Ship)
 	g.wealth_map = nil
+	g.inspiration_map = nil
 	g.ground_halite = 0
 	g.generate = make(map[int]bool)
 

@@ -159,8 +159,9 @@ func (self *Frame) Parse() {
 	self.dropoffs = nil
 	self.ship_xy_lookup = make(map[Point]*Ship)
 	self.ship_id_lookup = make(map[int]*Ship)
-	self.wealth_map = nil							// Not set in this function. Created when asked for.
-	self.ground_halite = 0							// Not set in this function. Created when asked for.
+	self.wealth_map = nil									// Not set in this function. Created when asked for.
+	self.inspiration_map = nil								// Not set in this function. Created when asked for.
+	self.ground_halite = 0									// Not set in this function. Created when asked for.
 	self.generate = make(map[int]bool)
 
 	// Remake the factories...

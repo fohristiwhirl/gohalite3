@@ -23,20 +23,21 @@ type Frame struct {
 	token_parser				*TokenParser
 
 	turn						int
-	highest_sid_seen			int				// Mostly for the simulator, which needs to generate unique new sids
+	highest_sid_seen			int							// Mostly for the simulator, which needs to generate unique new sids
 
 	// All of the following are regenerated from scratch each turn...
 
 	budgets						[]int
 	halite						[][]int
-	ships						[]*Ship			// Each ship contains a command field for the AI to set
-	dropoffs					[]*Dropoff		// The first <player_count> items are always the factories
+	ships						[]*Ship						// Each ship contains a command field for the AI to set
+	dropoffs					[]*Dropoff					// The first <player_count> items are always the factories
 	ship_xy_lookup				map[Point]*Ship
 	ship_id_lookup				map[int]*Ship
-	wealth_map					*WealthMap		// Made each turn the first time its asked for, then cached
-	ground_halite				int				// Likewise
+	wealth_map					*WealthMap					// Made each turn the first time its asked for, then cached
+	inspiration_map				map[int]*InspirationMap		// Likewise
+	ground_halite				int							// Likewise
 
-	generate					map[int]bool	// Whether the AI wants to send a "g" command
+	generate					map[int]bool				// Whether the AI wants to send a "g" command
 
 }
 
@@ -66,6 +67,7 @@ func (self *Frame) Remake() *Frame {			// This is a deep copy
 	g.ship_xy_lookup = make(map[Point]*Ship)
 	g.ship_id_lookup = make(map[int]*Ship)
 	g.wealth_map = nil										// Gets regenerated when asked for. Should we just link the old one?
+	g.inspiration_map = nil
 	g.ground_halite = 0										// Also gets regenerated when asked for.
 	g.generate = make(map[int]bool)
 
