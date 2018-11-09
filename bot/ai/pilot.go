@@ -1,7 +1,6 @@
 package ai
 
 import (
-	"fmt"
 	"math/rand"
 	"sort"
 
@@ -73,38 +72,28 @@ func DesireNav(ship *hal.Ship) {
 		neutrals = append(neutrals, "n")
 	}
 
-	// If lowish halite, prefer mining en route...
+	// We may prefer one square to the other if 2 are available...
 
-	if ship.Halite < 750 {
+	sort.Slice(likes, func(a, b int) bool {
 
-		sort.Slice(likes, func(a, b int) bool {
+		halite_after_move := ship.Halite - ship.MoveCost()
 
-			halite_after_move := ship.Halite - ship.MoveCost()
+		loc1 := ship.LocationAfterMove(likes[a])
+		loc2 := ship.LocationAfterMove(likes[b])
 
-			loc1 := ship.LocationAfterMove(likes[a])
-			loc2 := ship.LocationAfterMove(likes[b])
+		would_mine_1 := ShouldMine(frame, halite_after_move, loc1, ship.Target())
+		would_mine_2 := ShouldMine(frame, halite_after_move, loc2, ship.Target())
 
-			would_mine_1 := ShouldMine(frame, halite_after_move, loc1, ship.Target())
-			would_mine_2 := ShouldMine(frame, halite_after_move, loc2, ship.Target())
-
-			if would_mine_1 && would_mine_2 == false {				// Only mines at 1
-				return true
-			} else if would_mine_1 == false && would_mine_2 {		// Only mines at 2
-				return false
-			} else if would_mine_1 && would_mine_2 {				// Mines at both, choose higher
-				return frame.HaliteAtFast(loc1.X, loc1.Y) > frame.HaliteAtFast(loc2.X, loc2.Y)
-			} else {												// Mines at neither, choose lower
-				return frame.HaliteAtFast(loc1.X, loc1.Y) < frame.HaliteAtFast(loc2.X, loc2.Y)
-			}
-		})
-
-	} else {
-
-		rand.Shuffle(len(likes), func(i, j int) {
-			likes[i], likes[j] = likes[j], likes[i]
-		})
-
-	}
+		if would_mine_1 && would_mine_2 == false {				// Only mines at 1
+			return true
+		} else if would_mine_1 == false && would_mine_2 {		// Only mines at 2
+			return false
+		} else if would_mine_1 && would_mine_2 {				// Mines at both, choose higher
+			return frame.HaliteAtFast(loc1.X, loc1.Y) > frame.HaliteAtFast(loc2.X, loc2.Y)
+		} else {												// Mines at neither, choose lower
+			return frame.HaliteAtFast(loc1.X, loc1.Y) < frame.HaliteAtFast(loc2.X, loc2.Y)
+		}
+	})
 
 	rand.Shuffle(len(neutrals), func(i, j int) {
 		neutrals[i], neutrals[j] = neutrals[j], neutrals[i]
@@ -118,9 +107,4 @@ func DesireNav(ship *hal.Ship) {
 	ship.Desires = append(ship.Desires, neutrals...)
 	ship.Desires = append(ship.Desires, dislikes...)
 	ship.Desires = append(ship.Desires, "o")
-}
-
-func FlogTarget(ship *hal.Ship) {
-	ship.Frame.Flog(ship.X, ship.Y, fmt.Sprintf("Target: %d %d - Dist: %d", ship.Target().X, ship.Target().Y, ship.Dist(ship.Target())), "")
-	ship.Frame.Flog(ship.Target().X, ship.Target().Y, "", "LemonChiffon")
 }

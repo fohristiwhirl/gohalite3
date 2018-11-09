@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"fmt"
 	hal "../core"
 )
 
@@ -77,4 +78,54 @@ func SetTarget(ship *hal.Ship, target_book [][]bool) {
 	// we already returned and so they aren't included here.
 
 	target_book[ship.Target().X][ship.Target().Y] = true
+}
+
+func TargetSwaps(my_ships []*hal.Ship, cycles int) {
+
+	for cycle := 0; cycle < cycles; cycle++ {
+
+		swap_count := 0
+
+		for i, ship_a := range my_ships {
+
+			if ship_a.TargetIsDropoff() {
+				continue
+			}
+
+			for _, ship_b := range my_ships[i + 1:] {
+
+				if ship_b.TargetIsDropoff() {
+					continue
+				}
+
+				a_dist_b := ship_a.Dist(ship_b.Target())
+				b_dist_a := ship_b.Dist(ship_a.Target())
+
+				alt_score_a := HaliteDistScore(ship_b.TargetHalite(), a_dist_b)
+				alt_score_b := HaliteDistScore(ship_a.TargetHalite(), b_dist_a)
+
+				if alt_score_a + alt_score_b > ship_a.Score + ship_b.Score {
+
+					tmp := ship_a.Target()
+					ship_a.SetTarget(ship_b.Target())
+					ship_b.SetTarget(tmp)
+
+					ship_a.Score = alt_score_a
+					ship_b.Score = alt_score_b
+
+					// ship_a.Frame.Log("Swapped targets for pilots %d, %d (cycle %d)", ship_a.Sid, ship_b.Sid, cycle)
+					swap_count++
+				}
+			}
+		}
+
+		if swap_count == 0 {
+			return
+		}
+	}
+}
+
+func FlogTarget(ship *hal.Ship) {
+	ship.Frame.Flog(ship.X, ship.Y, fmt.Sprintf("Target: %d %d - Dist: %d", ship.Target().X, ship.Target().Y, ship.Dist(ship.Target())), "")
+	ship.Frame.Flog(ship.Target().X, ship.Target().Y, "", "LemonChiffon")
 }
