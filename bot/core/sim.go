@@ -319,4 +319,5 @@ func (self *Frame) DeleteEnemies() {
 	self.ships = new_ships_slice
 	self.ship_xy_lookup = new_ship_xy_lookup
 	self.ship_id_lookup = new_ship_id_lookup
+	self.inspiration_map = nil
 }
