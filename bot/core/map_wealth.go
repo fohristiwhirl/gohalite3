@@ -14,23 +14,21 @@ type WealthMap struct {
 }
 
 func NewWealthMap(frame *Frame) *WealthMap {
-	o := new(WealthMap)
-	o.Init(frame)		// Unlike some other maps, this one needs inited.
-	return o
-}
 
-func (self *WealthMap) Init(frame *Frame) {
+	self := new(WealthMap)
 
 	self.Values = Make2dIntArray(frame.Width(), frame.Height())
 
 	for x := 0; x < len(self.Values); x++ {
 		for y := 0; y < len(self.Values[0]); y++ {
-			self.Propagate(x, y, frame.HaliteAtFast(x, y), WEALTH_MAP_RADIUS)
+			self.propagate(x, y, frame.HaliteAtFast(x, y), WEALTH_MAP_RADIUS)
 		}
 	}
+
+	return self
 }
 
-func (self *WealthMap) Propagate(ox, oy, value int, radius int) {
+func (self *WealthMap) propagate(ox, oy, value int, radius int) {
 
 	width := len(self.Values)
 	height := len(self.Values[0])

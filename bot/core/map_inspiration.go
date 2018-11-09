@@ -10,22 +10,14 @@ type InspirationMap struct {
 }
 
 func NewInspirationMap(frame *Frame) *InspirationMap {
-	o := new(InspirationMap)
-	o.Init(frame)
-	return o
-}
 
-func (self *InspirationMap) Check(pos XYer) bool {
-	return self.Values[pos.GetX()][pos.GetY()] >= self.Threshold
-}
-
-func (self *InspirationMap) Init(frame *Frame) {
-
-	width := frame.Width()
-	height := frame.Height()
+	self := new(InspirationMap)
 
 	self.Threshold = frame.Constants.INSPIRATION_SHIP_COUNT
 	self.Values = Make2dIntArray(frame.Width(), frame.Height())
+
+	width := frame.Width()
+	height := frame.Height()
 
 	for _, ship := range frame.EnemyShips() {
 
@@ -47,6 +39,12 @@ func (self *InspirationMap) Init(frame *Frame) {
 			}
 		}
 	}
+
+	return self
+}
+
+func (self *InspirationMap) Check(pos XYer) bool {
+	return self.Values[pos.GetX()][pos.GetY()] >= self.Threshold
 }
 
 func (self *InspirationMap) Flog(turn int) {

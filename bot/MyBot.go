@@ -18,7 +18,7 @@ func main() {
 
 	const (
 		NAME = "Fohristiwhirl"
-		VERSION = "16.b"				// hash is 16283e9c2408534da297935758c3883e7b2f3740
+		VERSION = "16.b"				// hash is ??
 	)
 
 	flag.BoolVar(&config.Crash, "crash", false, "randomly crash")
