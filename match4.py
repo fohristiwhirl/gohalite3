@@ -8,7 +8,7 @@ bots = [
 	"bot.exe",
 	"other\\v15.exe",
 	"other\\v15.exe",
-	"node other\\dvf_29\\MyBot.js",
+	"other\\v15.exe",
 ]
 
 # ------------------------------------------------------------------------
