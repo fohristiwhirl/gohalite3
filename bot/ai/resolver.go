@@ -113,6 +113,11 @@ func PreventCollision(innocent *hal.Ship, book *MoveBook) {
 		return
 	}
 
+	if innocent.Command != "" && innocent.Command != "o" {
+		innocent.Frame.Log("PreventCollision(Ship %d) -- this ship was moving", innocent.Sid)
+		return
+	}
+
 	villain := book.Booker(innocent)
 
 	if villain == nil {
@@ -122,11 +127,6 @@ func PreventCollision(innocent *hal.Ship, book *MoveBook) {
 
 	if villain == innocent {
 		innocent.Frame.Log("PreventCollision(Ship %d) -- this ship was already the booker", innocent.Sid)
-		return
-	}
-
-	if innocent.Command != "" && innocent.Command != "o" {
-		innocent.Frame.Log("PreventCollision(Ship %d) -- this ship was moving", innocent.Sid)
 		return
 	}
 
