@@ -93,9 +93,50 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 
 	for _, ship := range my_ships {
 		if ship.Command == "" {
-			frame.Log("Couldn't find a safe move for ship %d (first desire was %s)", ship.Sid, ship.Desires[0])
+			PreventCollision(ship, book)
 		}
 	}
 
 	return book
+}
+
+func PreventCollision(innocent *hal.Ship, book *MoveBook) {
+
+	// If called correctly, the innocent ship is motionless but has
+	// some incoming ship that's going to collide with it.
+
+	if innocent.OnDropoff() && innocent.FinalDash {
+		innocent.Frame.Log("PreventCollision(Ship %d) -- ship was on dropoff and in final dash mode", innocent.Sid)
+		return
+	}
+
+	villain := book.Booker(innocent)
+
+	if villain == nil {
+		innocent.Frame.Log("PreventCollision(Ship %d) -- no incoming ship noted in the book", innocent.Sid)
+		return
+	}
+
+	if villain == innocent {
+		innocent.Frame.Log("PreventCollision(Ship %d) -- this ship was already the booker", innocent.Sid)
+		return
+	}
+
+	if innocent.Command != "" && innocent.Command != "o" {
+		innocent.Frame.Log("PreventCollision(Ship %d) -- this ship was moving", innocent.Sid)
+		return
+	}
+
+	innocent.Move("o")		// It either had this already, or had ""
+	book.SetBook(innocent, innocent)
+
+	villain.Move("o")
+
+	// Do we need to recurse?
+
+	if book.Booker(villain) != nil {
+		PreventCollision(villain, book)		// Will set the book for the villain (which will be considered the innocent by the recursed function)
+	} else {
+		book.SetBook(villain, villain)
+	}
 }

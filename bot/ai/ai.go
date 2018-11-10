@@ -14,16 +14,9 @@ const (
 
 func Step(frame *hal.Frame, pid int, allow_build bool) {
 
-	// Various calls rely on this happening..................
-	// Always have this first.
-
-	frame.SetPid(pid)
-
-	// Other initialisation..................................
+	frame.SetPid(pid)		// Always have this first.
 
 	rand.Seed(int64(frame.MyBudget() + pid))
-
-	// Ship cleanup and target choice........................
 
 	my_ships := frame.MyShips()
 
@@ -39,17 +32,11 @@ func Step(frame *hal.Frame, pid int, allow_build bool) {
 
 	TargetSwaps(my_ships, 4)
 
-	// What each ship wants to do right now..................
-
 	for _, ship := range my_ships {
 		SetDesires(ship)
 	}
 
-	// Resolve the desired moves.............................
-
 	move_book := Resolve(frame, my_ships)
-
-	// Other.................................................
 
 	if allow_build {
 		MaybeBuild(frame, my_ships, move_book)
