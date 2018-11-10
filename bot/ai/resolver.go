@@ -3,6 +3,7 @@ package ai
 // Given ships with desired moves, resolve them without collisions, as far as reasonable...
 
 import (
+	"../config"
 	hal "../core"
 )
 
@@ -91,9 +92,11 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 		}
 	}
 
-	for _, ship := range my_ships {
-		if ship.Command == "" {
-			PreventCollision(ship, book)
+	if config.NoAC == false {
+		for _, ship := range my_ships {
+			if ship.Command == "" {
+				PreventCollision(ship, book)
+			}
 		}
 	}
 

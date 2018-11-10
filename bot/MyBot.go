@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"math/rand"
 	"os"
@@ -21,10 +20,7 @@ func main() {
 		VERSION = "16"				// hash is fcb78ab9c882e8474090a9c6edc87bed79b176ab
 	)
 
-	flag.BoolVar(&config.Crash, "crash", false, "randomly crash")
-	flag.BoolVar(&config.RemakeTest, "remaketest", false, "test the frame remaker")
-	flag.BoolVar(&config.SimTest, "simtest", false, "test the simulator")
-	flag.Parse()
+	config.ParseCommandLine()
 
 	frame := hal.NewGame()
 
