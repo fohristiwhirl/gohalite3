@@ -130,7 +130,7 @@ func PreventCollision(innocent *hal.Ship, book *MoveBook) {
 		return
 	}
 
-	innocent.Move("o")		// It either had this already, or had ""
+	innocent.Move("o")						// It either had this already, or had ""
 	book.SetBook(innocent, innocent)
 
 	villain.Move("o")
