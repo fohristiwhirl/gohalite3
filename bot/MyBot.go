@@ -17,7 +17,7 @@ func main() {
 
 	const (
 		NAME = "Fohristiwhirl"
-		VERSION = "16"				// hash is fcb78ab9c882e8474090a9c6edc87bed79b176ab
+		VERSION = "17"				// hash is fcb78ab9c882e8474090a9c6edc87bed79b176ab
 	)
 
 	config.ParseCommandLine()
@@ -101,3 +101,22 @@ func main() {
 	}
 }
 
+func sim_check(real_frame *hal.Frame) (string, int) {
+
+	// Returns the final hash that the real bot will see,
+	// if the real bot is matched only against itself...
+
+	frame := real_frame.Remake()
+
+	for {
+		if frame.Turn() == frame.Constants.MAX_TURNS - 1 {
+			return frame.Hash(), frame.GroundHalite()
+		}
+
+		for pid := 0; pid < frame.Players(); pid++ {
+			ai.Step(frame, pid, true)
+		}
+
+		frame = frame.SimGen()
+	}
+}
