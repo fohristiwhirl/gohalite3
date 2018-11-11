@@ -20,8 +20,6 @@ type Frame struct {
 
 	initial_ground_halite		int
 
-	token_parser				*TokenParser
-
 	turn						int
 	highest_sid_seen			int							// Mostly for the simulator, which needs to generate unique new sids
 
@@ -47,7 +45,6 @@ func NewGame() *Frame {
 	frame := new(Frame)
 	frame.turn = -1
 	frame.highest_sid_seen = -1
-	frame.token_parser = NewTokenParser()
 
 	return frame
 }

@@ -43,7 +43,7 @@ func (self *Frame) Dropoffs(pid int) []*Dropoff {	// Includes factory
 	return ret
 }
 
-func (self *Frame) MyDropoffs() []*Dropoff {			// Includes factory
+func (self *Frame) MyDropoffs() []*Dropoff {		// Includes factory
 	return self.Dropoffs(self.pid)
 }
 

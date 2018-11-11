@@ -113,7 +113,7 @@ func TargetSwaps(my_ships []*hal.Ship, cycles int) {
 					ship_a.Score = alt_score_a
 					ship_b.Score = alt_score_b
 
-					// ship_a.Frame.Log("Swapped targets for pilots %d, %d (cycle %d)", ship_a.Sid, ship_b.Sid, cycle)
+					// ship_a.Frame.Log("Swapped targets for ships %d, %d (cycle %d)", ship_a.Sid, ship_b.Sid, cycle)
 					swap_count++
 				}
 			}

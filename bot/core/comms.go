@@ -13,6 +13,8 @@ import (
 
 // ---------------------------------------
 
+var token_parser *TokenParser
+
 type TokenParser struct {
 	scanner			*bufio.Scanner
 	count			int
@@ -64,15 +66,19 @@ func (self *Frame) PrePreParse() {
 	// Very early parsing that has to be done before log is opened
 	// so that we can open the right log name.
 
-	constants_json := self.token_parser.Str()
+	if token_parser == nil {
+		token_parser = NewTokenParser()
+	}
+
+	constants_json := token_parser.Str()
 	err := json.Unmarshal([]byte(constants_json), &self.Constants)
 
 	if err != nil {
 		panic("Couldn't load initial JSON line.")
 	}
 
-	self.players = self.token_parser.Int()
-	self.pid = self.token_parser.Int()
+	self.players = token_parser.Int()
+	self.pid = token_parser.Int()
 	self.__true_pid = self.pid
 }
 
@@ -84,9 +90,9 @@ func (self *Frame) PreParse() {
 
 	for n := 0; n < self.players; n++ {
 
-		pid := self.token_parser.Int()
-		x := self.token_parser.Int()
-		y := self.token_parser.Int()
+		pid := token_parser.Int()
+		x := token_parser.Int()
+		y := token_parser.Int()
 
 		self.dropoffs[pid] = &Dropoff{
 			Frame:		self,
@@ -104,14 +110,14 @@ func (self *Frame) PreParse() {
 		return self.dropoffs[a].Owner < self.dropoffs[b].Owner
 	})
 
-	self.width = self.token_parser.Int()
-	self.height = self.token_parser.Int()
+	self.width = token_parser.Int()
+	self.height = token_parser.Int()
 
 	self.halite = Make2dIntArray(self.width, self.height)
 
 	for y := 0; y < self.height; y++ {
 		for x := 0; x < self.width; x++ {
-			val := self.token_parser.Int()
+			val := token_parser.Int()
 			self.halite[x][y] = val
 		}
 	}
@@ -136,7 +142,7 @@ func (self *Frame) Parse() {
 	// Note: we do our first read very early since this is the point where it will panic
 	// on EOF. If it does, the old values will still be correct for e.g. final logging.
 
-	self.turn = self.token_parser.Int() - 1			// Out by 1 correction
+	self.turn = token_parser.Int() - 1			// Out by 1 correction
 	self.ParseTime = time.Now()						// Must come after the first read
 
 	// Note: we create brand new objects for literally everything;
@@ -163,26 +169,26 @@ func (self *Frame) Parse() {
 
 	for n := 0; n < self.players; n++ {
 
-		pid := self.token_parser.Int()
-		ships := self.token_parser.Int()
-		dropoffs := self.token_parser.Int()
+		pid := token_parser.Int()
+		ships := token_parser.Int()
+		dropoffs := token_parser.Int()
 
-		self.budgets[pid] = self.token_parser.Int()
+		self.budgets[pid] = token_parser.Int()
 
 		for i := 0; i < ships; i++ {
 
 			ship := new(Ship)
 
-			sid := self.token_parser.Int()
+			sid := token_parser.Int()
 
 			old_ship, ok := old_ship_id_lookup[sid]
 			if ok {
 				*ship = *old_ship					// (Shallow) copy all the AI stuff, if available. Everything else is replaced below.
 			}										// If the AI stuff is not available, the zeroed vars must work.
 
-			ship.X = self.token_parser.Int()
-			ship.Y = self.token_parser.Int()
-			ship.Halite = self.token_parser.Int()
+			ship.X = token_parser.Int()
+			ship.Y = token_parser.Int()
+			ship.Halite = token_parser.Int()
 
 			ship.Frame = self
 			ship.Sid = sid
@@ -201,13 +207,13 @@ func (self *Frame) Parse() {
 
 		for i := 0; i < dropoffs; i++ {
 
-			_ = self.token_parser.Int()				// sid (not needed)
+			_ = token_parser.Int()				// sid (not needed)
 
 			dropoff := new(Dropoff)
 			dropoff.Frame = self
 
-			dropoff.X = self.token_parser.Int()
-			dropoff.Y = self.token_parser.Int()
+			dropoff.X = token_parser.Int()
+			dropoff.Y = token_parser.Int()
 
 			dropoff.Factory = false
 			dropoff.Owner = pid
@@ -222,12 +228,12 @@ func (self *Frame) Parse() {
 		}
 	}
 
-	cell_update_count := self.token_parser.Int()
+	cell_update_count := token_parser.Int()
 
 	for n := 0; n < cell_update_count; n++ {
-		x := self.token_parser.Int()
-		y := self.token_parser.Int()
-		self.halite[x][y] = self.token_parser.Int()
+		x := token_parser.Int()
+		y := token_parser.Int()
+		self.halite[x][y] = token_parser.Int()
 	}
 
 	// ------------------------------------------------
