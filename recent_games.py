@@ -5,7 +5,7 @@ INITIAL_LIMIT = 100
 RELOAD_LIMIT = 50
 FLUORINE_DIR = "C:\\Users\\Owner\\github\\fluorine"
 
-SHOW_CHALLENGES = False
+SHOW_CHALLENGES = True
 
 class RecentGames:
 
@@ -20,7 +20,7 @@ class RecentGames:
 
 		for game in recent:
 
-			if game["challenge_id"] != None:
+			if game["challenge_id"] != None and SHOW_CHALLENGES == False:
 				continue
 
 			if game["game_id"] in self.game_ids:
