@@ -3,7 +3,7 @@ import os, requests, subprocess
 MY_ID = 219
 INITIAL_LIMIT = 100
 RELOAD_LIMIT = 50
-FLUORINE_DIR = "C:\\Users\\Owner\\github\\fluorine"
+FLUORINE_EXE = "C:\\Users\\Owner\\github\\fluorine\\dist\\win-unpacked\\Fluorine.exe"
 
 SHOW_CHALLENGES = True
 
@@ -63,7 +63,7 @@ class RecentGames:
 
 
 def load_in_fluorine(filename):
-	subprocess.Popen("electron \"{}\" -o \"{}\"".format(FLUORINE_DIR, filename), shell = True)
+	subprocess.Popen("\"{}\" \"{}\"".format(FLUORINE_EXE, filename), shell = True)
 
 my_id = MY_ID
 rg = RecentGames(my_id)
