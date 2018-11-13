@@ -10,6 +10,7 @@ import (
 const (
 	DROPOFF_SPACING = 12
 	NICE_THRESHOLD = 8000
+	BLOCKER_IGNORE_DIST = 3
 )
 
 func Step(frame *hal.Frame, pid int, allow_build bool) {

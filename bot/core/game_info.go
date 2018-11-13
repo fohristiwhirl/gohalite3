@@ -171,6 +171,10 @@ func (self *Frame) InspirationMap() *InspirationMap {
 	return self.inspiration_map[self.pid]
 }
 
+func (self *Frame) InspirationCheck(pos XYer) bool {
+	return self.InspirationMap().Check(pos)
+}
+
 func (self *Frame) DropoffDistMap() *DropoffDistMap {
 	if self.dropoff_dist_map == nil {
 		self.dropoff_dist_map = make(map[int]*DropoffDistMap)
@@ -179,10 +183,6 @@ func (self *Frame) DropoffDistMap() *DropoffDistMap {
 		self.dropoff_dist_map[self.pid] = NewDropoffDistMap(self)
 	}
 	return self.dropoff_dist_map[self.pid]
-}
-
-func (self *Frame) InspirationCheck(pos XYer) bool {
-	return self.InspirationMap().Check(pos)
 }
 
 func (self *Frame) InitialGroundHalite() int {

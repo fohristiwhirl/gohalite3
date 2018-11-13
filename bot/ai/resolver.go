@@ -52,7 +52,9 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 	if config.NoAntiEnemyCollision == false {
 		if frame.Players() == 4 {
 			for _, ship := range frame.EnemyShips() {
-				book.SetBook(ship, ship)
+				if frame.DropoffDistMap().Values[ship.X][ship.Y] > BLOCKER_IGNORE_DIST {
+					book.SetBook(ship, ship)
+				}
 			}
 		}
 	}
@@ -95,10 +97,10 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 					if booker.Command == "o" {			// Never clear a booking made by a stationary ship
 						continue
 					}
-					if booker.Owner != frame.Pid() && ship.FinalDash == false {
+					if booker.Owner != frame.Pid() {
 						continue
 					}
-					if booker.Halite < ship.Halite || booker.Owner != frame.Pid() {
+					if booker.Halite < ship.Halite {
 						ship.Move(desire)
 						book.SetBook(ship, new_loc)
 						booker.Move("")
@@ -111,7 +113,39 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 
 	if config.NoAntiSelfCollision == false {
 		for _, ship := range my_ships {
-			if ship.Command == "" {
+			if ship.Command == "" && book.Booker(ship) != nil {
+				PreventCollision(ship, book)
+			}
+		}
+	}
+
+	// Ships will maybe have "" due to anti-collision but we might be able to find moves for them...
+
+	for cycle := 0; cycle < 5; cycle++ {
+
+		for _, ship := range my_ships {
+
+			if ship.Command != "" {
+				continue
+			}
+
+			for _, desire := range ship.Desires {
+
+				new_loc := ship.LocationAfterMove(desire)
+				booker := book.Booker(new_loc)
+
+				if booker == nil {
+					ship.Move(desire)
+					book.SetBook(ship, new_loc)
+					break
+				}
+			}
+		}
+	}
+
+	if config.NoAntiSelfCollision == false {
+		for _, ship := range my_ships {
+			if ship.Command == "" && book.Booker(ship) != nil {
 				PreventCollision(ship, book)
 			}
 		}
