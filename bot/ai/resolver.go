@@ -36,6 +36,12 @@ func (self *MoveBook) SetBook(ship *hal.Ship, pos hal.XYer) {
 	self.book[x][y] = ship
 }
 
+func (self *MoveBook) ClearBook(pos hal.XYer) {
+	x := hal.Mod(pos.GetX(), self.width)
+	y := hal.Mod(pos.GetY(), self.height)
+	self.book[x][y] = nil
+}
+
 func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 
 	// Resolve the moves by setting the ships' actual .Commands
@@ -43,9 +49,11 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 
 	book := NewMoveBook(frame.Width(), frame.Height())
 
-	if frame.Players() == 4 {
-		for _, ship := range frame.EnemyShips() {
-			book.SetBook(ship, ship)
+	if config.NoAntiEnemyCollision == false {
+		if frame.Players() == 4 {
+			for _, ship := range frame.EnemyShips() {
+				book.SetBook(ship, ship)
+			}
 		}
 	}
 
@@ -87,13 +95,13 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 					if booker.Command == "o" {			// Never clear a booking made by a stationary ship
 						continue
 					}
-					if booker.Owner != frame.Pid() {	// We can't make enemy ships move...
+					if booker.Owner != frame.Pid() && ship.FinalDash == false {
 						continue
 					}
-					if booker.Halite < ship.Halite {
+					if booker.Halite < ship.Halite || booker.Owner != frame.Pid() {
 						ship.Move(desire)
 						book.SetBook(ship, new_loc)
-						booker.ClearMove()
+						booker.Move("")
 						break
 					}
 				}
@@ -101,7 +109,7 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 		}
 	}
 
-	if config.NoAC == false {
+	if config.NoAntiSelfCollision == false {
 		for _, ship := range my_ships {
 			if ship.Command == "" {
 				PreventCollision(ship, book)
@@ -139,16 +147,16 @@ func PreventCollision(innocent *hal.Ship, book *MoveBook) {
 		return
 	}
 
-	innocent.Move("o")						// It either had this already, or had ""
-	book.SetBook(innocent, innocent)
+	innocent.Move("")
+	book.ClearBook(innocent)
 
-	villain.Move("o")
+	villain.Move("")
 
 	// Do we need to recurse?
 
 	if book.Booker(villain) != nil {
-		PreventCollision(villain, book)		// Will set the book for the villain (which will be considered the innocent by the recursed function)
+		PreventCollision(villain, book)		// Will clear the book for the villain (which will be considered the innocent by the recursed function)
 	} else {
-		book.SetBook(villain, villain)
+		book.ClearBook(villain)
 	}
 }

@@ -59,13 +59,9 @@ func (self *Ship) String() string {
 	return fmt.Sprintf("Ship %v (%v,%v, owner %v, command \"%v\")", self.Sid, self.X, self.Y, self.Owner, self.Command)
 }
 
-func (self *Ship) ClearMove() {
-	self.Command = ""
-}
+func (self *Ship) Move(s string) {
 
-func (self *Ship) Move(s string) {		// Note that one cannot send "" - use ClearMove() instead
-
-	if s == "e" || s == "w" || s == "s" || s == "n" || s == "c" || s == "o" {
+	if s == "e" || s == "w" || s == "s" || s == "n" || s == "c" || s == "o" || s == "" {
 		self.Command = s
 	} else {
 		panic(fmt.Sprintf("ship.Move() - Illegal move \"%s\" on %v", s, self))
