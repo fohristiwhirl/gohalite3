@@ -105,22 +105,20 @@ func MaybeBuild(frame *hal.Frame, my_ships []*hal.Ship, move_book *MoveBook) {
 	}
 }
 
-func ShouldMine(frame *hal.Frame, halite_carried int, pos, tar hal.XYer) bool {
+func ShouldMine(frame *hal.Frame, halite_carried, halite_at_ship, halite_at_target int) bool {
 
-	// Whether a ship -- if it were carrying n halite, at pos, with specified target -- would stop to mine.
+	// Whether a ship...
+	//		- if it were carrying <halite_carried>
+	//		- with <halite_at_ship> underneath it
+	//		- with <halite_at_target> at its target
+	// ...would stop to mine.
 
 	if halite_carried >= 800 {
 		return false
 	}
 
-	pos_halite := frame.HaliteAt(pos)
-	tar_halite := frame.HaliteAt(tar)
-
-	// if frame.InspirationCheck(pos) { pos_halite *= 3 }
-	// if frame.InspirationCheck(tar) { tar_halite *= 3 }
-
-	if pos_halite > HappyThreshold(frame) {
-		if pos_halite > tar_halite / 3 {			// This is a bit odd since the test even happens when target is dropoff.
+	if halite_at_ship > HappyThreshold(frame) {
+		if halite_at_ship > halite_at_target / 3 {			// This is a bit odd since the test even happens when target is dropoff.
 			return true
 		}
 	}
