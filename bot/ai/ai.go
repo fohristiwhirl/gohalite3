@@ -30,7 +30,7 @@ func Step(frame *hal.Frame, pid int, allow_build bool) {
 		SetTarget(ship, target_book)
 	}
 
-	// TargetSwaps(my_ships, 4)		// Not legitimate if doing shipsims
+	TargetSwaps(my_ships, 4)
 
 	for _, ship := range my_ships {
 		SetDesires(ship)
