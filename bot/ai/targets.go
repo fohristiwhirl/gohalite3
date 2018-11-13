@@ -10,13 +10,19 @@ func NewTurn(ship *hal.Ship) {
 	ship.Command = ""
 	ship.Desires = nil
 
-	ship.ClearTarget()
+	if ship.OnDropoff() {
+		ship.ClearTarget()
+	}
+
+	if ship.TargetOK() && ship.TargetHalite() < IgnoreThreshold(ship.Frame) {
+		ship.ClearTarget()
+	}
 
 	if ship.Dist(ship.NearestDropoff()) > ship.Frame.Constants.MAX_TURNS - ship.Frame.Turn() - 3 {
 		ship.FinalDash = true
 	}
 
-	if ship.FinalDash || ShouldReturn(ship) || (ship.Returning && ship.OnDropoff() == false) {
+	if ship.FinalDash || ShouldReturn(ship.Halite) || (ship.Returning && ship.OnDropoff() == false) {
 		ship.Returning = true
 	} else {
 		ship.Returning = false
@@ -30,7 +36,9 @@ func SetTarget(ship *hal.Ship, target_book [][]bool) {
 		return
 	}
 
-	ship.ClearTarget()
+	if ship.TargetOK() {
+		return
+	}
 
 	frame := ship.Frame
 	width := frame.Width()
@@ -54,8 +62,7 @@ func SetTarget(ship *hal.Ship, target_book [][]bool) {
 				continue
 			}
 
-			dist := ship.Dist(hal.Point{x, y})
-			score := HaliteDistScore(halite, dist)
+			score := RunShipSim(ship, hal.Point{x, y})
 
 			if ship.TargetOK() == false || score > ship.Score {
 				ship.SetTarget(hal.Point{x, y})
@@ -71,7 +78,7 @@ func SetTarget(ship *hal.Ship, target_book [][]bool) {
 
 	if ship.TargetOK() == false {
 		ship.SetTarget(ship)										// Default - my own square
-		ship.Score = HaliteDistScore(ship.HaliteAt(), 0)
+		ship.Score = RunShipSim(ship, hal.Point{ship.X, ship.Y})
 	}
 
 	// Set the book for this ship. Note that for dropoff targets,

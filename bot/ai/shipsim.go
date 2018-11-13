@@ -20,7 +20,7 @@ type ShipSim struct {
 */
 
 
-func RunShipSim(real_ship *hal.Ship, proposed_target hal.Point) int {
+func RunShipSim(real_ship *hal.Ship, proposed_target hal.Point) float32 {
 
 	real_frame := real_ship.Frame
 	x := real_ship.X
@@ -46,15 +46,18 @@ func RunShipSim(real_ship *hal.Ship, proposed_target hal.Point) int {
 			halite_at_target = real_frame.HaliteAt(target)
 		}
 
+		amount_to_mine := (halite_at_ship + real_frame.Constants.EXTRACT_RATIO - 1) / real_frame.Constants.EXTRACT_RATIO
 		move_cost := halite_at_ship / real_frame.Constants.MOVE_COST_RATIO
 
-		if move_cost > halite_carried {
-			// FIXME: do mining
-			continue
+		// FIXME: actually simulate the return as well
+		if ShouldReturn(halite_carried) || halite_at_target == 0 {
+			// Return a sort of efficiency stat
+			return float32(halite_carried - real_ship.Halite) / float32(1 + turn - real_frame.Turn())
 		}
 
-		if ShouldMine(real_frame, halite_carried, halite_at_ship, halite_at_target) {
-			// FIXME: do mining
+		if move_cost > halite_carried || ShouldMine(real_frame, halite_carried, halite_at_ship, halite_at_target) {
+			halite_carried += amount_to_mine
+			cells[hal.Point{x, y}] = halite_at_ship - amount_to_mine
 			continue
 		}
 
@@ -63,7 +66,8 @@ func RunShipSim(real_ship *hal.Ship, proposed_target hal.Point) int {
 		dx, dy := (&hal.Cell{real_frame, x, y}).DxDy(target)
 
 		if dx == 0 && dy == 0 {
-			// FIXME: do mining
+			halite_carried += amount_to_mine
+			cells[hal.Point{x, y}] = halite_at_ship - amount_to_mine
 			continue
 		}
 

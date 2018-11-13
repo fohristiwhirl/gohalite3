@@ -30,7 +30,7 @@ func Step(frame *hal.Frame, pid int, allow_build bool) {
 		SetTarget(ship, target_book)
 	}
 
-	TargetSwaps(my_ships, 4)
+	// TargetSwaps(my_ships, 4)		// Not legitimate if doing shipsims
 
 	for _, ship := range my_ships {
 		SetDesires(ship)
@@ -126,8 +126,8 @@ func ShouldMine(frame *hal.Frame, halite_carried, halite_at_ship, halite_at_targ
 	return false
 }
 
-func ShouldReturn(ship *hal.Ship) bool {			// Could consider dist to dropoff, etc
-	return ship.Halite > 500
+func ShouldReturn(halite_carried int) bool {				// Could consider dist to dropoff, etc
+	return halite_carried > 500
 }
 
 func HappyThreshold(frame *hal.Frame) int {
