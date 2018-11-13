@@ -17,7 +17,7 @@ func main() {
 
 	const (
 		NAME = "Fohristiwhirl"
-		VERSION = "17"				// hash is fcb78ab9c882e8474090a9c6edc87bed79b176ab
+		VERSION = "18"				// hash is dcaeff7bfc9da191422a3efeccff57ec8cf163e7
 	)
 
 	config.ParseCommandLine()

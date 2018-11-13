@@ -43,6 +43,12 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 
 	book := NewMoveBook(frame.Width(), frame.Height())
 
+	if frame.Players() == 4 {
+		for _, ship := range frame.EnemyShips() {
+			book.SetBook(ship, ship)
+		}
+	}
+
 	for _, ship := range my_ships {
 		if ship.Desires[0] == "o" {
 			ship.Move("o")
@@ -78,7 +84,10 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 					book.SetBook(ship, new_loc)
 					break
 				} else {
-					if booker.Command == "o" {		// Never clear a booking made by a stationary ship
+					if booker.Command == "o" {			// Never clear a booking made by a stationary ship
+						continue
+					}
+					if booker.Owner != frame.Pid() {	// We can't make enemy ships move...
 						continue
 					}
 					if booker.Halite < ship.Halite {
