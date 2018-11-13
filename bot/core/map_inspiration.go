@@ -11,13 +11,13 @@ type InspirationMap struct {
 
 func NewInspirationMap(frame *Frame) *InspirationMap {
 
+	width := frame.Width()
+	height := frame.Height()
+
 	self := new(InspirationMap)
 
 	self.Threshold = frame.Constants.INSPIRATION_SHIP_COUNT
-	self.Values = Make2dIntArray(frame.Width(), frame.Height())
-
-	width := frame.Width()
-	height := frame.Height()
+	self.Values = Make2dIntArray(width, height)
 
 	for _, ship := range frame.EnemyShips() {
 

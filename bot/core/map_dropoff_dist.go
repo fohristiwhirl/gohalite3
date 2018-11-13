@@ -1,26 +1,23 @@
-package maps
+package core
 
 import (
 	"fmt"
-	hal "../core"
+	"../logging"
 )
 
 type DropoffDistMap struct {
 	Values			[][]int
 }
 
-func NewDropoffDistMap(frame *hal.Frame) *DropoffDistMap {
-	o := new(DropoffDistMap)
-	o.Values = hal.Make2dIntArray(frame.Width(), frame.Height())
-	return o
-}
-
-func (self *DropoffDistMap) Update(frame *hal.Frame) {
+func NewDropoffDistMap(frame *Frame) *DropoffDistMap {
 
 	width := frame.Width()
 	height := frame.Height()
 
-	var hotpoints []hal.Point
+	self := new(DropoffDistMap)
+	self.Values = Make2dIntArray(width, height)
+
+	var hotpoints []Point
 
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
@@ -30,12 +27,12 @@ func (self *DropoffDistMap) Update(frame *hal.Frame) {
 
 	for _, dropoff := range frame.MyDropoffs() {
 		self.Values[dropoff.X][dropoff.Y] = 0
-		hotpoints = append(hotpoints, hal.Point{dropoff.X, dropoff.Y})
+		hotpoints = append(hotpoints, Point{dropoff.X, dropoff.Y})
 	}
 
 	for {
 
-		var next_hotpoints []hal.Point
+		var next_hotpoints []Point
 
 		for _, hotpoint := range hotpoints {
 
@@ -46,7 +43,7 @@ func (self *DropoffDistMap) Update(frame *hal.Frame) {
 				if self.Values[box.X][box.Y] == 9999 {
 
 					self.Values[box.X][box.Y] = self.Values[hotpoint.X][hotpoint.Y] + 1
-					next_hotpoints = append(next_hotpoints, hal.Point{box.X, box.Y})
+					next_hotpoints = append(next_hotpoints, Point{box.X, box.Y})
 				}
 			}
 		}
@@ -54,16 +51,16 @@ func (self *DropoffDistMap) Update(frame *hal.Frame) {
 		hotpoints = next_hotpoints
 
 		if len(hotpoints) == 0 {
-			return
+			return self
 		}
 	}
 }
 
-func (self *DropoffDistMap) Flog(frame *hal.Frame) {
-	for x := 0; x < frame.Width(); x++ {
-		for y := 0; y < frame.Height(); y++ {
+func (self *DropoffDistMap) Flog(turn int) {
+	for x := 0; x < len(self.Values); x++ {
+		for y := 0; y < len(self.Values[0]); y++ {
 			s := fmt.Sprintf("Dropoff dist: %v", self.Values[x][y])
-			frame.Flog(x, y, s, "")
+			logging.Flog(turn, x, y, s, "")
 		}
 	}
 }

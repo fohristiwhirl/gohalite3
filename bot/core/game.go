@@ -36,8 +36,9 @@ type Frame struct {
 	// The following are cleared each parse / simgen / remake, then made when asked for, and cached...
 
 	wealth_map					*WealthMap
-	inspiration_map				map[int]*InspirationMap		// Likewise
-	ground_halite				int							// Likewise
+	inspiration_map				map[int]*InspirationMap
+	dropoff_dist_map			map[int]*DropoffDistMap
+	ground_halite				int
 }
 
 func NewGame() *Frame {
@@ -66,6 +67,7 @@ func (self *Frame) Zerofy() {
 
 	self.wealth_map = nil
 	self.inspiration_map = nil
+	self.dropoff_dist_map = nil
 	self.ground_halite = 0
 }
 
