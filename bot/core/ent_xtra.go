@@ -39,3 +39,18 @@ type Point struct {
 
 func (self Point) GetX() int { return self.X }
 func (self Point) GetY() int { return self.Y }
+
+// ------------------------------------------------------------
+
+type Cell struct {
+	Frame						*Frame
+	X							int
+	Y							int
+}
+
+func (self *Cell) GetFrame() *Frame { return self.Frame }
+func (self *Cell) GetX() int { return self.X }
+func (self *Cell) GetY() int { return self.Y }
+func (self *Cell) DxDy(other XYer) (int, int) { return DxDy(self, other) }
+func (self *Cell) Dist(other XYer) int { return Dist(self, other) }
+func (self *Cell) SamePlace(other XYer) bool { return SamePlace(self, other) }

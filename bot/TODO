@@ -1,0 +1,3 @@
+TODO
+
+* Score targets by considering the actual amount of halite that will be returned / time taken (maybe) by calculating the exact path and minings stops that will occur.
