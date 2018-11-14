@@ -120,6 +120,35 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 	}
 
 	// Ships will maybe have "" due to anti-collision but we might be able to find moves for them...
+	// As a priority, move any ships on dropoffs (prevent pile-ups)...
+
+	for _, ship := range my_ships {
+
+		if ship.Command != "" || ship.OnDropoff() == false {
+			continue
+		}
+
+		for _, desire := range ship.Desires {
+
+			new_loc := ship.LocationAfterMove(desire)
+			booker := book.Booker(new_loc)
+
+			if booker == nil {
+
+				// For this special loop, prefer not to move to a square with an uncommanded ship...
+				other_ship := frame.ShipAt(new_loc)
+				if other_ship != nil && other_ship.Command == "" {
+					continue
+				}
+
+				ship.Move(desire)
+				book.SetBook(ship, new_loc)
+				break
+			}
+		}
+	}
+
+	// Now do every other stalled ship...
 
 	for cycle := 0; cycle < 5; cycle++ {
 
@@ -142,6 +171,8 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 			}
 		}
 	}
+
+	// Second round of collision prevention...
 
 	if config.NoAntiSelfCollision == false {
 		for _, ship := range my_ships {

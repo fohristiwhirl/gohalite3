@@ -12,7 +12,7 @@ func NewTurn(ship *hal.Ship) {
 
 	ship.ClearTarget()
 
-	if ship.Dist(ship.NearestDropoff()) > ship.Frame.Constants.MAX_TURNS - ship.Frame.Turn() - 3 {
+	if ship.Dist(ship.NearestDropoff()) > ship.Frame.Constants.MAX_TURNS - ship.Frame.Turn() - DASH_CRITICAL {
 		ship.FinalDash = true
 	}
 
