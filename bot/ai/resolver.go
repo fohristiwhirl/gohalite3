@@ -135,7 +135,9 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 
 			if booker == nil {
 
-				// For this special loop, prefer not to move to a square with an uncommanded ship...
+				// For this special loop, don't move to a square with an uncommanded ship
+				// (because such a square has a high risk of getting us cancelled again)
+
 				other_ship := frame.ShipAt(new_loc)
 				if other_ship != nil && other_ship.Command == "" {
 					continue
