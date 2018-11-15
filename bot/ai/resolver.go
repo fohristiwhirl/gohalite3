@@ -134,15 +134,6 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 			booker := book.Booker(new_loc)
 
 			if booker == nil {
-
-				// For this special loop, don't move to a square with an uncommanded ship
-				// (because such a square has a high risk of getting us cancelled again)
-
-				other_ship := frame.ShipAt(new_loc)
-				if other_ship != nil && other_ship.Command == "" {
-					continue
-				}
-
 				ship.Move(desire)
 				book.SetBook(ship, new_loc)
 				break
@@ -150,7 +141,7 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 		}
 	}
 
-	// Now do every other stalled ship...
+	// Now do every still-stalled ship... without overrides.
 
 	for cycle := 0; cycle < 5; cycle++ {
 
