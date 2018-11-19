@@ -5,7 +5,7 @@ INITIAL_LIMIT = 100
 RELOAD_LIMIT = 50
 FLUORINE_EXE = "C:\\Users\\Owner\\github\\fluorine\\dist\\win-unpacked\\Fluorine.exe"
 
-SHOW_CHALLENGES = True
+SHOW_CHALLENGES = False
 
 class RecentGames:
 
