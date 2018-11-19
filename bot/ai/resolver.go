@@ -114,7 +114,7 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 	if config.NoAntiSelfCollision == false {
 		for _, ship := range my_ships {
 			if ship.Command == "" && book.Booker(ship) != nil {
-				PreventCollision(ship, book)
+				PreventCollision(ship, book, "Phase 1")
 			}
 		}
 	}
@@ -170,15 +170,23 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 	if config.NoAntiSelfCollision == false {
 		for _, ship := range my_ships {
 			if ship.Command == "" && book.Booker(ship) != nil {
-				PreventCollision(ship, book)
+				PreventCollision(ship, book, "Phase 2")
 			}
+		}
+	}
+
+	// Finally, set the book for any ship that doesn't have a move (except final dash ships sitting on the dropoff)
+
+	for _, ship := range my_ships {
+		if ship.Command == "" && (ship.FinalDash == false || ship.OnDropoff() == false) {
+			book.SetBook(ship, ship)
 		}
 	}
 
 	return book
 }
 
-func PreventCollision(innocent *hal.Ship, book *MoveBook) {
+func PreventCollision(innocent *hal.Ship, book *MoveBook, log_string string) {
 
 	// If called correctly, the innocent ship is motionless but has
 	// some incoming ship that's going to collide with it.
@@ -208,12 +216,13 @@ func PreventCollision(innocent *hal.Ship, book *MoveBook) {
 	innocent.Move("")
 	book.ClearBook(innocent)
 
+	villain.Frame.Log("(%s) Cancelling move of ship %d, move was %s", log_string, villain.Sid, villain.Command)
 	villain.Move("")
 
 	// Do we need to recurse?
 
 	if book.Booker(villain) != nil {
-		PreventCollision(villain, book)		// Will clear the book for the villain (which will be considered the innocent by the recursed function)
+		PreventCollision(villain, book, "recurse")	// Will clear the book for the villain (which will be considered the innocent by the recursed function)
 	} else {
 		book.ClearBook(villain)
 	}
