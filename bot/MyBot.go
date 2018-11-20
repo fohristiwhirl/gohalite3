@@ -17,7 +17,7 @@ func main() {
 
 	const (
 		NAME = "Fohristiwhirl"
-		VERSION = "22b"				// hash is ??
+		VERSION = "22"				// hash is 65fa9950d845842abd7728acf3f861f0c10d3bd3
 	)
 
 	config.ParseCommandLine()
@@ -52,6 +52,8 @@ func main() {
 
 	frame.PreParse()				// Reads the map data.
 
+	config.SetGenMin(frame.Width(), frame.Players())
+
 	logging.Log("--------------------------------------------------------------------------------")
 	logging.Log("%s %s starting up at %s", NAME, VERSION, time.Now().Format("2006-01-02 15:04:05"))
 	logging.Log("Invoked as %s", strings.Join(os.Args, " "))
@@ -63,6 +65,8 @@ func main() {
 
 	logging.Log("./halite.py --width %d --height %d -s %v %s",
 		frame.Width(), frame.Height(), frame.Constants.GameSeed, strings.Join(player_strings, " "))
+
+	logging.Log("GenMin is %v", config.GenMin)
 
 	// -------------------------------------------------------------------------------
 
