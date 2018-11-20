@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"sort"
 
+	"../config"
 	hal "../core"
 )
 
@@ -98,14 +99,14 @@ func MaybeBuild(frame *hal.Frame, my_ships []*hal.Ship, move_book *MoveBook) {
 	factory := frame.MyFactory()
 	willing := true
 
-	if frame.InitialGroundHalite() / (frame.GroundHalite() + 1) >= 2 {		// remember int division, also div-by-zero
+	if float64(frame.GroundHalite()) / float64(frame.InitialGroundHalite()) < config.GenMin {
 		willing = false
 	}
-
+/*
 	if frame.Turn() >= frame.Constants.MAX_TURNS / 2 {
 		willing = false
 	}
-
+*/
 	if budget >= frame.Constants.NEW_ENTITY_ENERGY_COST && move_book.Booker(factory) == nil && willing {
 		frame.SetGenerate(true)
 		budget -= frame.Constants.NEW_ENTITY_ENERGY_COST
