@@ -55,22 +55,6 @@ func MaybeBuild(frame *hal.Frame, my_ships []*hal.Ship, move_book *MoveBook) {
 
 	budget := frame.MyBudget()
 
-	factory := frame.MyFactory()
-	willing := true
-
-	if frame.InitialGroundHalite() / (frame.GroundHalite() + 1) >= 2 {		// remember int division, also div-by-zero
-		willing = false
-	}
-
-	if frame.Turn() >= frame.Constants.MAX_TURNS / 2 {
-		willing = false
-	}
-
-	if budget >= frame.Constants.NEW_ENTITY_ENERGY_COST && move_book.Booker(factory) == nil && willing {
-		frame.SetGenerate(true)
-		budget -= frame.Constants.NEW_ENTITY_ENERGY_COST
-	}
-
 	// -------------------------------------------
 
 	var possible_constructs []*hal.Ship
@@ -94,16 +78,37 @@ func MaybeBuild(frame *hal.Frame, my_ships []*hal.Ship, move_book *MoveBook) {
 
 	sort.Slice(possible_constructs, func (a, b int) bool {
 
-		return	frame.WealthMap().Values[possible_constructs[a].X][possible_constructs[a].Y] <
+		return	frame.WealthMap().Values[possible_constructs[a].X][possible_constructs[a].Y] >		// Reverse
 				frame.WealthMap().Values[possible_constructs[b].X][possible_constructs[b].Y]
 	})
 
 	for _, ship := range possible_constructs {
-		if ship.Halite + frame.HaliteAtFast(ship.X, ship.Y) + budget >= frame.Constants.DROPOFF_COST {
+		halite_at := frame.HaliteAtFast(ship.X, ship.Y)
+		if ship.Halite + halite_at + budget >= frame.Constants.DROPOFF_COST {
 			ship.Command = "c"
 			frame.Log("Ship %d building dropoff (wmap: %d)", ship.Sid, frame.WealthMap().Values[ship.X][ship.Y])
+			budget -= frame.Constants.DROPOFF_COST
+			budget += ship.Halite + halite_at
 			break
 		}
+	}
+
+	// -------------------------------------------
+
+	factory := frame.MyFactory()
+	willing := true
+
+	if frame.InitialGroundHalite() / (frame.GroundHalite() + 1) >= 2 {		// remember int division, also div-by-zero
+		willing = false
+	}
+
+	if frame.Turn() >= frame.Constants.MAX_TURNS / 2 {
+		willing = false
+	}
+
+	if budget >= frame.Constants.NEW_ENTITY_ENERGY_COST && move_book.Booker(factory) == nil && willing {
+		frame.SetGenerate(true)
+		budget -= frame.Constants.NEW_ENTITY_ENERGY_COST
 	}
 }
 
