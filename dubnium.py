@@ -28,7 +28,7 @@ useful = dict()
 
 useful["engine"] = EXE
 
-for key in ["map_width", "map_height", "map_seed", "replay", "stats"]:
+for key in ["map_seed", "map_width", "map_height", "map_halite", "replay", "stats"]:
 	useful[key] = parsed[key]
 
 useful["time"] = time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time))
