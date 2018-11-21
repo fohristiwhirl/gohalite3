@@ -94,7 +94,7 @@ func Resolve(frame *hal.Frame, my_ships []*hal.Ship) *MoveBook {
 					book.SetBook(ship, new_loc)
 					break
 				} else {
-					if booker.Command == "o" {			// Never clear a booking made by a stationary ship
+					if len(booker.Desires) == 1 {		// The booker has no choice but to do what it's doing
 						continue
 					}
 					if booker.Owner != frame.Pid() {
