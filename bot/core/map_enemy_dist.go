@@ -9,11 +9,12 @@ type EnemyDistMap struct {
 }
 
 func NewEnemyDistMap(frame *Frame) *EnemyDistMap {
-	self := new(EnemyDistMap)
-	self.Values = Make2dIntArray(frame.Width(), frame.Height())
 
 	width := frame.Width()
 	height := frame.Height()
+
+	self := new(EnemyDistMap)
+	self.Values = Make2dIntArray(width, height)
 
 	var hotpoints []Point
 

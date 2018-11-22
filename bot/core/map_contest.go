@@ -12,6 +12,7 @@ type ContestMap struct {
 // Strongly positive numbers are heavily in enemy area of influence.
 
 func NewContestMap(a *FriendlyDistMap, b *EnemyDistMap) *ContestMap {
+
 	self := new(ContestMap)
 	self.Values = Make2dIntArray(len(a.Values), len(a.Values[0]))
 

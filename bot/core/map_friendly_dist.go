@@ -9,11 +9,12 @@ type FriendlyDistMap struct {
 }
 
 func NewFriendlyDistMap(frame *Frame) *FriendlyDistMap {
-	self := new(FriendlyDistMap)
-	self.Values = Make2dIntArray(frame.Width(), frame.Height())
 
 	width := frame.Width()
 	height := frame.Height()
+
+	self := new(FriendlyDistMap)
+	self.Values = Make2dIntArray(width, height)
 
 	var hotpoints []Point
 
