@@ -38,6 +38,10 @@ type Frame struct {
 	wealth_map					*WealthMap
 	inspiration_map				map[int]*InspirationMap
 	dropoff_dist_map			map[int]*DropoffDistMap
+	friendly_dist_map			map[int]*FriendlyDistMap
+	enemy_dist_map				map[int]*EnemyDistMap
+	contest_map					map[int]*ContestMap
+
 	ground_halite				int
 }
 
@@ -68,6 +72,9 @@ func (self *Frame) Zerofy() {
 	self.wealth_map = nil
 	self.inspiration_map = nil
 	self.dropoff_dist_map = nil
+	self.friendly_dist_map = nil
+	self.enemy_dist_map = nil
+	self.contest_map = nil
 	self.ground_halite = 0
 }
 

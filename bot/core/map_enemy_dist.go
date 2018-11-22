@@ -1,26 +1,21 @@
-package maps
+package core
 
 import (
 	"fmt"
-	hal "../core"
 )
 
 type EnemyDistMap struct {
 	Values			[][]int
 }
 
-func NewEnemyDistMap(frame *hal.Frame) *EnemyDistMap {
-	o := new(EnemyDistMap)
-	o.Values = hal.Make2dIntArray(frame.Width(), frame.Height())
-	return o
-}
-
-func (self *EnemyDistMap) Update(frame *hal.Frame) {
+func NewEnemyDistMap(frame *Frame) *EnemyDistMap {
+	self := new(EnemyDistMap)
+	self.Values = Make2dIntArray(frame.Width(), frame.Height())
 
 	width := frame.Width()
 	height := frame.Height()
 
-	var hotpoints []hal.Point
+	var hotpoints []Point
 
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
@@ -30,17 +25,17 @@ func (self *EnemyDistMap) Update(frame *hal.Frame) {
 
 	for _, ship := range frame.EnemyShips() {
 		self.Values[ship.X][ship.Y] = 0
-		hotpoints = append(hotpoints, hal.Point{ship.X, ship.Y})
+		hotpoints = append(hotpoints, Point{ship.X, ship.Y})
 	}
 
 	for _, factory := range frame.EnemyFactories() {
 		self.Values[factory.X][factory.Y] = 0
-		hotpoints = append(hotpoints, hal.Point{factory.X, factory.Y})
+		hotpoints = append(hotpoints, Point{factory.X, factory.Y})
 	}
 
 	for {
 
-		var next_hotpoints []hal.Point
+		var next_hotpoints []Point
 
 		for _, hotpoint := range hotpoints {
 
@@ -51,7 +46,7 @@ func (self *EnemyDistMap) Update(frame *hal.Frame) {
 				if self.Values[box.X][box.Y] == 9999 {
 
 					self.Values[box.X][box.Y] = self.Values[hotpoint.X][hotpoint.Y] + 1
-					next_hotpoints = append(next_hotpoints, hal.Point{box.X, box.Y})
+					next_hotpoints = append(next_hotpoints, Point{box.X, box.Y})
 				}
 			}
 		}
@@ -59,12 +54,12 @@ func (self *EnemyDistMap) Update(frame *hal.Frame) {
 		hotpoints = next_hotpoints
 
 		if len(hotpoints) == 0 {
-			return
+			return self
 		}
 	}
 }
 
-func (self *EnemyDistMap) Flog(frame *hal.Frame) {
+func (self *EnemyDistMap) Flog(frame *Frame) {
 	for x := 0; x < frame.Width(); x++ {
 		for y := 0; y < frame.Height(); y++ {
 			s := fmt.Sprintf("Enemy dist: %v", self.Values[x][y])

@@ -185,6 +185,36 @@ func (self *Frame) DropoffDistMap() *DropoffDistMap {
 	return self.dropoff_dist_map[self.pid]
 }
 
+func (self *Frame) FriendlyDistMap() *FriendlyDistMap {
+	if self.friendly_dist_map == nil {
+		self.friendly_dist_map = make(map[int]*FriendlyDistMap)
+	}
+	if self.friendly_dist_map[self.pid] == nil {
+		self.friendly_dist_map[self.pid] = NewFriendlyDistMap(self)
+	}
+	return self.friendly_dist_map[self.pid]
+}
+
+func (self *Frame) EnemyDistMap() *EnemyDistMap {
+	if self.enemy_dist_map == nil {
+		self.enemy_dist_map = make(map[int]*EnemyDistMap)
+	}
+	if self.enemy_dist_map[self.pid] == nil {
+		self.enemy_dist_map[self.pid] = NewEnemyDistMap(self)
+	}
+	return self.enemy_dist_map[self.pid]
+}
+
+func (self *Frame) ContestMap() *ContestMap {
+	if self.contest_map == nil {
+		self.contest_map = make(map[int]*ContestMap)
+	}
+	if self.contest_map[self.pid] == nil {
+		self.contest_map[self.pid] = NewContestMap(self.FriendlyDistMap(), self.EnemyDistMap())
+	}
+	return self.contest_map[self.pid]
+}
+
 func (self *Frame) InitialGroundHalite() int {
 	return self.initial_ground_halite
 }
