@@ -45,11 +45,19 @@ func SetTarget(ship *hal.Ship, target_book [][]bool) {
 			}
 
 			halite := frame.HaliteAtFast(x, y)
-/*
-			if frame.InspirationCheck(hal.Point{x, y}) {
-				halite *= 3
+
+			contest_map := frame.ContestMap()
+
+			if frame.Players() > 2 {
+				if contest_map.Values[x][y] >= -3 && contest_map.Values[x][y] <= 3 {
+					halite *= 3
+				}
 			}
-*/
+
+//			if frame.InspirationCheck(hal.Point{x, y}) {
+//				halite *= 3
+//			}
+
 			if halite < IgnoreThreshold(frame) {
 				continue
 			}

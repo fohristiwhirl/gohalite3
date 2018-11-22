@@ -6,9 +6,9 @@ SHUFFLE = True
 
 bots = [
 	"bot.exe",
-	"other\\v21.exe",
-	"other\\v21.exe",
-	"other\\v21.exe",
+	"other\\v22.exe",
+	"other\\v22.exe",
+	"other\\v22.exe",
 ]
 
 # ------------------------------------------------------------------------

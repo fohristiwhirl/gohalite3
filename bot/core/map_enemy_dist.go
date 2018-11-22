@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"../logging"
 )
 
 type EnemyDistMap struct {
@@ -60,11 +61,11 @@ func NewEnemyDistMap(frame *Frame) *EnemyDistMap {
 	}
 }
 
-func (self *EnemyDistMap) Flog(frame *Frame) {
-	for x := 0; x < frame.Width(); x++ {
-		for y := 0; y < frame.Height(); y++ {
+func (self *EnemyDistMap) Flog(turn int) {
+	for x := 0; x < len(self.Values); x++ {
+		for y := 0; y < len(self.Values[0]); y++ {
 			s := fmt.Sprintf("Enemy dist: %v", self.Values[x][y])
-			frame.Flog(x, y, s, "")
+			logging.Flog(turn, x, y, s, "")
 		}
 	}
 }
