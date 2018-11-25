@@ -46,21 +46,6 @@ func SetTarget(ship *hal.Ship, target_book [][]bool) {
 
 			halite := frame.HaliteAtFast(x, y)
 
-			contest_map := frame.ContestMap()
-
-			// FIXME: how does this interact with TargetSwaps?
-			// FIXME: maybe a lower range e.g. -4 to 2?
-
-			if frame.Players() > 2 {
-				if contest_map.Values[x][y] >= -3 && contest_map.Values[x][y] <= 3 {
-					halite *= 3
-				}
-			}
-
-//			if frame.InspirationCheck(hal.Point{x, y}) {
-//				halite *= 3
-//			}
-
 			if halite < IgnoreThreshold(frame) {
 				continue
 			}
